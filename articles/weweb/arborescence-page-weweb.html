@@ -1,0 +1,146 @@
+<h1>Comprendre l'arborescence d'une page WeWeb : exemple de la page Mon Compte</h1>
+
+<p>Dans cet article, nous découvrons la structure complète d'une page construite avec WeWeb. L'objectif est de comprendre la logique d'imbrication des éléments et leur rôle dans l'interface utilisateur. Cette organisation hiérarchique est essentielle pour maintenir une page claire, responsive et facilement maintenable.</p>
+
+<div class="figure">
+    <img src="../../public/images/weweb/panneaugauche/arborescence-page.jpg" alt="Arborescence d'une page WeWeb montrant les différents éléments déployés">
+    <p class="figure-caption">Figure 1: Structure hiérarchique d'une page Mon Compte dans WeWeb</p>
+</div>
+
+<h2>Niveau 1 : Section principale</h2>
+
+<p>Tout commence par un composant parent appelé <strong>Section</strong>. C'est le conteneur global qui définit la zone de la page visible par l'utilisateur.</p>
+
+<p><strong>Enfants directs :</strong></p>
+<ul>
+    <li><code>main</code></li>
+    <li><code>footer</code></li>
+</ul>
+
+<p>Ces deux éléments représentent respectivement le contenu central de la page et le bas de page.</p>
+
+<h2>Niveau 2 : le contenu principal (main)</h2>
+
+<p>À l'intérieur de <code>main</code>, on retrouve deux blocs structurants :</p>
+
+<ul>
+    <li><code>cl_navbar</code> : correspond à la barre de navigation supérieure.</li>
+    <li><code>div_principal</code> : c'est ici que se trouve tout le contenu du profil utilisateur.</li>
+</ul>
+
+<h2>Niveau 3 : Structure interne de div_principal</h2>
+
+<h3>ctn_principal</h3>
+
+<p>Il agit comme un container principal pour organiser les données du profil en sections logiques.</p>
+
+<p><strong>Sous-éléments de ctn_principal :</strong></p>
+
+<h4>div_photo</h4>
+<ul>
+    <li>Contient l'image de profil (nommée <em>profile picture</em>).</li>
+    <li>Permet de personnaliser l'espace utilisateur.</li>
+</ul>
+
+<h4>div_vos infos</h4>
+<p>C'est le bloc regroupant toutes les informations personnelles. Cette division est ensuite organisée en deux sous-catégories :</p>
+
+<ul>
+    <li><code>div_titre</code> : affiche le titre ou en-tête ("Vos informations" par exemple).</li>
+    <li><code>div_details</code> : contient les champs de saisie du profil.</li>
+</ul>
+
+<h2>Détail des champs dans div_details</h2>
+
+<p>Chaque information personnelle est présentée sous forme de couple Label + Input, respectant une logique UX claire :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Élément</th>
+            <th>Rôle</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>Label_adresse mail</code></td>
+            <td>Texte d'indication ("Adresse email")</td>
+        </tr>
+        <tr>
+            <td><code>Input_prenom</code></td>
+            <td>Champ de saisie du prénom</td>
+        </tr>
+        <tr>
+            <td><code>Label_nom</code></td>
+            <td>Libellé pour le nom de famille</td>
+        </tr>
+        <tr>
+            <td><code>Input_nom</code></td>
+            <td>Champ pour saisir le nom</td>
+        </tr>
+        <tr>
+            <td><code>Label_prenom</code></td>
+            <td>Libellé pour le prénom</td>
+        </tr>
+        <tr>
+            <td><code>Input_adresse mail</code></td>
+            <td>Champ de saisie pour l'adresse email</td>
+        </tr>
+        <tr>
+            <td><code>Div</code></td>
+            <td>Un sous-conteneur (probablement pour regrouper certains champs)</td>
+        </tr>
+        <tr>
+            <td><code>Input_telephone</code></td>
+            <td>Champ de saisie du numéro de téléphone</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Chacun de ces éléments est imbriqué dans le <code>div_details</code>, lui-même imbriqué dans <code>div_vos infos</code>, ce qui permet :</p>
+
+<ul>
+    <li>Une organisation claire</li>
+    <li>Un design responsive</li>
+    <li>Une séparation logique entre affichage, contenu et interaction utilisateur</li>
+</ul>
+
+<h2>Niveau final : footer</h2>
+
+<p>Placée en bas de page, cette zone sert généralement à afficher :</p>
+
+<ul>
+    <li>Mentions légales</li>
+    <li>Liens de navigation secondaires</li>
+    <li>Copyright</li>
+</ul>
+
+<h2>Logique d'imbrication résumée</h2>
+
+<pre><code>Section
+ ├── main
+ │    ├── cl_navbar
+ │    └── div_principal
+ │         └── ctn_principal
+ │              ├── div_photo
+ │              │     └── profile picture
+ │              └── div_vos infos
+ │                    ├── div_titre
+ │                    └── div_details
+ │                          ├── Label + Input (Nom)
+ │                          ├── Label + Input (Prénom)
+ │                          ├── Label + Input (Email)
+ │                          └── Input téléphone
+ └── footer</code></pre>
+
+<h2>Conclusion</h2>
+
+<p>Cette structure reflète une organisation professionnelle et modulaire :</p>
+
+<ul>
+    <li><strong>Chaque bloc a une fonction spécifique</strong> : cela facilite la maintenance et la compréhension du code</li>
+    <li><strong>L'information est regroupée par pertinence</strong> : les éléments liés sont imbriqués ensemble</li>
+    <li><strong>L'imbrication favorise la réutilisation et l'adaptabilité</strong> : chaque composant peut être modifié indépendamment</li>
+</ul>
+
+<p>Dans un prochain article, nous pourrons détailler comment chaque composant interagit avec la base de données ou les workflows WeWeb pour rendre la page dynamique.</p>
