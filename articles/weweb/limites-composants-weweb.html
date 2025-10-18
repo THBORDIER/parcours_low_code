@@ -1,0 +1,137 @@
+<h1>Quand les composants deviennent un piège : comprendre les limites pour mieux les maîtriser</h1>
+
+<p><em>Retour d'expérience réel – du blocage à la solution concrète</em></p>
+
+<h2>🎯 Contexte</h2>
+
+<p>
+    WeWeb est un outil no-code puissant qui permet de créer des interfaces web dynamiques grâce à des composants réutilisables.
+    En théorie, cette approche offre un énorme gain de temps : on crée un modèle, on l'applique partout, et toute modification
+    se propage automatiquement.
+</p>
+
+<p>
+    Mais dans la pratique, lorsqu'un composant n'a pas été correctement préparé (notamment en n'exposant pas les bonnes propriétés),
+    il devient un véritable verrou. C'est exactement le problème rencontré dans ce cas : impossible de modifier quelque chose
+    d'aussi simple qu'un placeholder (texte d'un champ de formulaire) qui affichait "Name" de manière figée.
+</p>
+
+<h2>❌ Le problème concret</h2>
+
+<p><em>"Je veux remplacer le texte 'Name' dans un champ input, mais aucune option n'apparaît dans le panneau de droite.
+Même dans l'onglet Specific, je ne vois que la couleur du placeholder et le type de champ. Impossible de modifier le texte. Pourquoi ?"</em></p>
+
+<p>
+    La confusion vient d'un point clé : <strong>l'élément utilisé n'était pas un input classique, mais un composant</strong>.
+    Et ce composant n'exposait pas la propriété "placeholder" dans ses réglages.
+</p>
+
+<h3>🔒 Résultat :</h3>
+<ul>
+    <li>On ne peut pas modifier le placeholder depuis l'instance</li>
+    <li>Le champ semble "bloqué"</li>
+    <li>Le composant donne l'impression de faire gagner du temps… mais empêche toute personnalisation locale</li>
+</ul>
+
+<h2>🔍 Diagnostic</h2>
+
+<p>Après vérification dans la documentation et le forum WeWeb :</p>
+
+<ul>
+    <li>Un composant n'est modifiable au niveau de l'instance que s'il expose des <strong>props</strong> (propriétés dynamiques)</li>
+    <li>Le placeholder de ce composant n'étant pas exposé, il était impossible de le modifier directement</li>
+    <li>Ce comportement est documenté par WeWeb et confirmé par la communauté</li>
+</ul>
+
+<p><em>"To edit placeholder per instance, you must create a component property and bind it to the input placeholder."</em></p>
+
+<h2>✅ Solutions possibles</h2>
+
+<h3>Option 1 : Modifier le composant maître</h3>
+
+<ol>
+    <li>Ouvrir le composant via <strong>Edit</strong></li>
+    <li>Ajouter une propriété (prop) de type texte appelée <code>"placeholder"</code></li>
+    <li>Lier cette prop au champ input interne (dans le champ "Placeholder")</li>
+    <li>Sauvegarder</li>
+</ol>
+
+<p>
+    ➡ Désormais, chaque instance du composant permet de modifier le placeholder individuellement.
+</p>
+
+<h3>Option 2 : Sortir du composant pour retrouver la liberté</h3>
+
+<ol>
+    <li>Entrer en édition du composant</li>
+    <li>Copier les éléments internes (le champ input)</li>
+    <li>Coller ces éléments directement dans la page</li>
+    <li>Supprimer l'instance du composant</li>
+</ol>
+
+<p>
+    ➡ Le champ redevient un élément normal, avec un placeholder modifiable librement.
+</p>
+
+<h2>🔄 Conclusion : leçons apprises</h2>
+
+<h3>🚫 Ce qu'il ne faut pas faire :</h3>
+<ul>
+    <li>Transformer un élément en composant sans exposer les propriétés importantes (comme texte, images, placeholders)</li>
+    <li>Utiliser des composants juste "par principe" si le contenu doit varier souvent</li>
+</ul>
+
+<h3>✅ Ce qu'il faut retenir :</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Besoin</th>
+            <th>Outil WeWeb à utiliser</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Uniformiser le style</td>
+            <td>Classes (CSS)</td>
+        </tr>
+        <tr>
+            <td>Uniformiser structure + comportement</td>
+            <td>Composants</td>
+        </tr>
+        <tr>
+            <td>Personnalisation par page</td>
+            <td>Props et slots exposés</td>
+        </tr>
+        <tr>
+            <td>Modification locale libre</td>
+            <td>Éléments simples (non composants)</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>✨ La solution finale</h2>
+
+<p>
+    Le composant bloqué a été converti en élément libre (option 2). Cela a permis :
+</p>
+
+<ul>
+    <li>de modifier directement le placeholder</li>
+    <li>de reprendre la personnalisation page par page</li>
+    <li>sans repartir de zéro</li>
+</ul>
+
+<h2>🧠 Moralité</h2>
+
+<p>
+    <strong>Un composant n'est pas automatiquement un gain de temps.</strong> Il ne devient utile que s'il est bien conçu,
+    avec des propriétés exposées dès le départ. Sinon, il devient une prison.
+</p>
+
+<div class="figure">
+    <p class="figure-caption">
+        💡 <strong>Avant de créer un composant, posez-vous la question :</strong><br>
+        "Est-ce que je veux juste uniformiser le style ? Ou est-ce que je veux vraiment rendre la structure réutilisable et paramétrable ?"
+    </p>
+</div>
