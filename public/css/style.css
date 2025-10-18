@@ -1,19 +1,27 @@
 /* ===========================
-   Variables et Reset
+   Import Police OpenClassrooms
+   =========================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ===========================
+   Variables OpenClassrooms
    =========================== */
 :root {
-    --primary-blue: #2c5aa0;
-    --secondary-blue: #4a7cc7;
-    --light-blue: #e8f0f9;
-    --dark-gray: #2d3748;
-    --medium-gray: #4a5568;
-    --light-gray: #edf2f7;
-    --border-gray: #cbd5e0;
-    --white: #ffffff;
-    --text-color: #2d3748;
-    --navbar-height: 60px;
+    --primary-color: #6C63FF;
+    --secondary-color: #3A86FF;
+    --background-color: #F9FAFB;
+    --text-color: #333333;
+    --text-muted: #555555;
+    --success-color: #00C853;
+    --white: #FFFFFF;
+    --light-gray: #EEEEEE;
+    --border-color: #E0E0E0;
+    --navbar-height: 70px;
 }
 
+/* ===========================
+   Reset et Styles Généraux
+   =========================== */
 * {
     margin: 0;
     padding: 0;
@@ -21,14 +29,14 @@
 }
 
 body {
-    font-family: 'Arial', 'Roboto', sans-serif;
+    font-family: 'Poppins', Arial, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
-    background-color: var(--light-gray);
+    background-color: var(--background-color);
 }
 
 /* ===========================
-   Navigation
+   Navigation - Style OpenClassrooms
    =========================== */
 .navbar {
     position: fixed;
@@ -36,8 +44,9 @@ body {
     left: 0;
     right: 0;
     height: var(--navbar-height);
-    background-color: var(--primary-blue);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     z-index: 1000;
 }
 
@@ -51,15 +60,16 @@ body {
 }
 
 .navbar-brand {
-    color: var(--white);
-    font-size: 1.2rem;
-    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    font-weight: 700;
     text-decoration: none;
     margin-right: 40px;
+    transition: color 0.3s ease;
 }
 
 .navbar-brand:hover {
-    color: var(--light-blue);
+    color: var(--secondary-color);
 }
 
 .navbar-menu {
@@ -69,16 +79,18 @@ body {
 }
 
 .navbar-menu li a {
-    color: var(--white);
+    color: var(--text-color);
     text-decoration: none;
     font-size: 0.95rem;
-    padding: 8px 15px;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .navbar-menu li a:hover {
-    background-color: var(--secondary-blue);
+    background-color: rgba(108, 99, 255, 0.1);
+    color: var(--primary-color);
 }
 
 /* ===========================
@@ -96,20 +108,23 @@ body {
 }
 
 /* ===========================
-   Page d'accueil
+   Page d'accueil - Style OpenClassrooms
    =========================== */
 .hero {
-    background-color: var(--white);
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(58, 134, 255, 0.05) 100%);
+    border-radius: 16px;
     padding: 60px 40px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(108, 99, 255, 0.1);
 }
 
 .hero h1 {
-    color: var(--primary-blue);
+    color: var(--primary-color);
     font-size: 2.5rem;
+    font-weight: 700;
     margin-bottom: 30px;
+    line-height: 1.3;
 }
 
 .hero-content {
@@ -120,71 +135,105 @@ body {
 
 .hero-content p {
     font-size: 1.1rem;
-    color: var(--medium-gray);
+    color: var(--text-muted);
     margin-bottom: 20px;
+    line-height: 1.8;
 }
 
+.hero-content strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* ===========================
+   Grille de Thèmes - Style Cartes OpenClassrooms
+   =========================== */
 .themes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
     margin-top: 60px;
 }
 
 .theme-card {
     background-color: var(--white);
-    border-radius: 8px;
-    padding: 30px;
+    border-radius: 16px;
+    padding: 32px 24px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
     text-decoration: none;
     color: var(--text-color);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.theme-card:hover::before {
+    transform: scaleX(1);
 }
 
 .theme-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(108, 99, 255, 0.15);
+    border-color: rgba(108, 99, 255, 0.2);
 }
 
 .theme-card h3 {
-    color: var(--primary-blue);
-    font-size: 1.4rem;
-    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 12px;
 }
 
 .theme-card p {
-    color: var(--medium-gray);
+    color: var(--text-muted);
     font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.6;
 }
 
 /* ===========================
-   Layout deux colonnes (Pages thématiques)
+   Layout deux colonnes - Style OpenClassrooms
    =========================== */
 .two-column-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 30px;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
     background-color: var(--white);
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     min-height: calc(100vh - var(--navbar-height) - 80px);
 }
 
 /* Colonne gauche - Liste des articles */
 .articles-list {
-    background-color: var(--light-blue);
-    padding: 30px 20px;
-    border-right: 1px solid var(--border-gray);
+    background: linear-gradient(180deg, rgba(108, 99, 255, 0.05) 0%, rgba(58, 134, 255, 0.02) 100%);
+    padding: 32px 24px;
+    border-right: 1px solid var(--border-color);
 }
 
 .articles-list h2 {
-    color: var(--primary-blue);
+    color: var(--primary-color);
     font-size: 1.5rem;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--primary-blue);
+    font-weight: 600;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid var(--primary-color);
 }
 
 .articles-list ul {
@@ -192,113 +241,201 @@ body {
 }
 
 .articles-list li {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .articles-list a {
     display: block;
-    padding: 12px 15px;
+    padding: 14px 16px;
     color: var(--text-color);
     text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
 }
 
-.articles-list a:hover,
+.articles-list a:hover {
+    background-color: var(--white);
+    color: var(--primary-color);
+    border-color: rgba(108, 99, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(108, 99, 255, 0.1);
+}
+
 .articles-list a.active {
     background-color: var(--white);
-    color: var(--primary-blue);
-    font-weight: 500;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(108, 99, 255, 0.15);
 }
 
 /* Colonne droite - Contenu de l'article */
 .article-content {
-    padding: 40px;
+    padding: 48px 56px;
     overflow-y: auto;
 }
 
 .article-content h1 {
-    color: var(--primary-blue);
-    font-size: 2rem;
-    margin-bottom: 20px;
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    line-height: 1.3;
 }
 
 .article-content h2 {
-    color: var(--secondary-blue);
-    font-size: 1.5rem;
-    margin-top: 30px;
-    margin-bottom: 15px;
+    color: var(--secondary-color);
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-top: 36px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(108, 99, 255, 0.1);
 }
 
 .article-content h3 {
-    color: var(--medium-gray);
-    font-size: 1.2rem;
+    color: var(--text-color);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 28px;
+    margin-bottom: 12px;
+}
+
+.article-content h4 {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 600;
     margin-top: 20px;
     margin-bottom: 10px;
 }
 
 .article-content p {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     line-height: 1.8;
     color: var(--text-color);
+    font-size: 1rem;
+}
+
+.article-content strong {
+    color: var(--text-color);
+    font-weight: 600;
 }
 
 .article-content ul,
 .article-content ol {
-    margin-left: 30px;
-    margin-bottom: 15px;
+    margin-left: 32px;
+    margin-bottom: 16px;
 }
 
 .article-content li {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    line-height: 1.7;
+    color: var(--text-color);
+}
+
+.article-content ul li {
+    list-style-type: disc;
+}
+
+.article-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.article-content a:hover {
+    border-bottom-color: var(--primary-color);
 }
 
 .article-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 8px;
-    margin: 20px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin: 24px 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .article-content code {
-    background-color: var(--light-gray);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
+    background-color: rgba(108, 99, 255, 0.08);
+    color: var(--primary-color);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'Courier New', 'Consolas', monospace;
     font-size: 0.9em;
+    font-weight: 500;
 }
 
 .article-content pre {
-    background-color: var(--dark-gray);
-    color: var(--white);
-    padding: 15px;
-    border-radius: 6px;
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    color: #E2E8F0;
+    padding: 20px;
+    border-radius: 12px;
     overflow-x: auto;
-    margin: 20px 0;
+    margin: 24px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .article-content pre code {
     background-color: transparent;
     padding: 0;
+    color: #E2E8F0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.article-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.article-content table th {
+    background-color: var(--primary-color);
     color: var(--white);
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.article-content table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.article-content table tr:last-child td {
+    border-bottom: none;
+}
+
+.article-content table tr:nth-child(even) {
+    background-color: rgba(108, 99, 255, 0.03);
 }
 
 /* Figure avec légende */
 .figure {
-    margin: 30px 0;
+    margin: 32px 0;
     text-align: center;
 }
 
 .figure img {
     display: block;
-    margin: 0 auto 10px;
+    margin: 0 auto 12px;
 }
 
 .figure-caption {
-    color: var(--medium-gray);
+    color: var(--text-muted);
     font-size: 0.9rem;
     font-style: italic;
+    font-weight: 400;
 }
 
 /* Message par défaut */
@@ -307,9 +444,59 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--medium-gray);
+    color: var(--text-muted);
     font-size: 1.1rem;
     text-align: center;
+    padding: 40px;
+}
+
+.default-message p {
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(58, 134, 255, 0.05) 100%);
+    padding: 32px 48px;
+    border-radius: 16px;
+    border: 2px dashed rgba(108, 99, 255, 0.3);
+}
+
+/* ===========================
+   Boutons OpenClassrooms
+   =========================== */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    box-shadow: 0 6px 16px rgba(58, 134, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--primary-color);
+    padding: 12px 28px;
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(108, 99, 255, 0.1);
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
 }
 
 /* ===========================
@@ -319,18 +506,24 @@ body {
     .navbar-container {
         flex-direction: column;
         height: auto;
-        padding: 15px;
+        padding: 20px;
     }
 
     .navbar-brand {
         margin-right: 0;
-        margin-bottom: 10px;
+        margin-bottom: 16px;
+        font-size: 1.2rem;
     }
 
     .navbar-menu {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
         justify-content: center;
+    }
+
+    .navbar-menu li a {
+        font-size: 0.9rem;
+        padding: 8px 12px;
     }
 
     .two-column-layout {
@@ -339,14 +532,75 @@ body {
 
     .articles-list {
         border-right: none;
-        border-bottom: 1px solid var(--border-gray);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .article-content {
+        padding: 32px 24px;
+    }
+
+    .hero {
+        padding: 40px 24px;
     }
 
     .hero h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
     }
 
     .themes-grid {
         grid-template-columns: 1fr;
     }
+
+    .theme-card {
+        padding: 24px 20px;
+    }
+
+    .article-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .article-content h2 {
+        font-size: 1.4rem;
+    }
+}
+
+/* ===========================
+   Animations et Transitions
+   =========================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.article-content {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Scrollbar personnalisée */
+.article-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.article-content::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 10px;
+}
+
+.article-content::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+.article-content::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
 }
