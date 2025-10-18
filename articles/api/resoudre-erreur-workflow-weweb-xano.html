@@ -1,0 +1,276 @@
+<h1>Résoudre l'erreur "An error happened during the execution of the workflow"</h1>
+
+<h2>Introduction</h2>
+
+<p>
+    Lorsque l'on intègre WeWeb avec Xano pour créer un système d'authentification, tout semble simple...
+    jusqu'au moment où l'on clique sur "Login" et que le message tant redouté apparaît :
+</p>
+
+<pre><code>An error happened during the execution of the workflow
+AxiosError – Status 400 ou 500
+</code></pre>
+
+<p>
+    <strong>Que signifie cette erreur ?</strong> Cela signifie que WeWeb et Xano ne se comprennent pas.
+    L'erreur provient d'une mauvaise communication entre votre interface (frontend) et votre API (backend).
+</p>
+
+<p>
+    <strong>AxiosError</strong> est simplement le nom technique de l'erreur de communication HTTP.
+    Les codes d'erreur vous donnent des indices :
+</p>
+
+<ul>
+    <li><strong>Status 400 (Bad Request)</strong> : Les données envoyées sont incorrectes ou incomplètes</li>
+    <li><strong>Status 500 (Internal Server Error)</strong> : Un problème s'est produit dans le traitement côté Xano</li>
+</ul>
+
+<h2>Objectif</h2>
+
+<p>Mettre en place un login utilisateur fonctionnel avec :</p>
+
+<ul>
+    <li>Un formulaire WeWeb</li>
+    <li>Un endpoint <code>/auth/login</code> dans Xano</li>
+    <li>Une authentification via token JWT (jeton d'authentification sécurisé)</li>
+    <li>Une redirection après connexion réussie</li>
+</ul>
+
+<h2>Le problème initial</h2>
+
+<p>Au clic sur "Login", l'interface WeWeb affichait une erreur générique :</p>
+
+<pre><code>An error happened during the execution of the workflow
+AxiosError: Request failed with status code 400 (ou 500)
+</code></pre>
+
+<h3>Symptômes rencontrés</h3>
+
+<ul>
+    <li><strong>Status 400 (Bad Request)</strong> : Champs manquants ou mal envoyés</li>
+    <li><strong>Status 500 (Internal Server Error)</strong> : Problème dans la "Function Stack" de Xano (la pile de traitement)</li>
+    <li>Messages Xano : "Missing param: field_value" ou "Invalid name: mpwp1:1"</li>
+</ul>
+
+<p>
+    Il était donc clair que le workflow WeWeb s'exécutait correctement,
+    <strong>mais le backend Xano rejetait ou plantait lors de la requête</strong>.
+</p>
+
+<h2>Étape 1 : Vérifier l'API Xano</h2>
+
+<h3>Test via "Run & Debug"</h3>
+
+<p>
+    Dans Xano, utilisez la fonctionnalité "Run & Debug" pour tester manuellement votre endpoint
+    <code>/auth/login</code> avec des données de test :
+</p>
+
+<pre><code>{
+  "email": "user@exemple.com",
+  "password": "123456"
+}
+</code></pre>
+
+<p>
+    Si vous obtenez une erreur interne (500), le problème vient probablement de la "Function Stack"
+    (l'ensemble des opérations que Xano doit exécuter).
+</p>
+
+<h3>Diagnostic du problème</h3>
+
+<p>
+    Dans mon cas, le bloc "Get Record From" pointait vers une table supprimée ou inexistante.
+    Xano ne trouvait donc pas la table utilisateur pour vérifier les identifiants.
+</p>
+
+<h3>Résolution</h3>
+
+<p>Pour résoudre ce problème :</p>
+
+<ol>
+    <li>Aller dans <strong>Database &gt; users</strong> (votre table utilisateurs)</li>
+    <li>Ouvrir les <strong>Settings</strong> de la table</li>
+    <li><strong>Activer l'authentification</strong> sur cette table</li>
+    <li>Recréer l'endpoint <code>/auth/login</code> via : <strong>Add API Endpoint &gt; Login (User Authentication)</strong></li>
+</ol>
+
+<p>
+    Xano génère automatiquement les endpoints suivants avec la bonne configuration :
+</p>
+
+<ul>
+    <li><code>/auth/login</code> : Connexion utilisateur</li>
+    <li><code>/auth/signup</code> : Inscription utilisateur</li>
+    <li><code>/auth/me</code> : Récupération du profil utilisateur authentifié</li>
+</ul>
+
+<p>
+    Ces endpoints suivent automatiquement le format attendu par WeWeb,
+    ce qui évite les problèmes de compatibilité.
+</p>
+
+<h2>Étape 2 : Vérifier le format d'entrée/sortie</h2>
+
+<p>
+    Pour que WeWeb et Xano se comprennent parfaitement,
+    les données doivent suivre un format précis.
+</p>
+
+<h3>Format de la requête (envoyé par WeWeb)</h3>
+
+<pre><code>{
+  "email": "user@exemple.com",
+  "password": "123456"
+}
+</code></pre>
+
+<p>
+    Les champs doivent s'appeler exactement <code>email</code> et <code>password</code>.
+    Tout autre nom (comme <code>field_value</code>, <code>username</code>, etc.) entraînera une erreur 400.
+</p>
+
+<h3>Format de la réponse (attendu par WeWeb)</h3>
+
+<pre><code>{
+  "authToken": "xxxx",
+  "user": {
+    "id": 1,
+    "email": "user@exemple.com"
+  }
+}
+</code></pre>
+
+<p>
+    WeWeb attend obligatoirement un champ <code>authToken</code> et un objet <code>user</code>.
+    Si votre endpoint Xano retourne un format différent, l'authentification échouera.
+</p>
+
+<h2>Étape 3 : Configurer le plugin Xano Auth dans WeWeb</h2>
+
+<p>Dans WeWeb, allez dans <strong>Plugins &gt; Xano Auth</strong> et configurez les paramètres suivants :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Champ</th>
+            <th>Valeur</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Base URL</td>
+            <td><code>https://votre-instance.xano.io/api:XXXX</code></td>
+        </tr>
+        <tr>
+            <td>Login Endpoint</td>
+            <td><code>/auth/login</code></td>
+        </tr>
+        <tr>
+            <td>Signup Endpoint</td>
+            <td><code>/auth/signup</code></td>
+        </tr>
+        <tr>
+            <td>Me Endpoint</td>
+            <td><code>/auth/me</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<p>
+    <strong>Important :</strong> Ne mettez <strong>pas</strong> l'URL complète dans les champs "Endpoint".
+    Utilisez uniquement le chemin (par exemple <code>/auth/login</code>, et non
+    <code>https://votre-instance.xano.io/api:XXXX/auth/login</code>).
+</p>
+
+<h2>Étape 4 : Lier correctement le formulaire WeWeb</h2>
+
+<p>
+    Dans votre formulaire de connexion WeWeb, configurez le workflow "On Submit" comme suit :
+</p>
+
+<h3>Configuration du workflow</h3>
+
+<ol>
+    <li><strong>Action :</strong> Login with Xano</li>
+    <li><strong>Champs à lier :</strong>
+        <ul>
+            <li><code>email</code> ← Email Input - value</li>
+            <li><code>password</code> ← Password Input - value</li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Vérifier les données envoyées</h3>
+
+<p>
+    Pour vérifier que les bonnes données sont envoyées, utilisez le mode <strong>Preview</strong>
+    dans WeWeb, puis ouvrez l'onglet <strong>Network</strong> de votre navigateur (F12).
+    Vous verrez le <strong>Payload</strong> (les données) envoyé à Xano lors du clic sur "Login".
+</p>
+
+<h2>Résultat final</h2>
+
+<p>Après ces corrections :</p>
+
+<ul>
+    <li>Le login retourne un token valide</li>
+    <li>La variable <code>accessToken</code> est remplie automatiquement dans WeWeb</li>
+    <li>L'utilisateur est authentifié (<code>isAuthenticated = true</code>)</li>
+    <li>Redirection automatique vers la page protégée</li>
+</ul>
+
+<h2>Points clés à retenir</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Problème</th>
+            <th>Cause</th>
+            <th>Solution</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>500 Internal Server Error</td>
+            <td>Table supprimée ou bloc Xano corrompu</td>
+            <td>Recréer le login avec une table authentifiée</td>
+        </tr>
+        <tr>
+            <td>400 Bad Request</td>
+            <td>Mauvais nom de champs envoyés</td>
+            <td>Vérifier le mapping email/password</td>
+        </tr>
+        <tr>
+            <td>Champ <code>field_value</code> manquant</td>
+            <td>Mauvais modèle de login Xano</td>
+            <td>Utiliser l'endpoint généré automatiquement</td>
+        </tr>
+        <tr>
+            <td>Token non récupéré</td>
+            <td>Format de réponse incorrect</td>
+            <td>Retourner <code>authToken</code> + <code>user</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Conclusion</h2>
+
+<p>
+    Ce type d'erreur n'est <strong>pas un bug</strong> de WeWeb ou de Xano,
+    mais un <strong>problème d'alignement</strong> entre les deux plateformes.
+</p>
+
+<p>
+    En activant l'authentification sur la bonne table, en utilisant les endpoints générés automatiquement par Xano,
+    et en configurant correctement le plugin WeWeb, le login fonctionne parfaitement.
+</p>
+
+<h3>Astuce finale</h3>
+
+<p>
+    Utilisez toujours <strong>Run &amp; Debug</strong> dans Xano et l'onglet <strong>Network</strong>
+    dans WeWeb pour identifier rapidement les divergences entre ce qui est attendu et ce qui est envoyé.
+    Ces outils vous permettent de visualiser les données réelles échangées entre frontend et backend.
+</p>
