@@ -1,0 +1,228 @@
+<h1>Intégration Xano + WeWeb : Afficher dynamiquement les catégories pour chaque réparateur</h1>
+
+<p class="subtitle">Dans cet article, je vous explique comment j'ai réussi à créer une API Xano unique qui renvoie les réparateurs avec leurs catégories associées, et comment les afficher proprement dans WeWeb grâce aux jointures et au binding dynamique.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Xano, WeWeb, API, Jointures, Query All Records, Binding dynamique</p>
+    <p>📅 <strong>Mise à jour:</strong> 18/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h</p>
+    <p>⚙️ <strong>Stack:</strong> Xano + WeWeb</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Grâce aux <strong>jointures dans Xano</strong> (Query All Records + Add-on), j'ai créé une API unique qui renvoie les réparateurs avec leurs catégories. Résultat : une seule requête API pour alimenter WeWeb, un JSON structuré facile à binder, et des performances optimisées.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Contexte :</strong> Je développe une application de réservation de services de réparation. Mon objectif est d'afficher une liste de réparateurs sous forme de cartes dans WeWeb, avec pour chaque réparateur :</p>
+
+<ul>
+    <li>Son nom (ex: Joshua)</li>
+    <li>Sa catégorie principale (ex: Vélo)</li>
+    <li>L'icône associée à sa catégorie (ex: 🚴)</li>
+    <li>Le prix de ses services</li>
+</ul>
+
+<p><strong>💡 Exemple utilisateur :</strong> Quand un utilisateur arrive sur la page, il voit immédiatement dans chaque carte : "Joshua - Vélo 🚴 - 16,46 €"</p>
+
+<p><strong>⚠️ Le problème :</strong> Mon endpoint Xano <code>/repairer/{id}</code> ne retournait que les données de la table <code>repairer</code>, sans les informations de catégories. Je ne savais pas comment récupérer les relations entre réparateurs et catégories dans une seule réponse API.</p>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<p>Dans une base de données relationnelle comme Xano, les informations sont souvent réparties dans plusieurs tables :</p>
+
+<ul>
+    <li><strong>Table <code>repairer</code> :</strong> id, firstname, description...</li>
+    <li><strong>Table <code>repairer_category</code> :</strong> table de liaison (many-to-many) entre réparateurs et catégories</li>
+    <li><strong>Table <code>category</code> :</strong> name, icon, price...</li>
+</ul>
+
+<p>🧠 <strong>Analogie :</strong> Imaginez une bibliothèque. Vous avez :</p>
+<ul>
+    <li>Une étagère "Auteurs" (table <code>repairer</code>)</li>
+    <li>Une étagère "Genres littéraires" (table <code>category</code>)</li>
+    <li>Un registre qui dit "quel auteur écrit dans quel genre" (table <code>repairer_category</code>)</li>
+</ul>
+
+<p>Pour savoir qu'un auteur écrit du "Policier", il faut consulter les trois étagères. En SQL classique, on utilise des <strong>JOIN</strong>. Dans Xano, on utilise <strong>Query All Records + Add-on</strong>.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Plutôt que de créer plusieurs endpoints (un pour les réparateurs, un pour les catégories), on peut tout regrouper dans une seule réponse JSON grâce aux jointures Xano. C'est plus rapide, plus simple à maintenir, et WeWeb adore ça !
+</div>
+
+<h2>🧪 Solution : Procédure étape par étape</h2>
+
+<h3>Étape 1️⃣ : Utiliser Query All Records dans Xano</h3>
+
+<p>Dans mon endpoint Xano, j'ai remplacé le simple <code>Get Record</code> par un <strong>Query All Records</strong> sur la table <code>repairer</code>.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+<code>Query All Records</code> retourne une <strong>liste</strong>, même s'il n'y a qu'un seul résultat. Pensez à filtrer avec <code>WHERE id = {repairer_id}</code> si vous voulez un réparateur spécifique.
+</div>
+
+<h3>Étape 2️⃣ : Ajouter un Add-on pour joindre la table de liaison</h3>
+
+<p>Dans le Query All Records, j'ai cliqué sur <strong>Add-on</strong> et sélectionné :</p>
+
+<ul>
+    <li><strong>Table :</strong> <code>repairer_category</code></li>
+    <li><strong>Type de relation :</strong> One-to-many (un réparateur peut avoir plusieurs catégories)</li>
+    <li><strong>Champ de liaison :</strong> <code>repairer_category.repairer_id = repairer.id</code></li>
+</ul>
+
+<h3>Étape 3️⃣ : Ajouter une seconde jointure vers la table category</h3>
+
+<p>Ensuite, j'ai ajouté un second Add-on depuis <code>repairer_category</code> vers <code>category</code> :</p>
+
+<ul>
+    <li><strong>Table :</strong> <code>category</code></li>
+    <li><strong>Champ de liaison :</strong> <code>repairer_category.category_id = category.id</code></li>
+</ul>
+
+<h3>Étape 4️⃣ : Sélectionner les champs pertinents</h3>
+
+<p>Dans le Add-on, j'ai sélectionné uniquement les champs dont j'ai besoin :</p>
+
+<ul>
+    <li><code>category.name</code></li>
+    <li><code>category.icon</code></li>
+    <li><code>category.price</code> (si le prix est stocké par catégorie)</li>
+</ul>
+
+<h3>Étape 5️⃣ : Tester la réponse API</h3>
+
+<p>Résultat de mon endpoint <code>GET /repairer</code> :</p>
+
+<pre><code>[
+  {
+    "id": 2,
+    "firstname": "Joshua",
+    "description": "Expert en réparation de vélos",
+    "categories": [
+      {
+        "name": "Vélo",
+        "icon": "🚴",
+        "price": 16.46
+      }
+    ]
+  }
+]
+</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : Aplatir la structure</strong><br>
+Si vous voulez éviter <code>categories[0].name</code> dans WeWeb, ajoutez un champ calculé dans Xano avec <strong>Add Field</strong> :
+<ul>
+    <li><code>category_name = _category[0].name</code></li>
+    <li><code>category_icon = _category[0].icon</code></li>
+</ul>
+Ainsi, dans WeWeb, vous pourrez simplement utiliser <code>current.category_name</code> au lieu de <code>current.categories[0].name</code>.
+</div>
+
+<h2>🧭 Intégration dans WeWeb</h2>
+
+<h3>🎯 Objectif</h3>
+
+<p>Afficher dynamiquement dans chaque carte WeWeb :</p>
+<ul>
+    <li>Le nom du réparateur</li>
+    <li>Le label de catégorie (ex: Vélo)</li>
+    <li>L'icône catégorie (ex: 🚴)</li>
+</ul>
+
+<h3>🛠 Configuration WeWeb</h3>
+
+<p><strong>1. Créer une Collection de données :</strong></p>
+<ul>
+    <li>Allez dans <strong>Data Sources</strong></li>
+    <li>Ajoutez une REST API avec votre endpoint Xano</li>
+    <li>Nommez-la par exemple <code>repairers_list</code></li>
+</ul>
+
+<p><strong>2. Créer un Repeater (boucle) :</strong></p>
+<ul>
+    <li>Ajoutez un composant <strong>List</strong> ou <strong>Repeater</strong></li>
+    <li>Bindez la source de données à <code>repairers_list.data</code></li>
+</ul>
+
+<p><strong>3. Binder les données dans chaque carte :</strong></p>
+
+<p>Pour afficher le nom du réparateur :</p>
+<pre><code>current.firstname</code></pre>
+
+<p>Pour afficher le nom de catégorie :</p>
+<pre><code>current.categories[0].name</code></pre>
+
+<p>Pour afficher l'icône catégorie :</p>
+<pre><code>current.categories[0].icon</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+<strong>Gérer plusieurs catégories par réparateur :</strong><br>
+Si un réparateur peut avoir plusieurs catégories, utilisez un second repeater à l'intérieur de chaque carte, bindé sur <code>current.categories</code>, pour afficher tous les badges de catégories.
+</div>
+
+<h2>📌 Résumé final</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>Query All Records + Add-on</strong> dans Xano permet de joindre plusieurs tables et d'obtenir un JSON structuré en une seule requête</li>
+  <li>Évitez de créer plusieurs endpoints séparés : regroupez tout dans une API unique pour optimiser les performances</li>
+  <li>Utilisez <strong>Add Field</strong> dans Xano pour aplatir la structure JSON si vous voulez simplifier le binding dans WeWeb</li>
+  <li>Dans WeWeb, le contexte <code>current</code> d'un repeater contient automatiquement l'item en cours, accessible via <code>current.field_name</code></li>
+  <li>Cette méthode est facilement extensible : vous pouvez ajouter d'autres relations (sessions, réservations, avis...) avec la même logique</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide (pour tester votre compréhension)</h2>
+
+<p><strong>Question :</strong> Pourquoi utiliser <code>Query All Records</code> plutôt que <code>Get Record</code> dans Xano ?</p>
+
+<p><strong>✅ Réponse attendue :</strong> <code>Query All Records</code> permet d'utiliser des <strong>Add-on</strong> pour effectuer des jointures avec d'autres tables, ce qui n'est pas possible avec <code>Get Record</code>. Cela permet d'obtenir des données relationnelles dans une seule réponse API.</p>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/working-with-your-database/queries" target="_blank">Documentation Xano : Working with Queries</a></li>
+    <li><a href="https://docs.xano.com/working-with-your-database/add-ons" target="_blank">Documentation Xano : Add-ons</a></li>
+    <li><a href="https://docs.weweb.io/data-sources.html" target="_blank">Documentation WeWeb : Data Sources</a></li>
+    <li><a href="#" data-article="../articles/xano/api-endpoints.html">Article connexe : Créer des API endpoints dans Xano</a></li>
+</ul>
+
+<h2>✨ Tableau récapitulatif des avantages</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Avantage</th>
+            <th>Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Une seule API</td>
+            <td>Moins d'appels réseau, temps de chargement réduit</td>
+        </tr>
+        <tr>
+            <td>JSON structuré</td>
+            <td>Facile à binder dans WeWeb</td>
+        </tr>
+        <tr>
+            <td>Flexibilité</td>
+            <td>Ajout facile d'autres relations (sessions, réservations…)</td>
+        </tr>
+        <tr>
+            <td>Maintenabilité</td>
+            <td>Un seul endpoint à documenter et maintenir</td>
+        </tr>
+    </tbody>
+</table>

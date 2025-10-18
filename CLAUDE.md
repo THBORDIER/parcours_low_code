@@ -109,18 +109,145 @@ Each theme page includes a vanilla JavaScript script that:
 4. Place images in `public/images/[theme]/`
 5. Reference images with relative paths: `../../public/images/weweb/image.jpg`
 
-### Article HTML Template
+### Article Content Structure
+
+**IMPORTANT: Before publishing any article, Claude must ask for:**
+- 📅 Date of publication/update (format: DD/MM/YYYY)
+- ⏱️ Time spent on the article
+
+Each article should follow this pedagogical structure:
+
+#### 🏷️ 1. Article Header
+- **Title**: `<h1>` — short, descriptive, actionable
+  - Example: "Comprendre le fonctionnement des Collections dans Xano"
+- **Subtitle**: Sentence describing the article's objective
+  - Example: "Dans cet article, je vais expliquer simplement ce qu'est une collection dans Xano, à quoi ça sert, et comment l'utiliser concrètement dans un workflow WeWeb."
+
+#### 🔑 2. Metadata Block
+Visual block at the beginning with icons:
+- 🏷️ Catégorie: WeWeb / Xano / API / Base de données / Bonnes pratiques / Notes diverses
+- 🎯 Niveau: Débutant / Intermédiaire / Avancé
+- 🔍 Mots-clés: Relevant keywords
+- 📅 Mise à jour: Date (format: DD/MM/YYYY)
+- ⏱️ Temps passé: Time spent on article
+- ⚙️ Stack utilisée: WeWeb + Xano (or other)
+
+#### 📘 3. Quick Summary (TL;DR)
+Colored box in light purple (OpenClassrooms style):
+```html
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Brief summary of the key concept or solution.
+</div>
+```
+
+#### 🤔 4. Initial Problem
+- 🛑 **Problème rencontré**: Simple, concrete description of the need or issue
+- 💡 **Exemple utilisateur**: User scenario illustrating the problem
+
+#### 🔍 5. Simplified Explanation
+Pedagogical section with analogies and small diagrams:
+- Use analogies to make concepts accessible
+- Include:
+  - ✅ Bullet lists
+  - 📊 Simple ASCII diagrams if needed
+  - 🧠 Pedagogical tips
+
+#### 🧪 6. Solution / Procedure
+Organized step-by-step:
+- Étape 1️⃣: First step
+- Étape 2️⃣: Second step
+- Étape 3️⃣: Third step
+- 🔧 Code or configuration examples
+- 📷 Screenshots illustrating the interface
+
+#### 🧰 7. Useful Callout Boxes
+
+**Attention Box:**
+```html
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Important warning or reminder
+</div>
+```
+
+**Tip Box:**
+```html
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Helpful tip or best practice
+</div>
+```
+
+**Advanced Concept Box:**
+```html
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Advanced concepts, pagination, dynamic filters, security
+</div>
+```
+
+#### 🧭 8. Concrete Example
+Mini use case with code/JSON examples showing real implementation
+
+#### 📌 9. Final Summary
+```html
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Key point 1</li>
+  <li>Key point 2</li>
+  <li>Key point 3</li>
+</ul>
+</div>
+```
+
+#### 🎓 10. Quick Quiz (optional, gamification)
+- 🧠 **Question**: Test question
+- ✅ **Réponse attendue**: Expected answer
+
+#### 🔗 11. Useful Links
+- Official documentation links
+- Related articles within the knowledge base
+- External tutorials
+
+### Article HTML Template (Basic Structure)
 
 ```html
 <h1>Article Title</h1>
 
-<h2>Section</h2>
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> Collections, Data, API</p>
+    <p>📅 <strong>Mise à jour:</strong> 18/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h30</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Brief summary here.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+<p>Description...</p>
+
+<h2>🔍 Explication</h2>
 <p>Content...</p>
 
 <ul>
     <li>Point 1</li>
     <li>Point 2</li>
 </ul>
+
+<!-- Callout box example -->
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Helpful tip here.
+</div>
 
 <!-- Image with caption -->
 <div class="figure">
@@ -132,6 +259,15 @@ Each theme page includes a vanilla JavaScript script that:
 <pre><code>
 code here
 </code></pre>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Key point 1</li>
+  <li>Key point 2</li>
+</ul>
+</div>
 ```
 
 ### Adding a New Theme

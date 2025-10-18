@@ -438,6 +438,116 @@ body {
     font-weight: 400;
 }
 
+/* ===========================
+   Article Components - Pedagogical Elements
+   =========================== */
+
+/* Metadata block */
+.metadata {
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(58, 134, 255, 0.05) 100%);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 24px 0;
+}
+
+.metadata p {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.metadata p:last-child {
+    margin-bottom: 0;
+}
+
+/* TL;DR block */
+.tldr {
+    background-color: rgba(108, 99, 255, 0.08);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-size: 1rem;
+}
+
+/* Callout boxes */
+.callout {
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-left: 4px solid;
+}
+
+.callout strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+}
+
+/* Warning callout */
+.callout-warning {
+    background-color: rgba(255, 152, 0, 0.08);
+    border-left-color: #FF9800;
+    color: var(--text-color);
+}
+
+.callout-warning strong {
+    color: #F57C00;
+}
+
+/* Tip callout */
+.callout-tip {
+    background-color: rgba(0, 200, 83, 0.08);
+    border-left-color: var(--success-color);
+    color: var(--text-color);
+}
+
+.callout-tip strong {
+    color: #00A344;
+}
+
+/* Advanced concept callout */
+.callout-advanced {
+    background-color: rgba(58, 134, 255, 0.08);
+    border-left-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.callout-advanced strong {
+    color: var(--secondary-color);
+}
+
+/* Summary block */
+.summary {
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(58, 134, 255, 0.1) 100%);
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 32px 0;
+}
+
+.summary strong {
+    display: block;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+.summary ul {
+    margin-left: 24px;
+    margin-bottom: 0;
+}
+
+.summary li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.summary li:last-child {
+    margin-bottom: 0;
+}
+
 /* Message par défaut */
 .default-message {
     display: flex;
