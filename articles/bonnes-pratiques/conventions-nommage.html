@@ -1,0 +1,270 @@
+<h1>Conventions de nommage</h1>
+
+<h2>Pourquoi des conventions de nommage ?</h2>
+
+<p>
+    Des conventions claires et cohérentes facilitent :
+</p>
+<ul>
+    <li>La compréhension du code par l'équipe</li>
+    <li>La maintenance à long terme</li>
+    <li>La recherche d'éléments spécifiques</li>
+    <li>L'onboarding de nouveaux membres</li>
+</ul>
+
+<h2>Conventions WeWeb</h2>
+
+<h3>Pages</h3>
+<pre><code>✅ Bon :
+- Home
+- Products_List
+- Products_Detail
+- User_Dashboard
+- Admin_Users
+
+❌ Mauvais :
+- page1
+- prod
+- details
+- userpage
+</code></pre>
+
+<h3>Composants</h3>
+<pre><code>✅ Bon :
+- Card_Product
+- Button_Primary
+- Button_Secondary
+- Modal_Confirmation
+- Header_Navigation
+
+❌ Mauvais :
+- card1
+- btn
+- popup
+- header
+</code></pre>
+
+<h3>Variables globales</h3>
+<pre><code>✅ Bon :
+- global_currentUser
+- global_authToken
+- global_theme
+- global_language
+
+❌ Mauvais :
+- user
+- token
+- t
+- lang
+</code></pre>
+
+<h3>Variables de page</h3>
+<pre><code>✅ Bon :
+- products_searchQuery
+- products_selectedCategory
+- dashboard_dateRange
+- form_isSubmitting
+
+❌ Mauvais :
+- query
+- cat
+- dates
+- loading
+</code></pre>
+
+<h3>Collections</h3>
+<pre><code>✅ Bon :
+- products (liste)
+- currentProduct (item unique)
+- users
+- currentUser
+- orders
+
+❌ Mauvais :
+- prod
+- p
+- data
+- items
+</code></pre>
+
+<h3>Workflows</h3>
+<pre><code>✅ Bon :
+- onClick_Submit_LoginForm
+- onLoad_Fetch_UserData
+- onChange_Filter_Products
+- onSuccess_Redirect_Dashboard
+
+❌ Mauvais :
+- workflow1
+- click
+- load
+- filter
+</code></pre>
+
+<h2>Conventions Xano</h2>
+
+<h3>Tables</h3>
+<pre><code>✅ Bon :
+- users
+- products
+- orders
+- order_items
+- user_addresses
+
+❌ Mauvais :
+- tbl_users
+- PRODUCTS
+- order
+- items
+</code></pre>
+
+<h3>Champs de table</h3>
+<pre><code>✅ Bon :
+- id
+- created_at
+- updated_at
+- first_name
+- last_name
+- email_address
+- is_active
+
+❌ Mauvais :
+- ID
+- createdAt
+- fname
+- e-mail
+- active
+</code></pre>
+
+<h3>Relations (Foreign Keys)</h3>
+<pre><code>✅ Bon :
+- user_id (dans la table orders)
+- product_id (dans la table order_items)
+- category_id (dans la table products)
+
+❌ Mauvais :
+- user
+- prod_id
+- cat
+</code></pre>
+
+<h3>API Endpoints</h3>
+<pre><code>✅ Bon :
+- GET /users
+- GET /users/{user_id}
+- POST /auth/signup
+- POST /auth/login
+- PATCH /users/{user_id}
+- DELETE /users/{user_id}
+
+❌ Mauvais :
+- GET /getUsers
+- GET /user
+- POST /register
+- POST /signin
+- PUT /updateUser
+</code></pre>
+
+<h3>Fonctions personnalisées</h3>
+<pre><code>✅ Bon :
+- send_welcome_email
+- calculate_order_total
+- validate_email_format
+- format_phone_number
+
+❌ Mauvais :
+- email
+- calc
+- validate
+- format
+</code></pre>
+
+<h2>Conventions générales</h2>
+
+<h3>Casse (Case)</h3>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Contexte</th>
+        <th>Convention</th>
+        <th>Exemple</th>
+    </tr>
+    <tr>
+        <td>Tables Xano</td>
+        <td>snake_case</td>
+        <td>order_items</td>
+    </tr>
+    <tr>
+        <td>Champs Xano</td>
+        <td>snake_case</td>
+        <td>first_name</td>
+    </tr>
+    <tr>
+        <td>Endpoints Xano</td>
+        <td>kebab-case</td>
+        <td>/order-items</td>
+    </tr>
+    <tr>
+        <td>Pages WeWeb</td>
+        <td>PascalCase</td>
+        <td>ProductsList</td>
+    </tr>
+    <tr>
+        <td>Variables WeWeb</td>
+        <td>camelCase</td>
+        <td>currentUser</td>
+    </tr>
+    <tr>
+        <td>Composants WeWeb</td>
+        <td>PascalCase</td>
+        <td>CardProduct</td>
+    </tr>
+</table>
+
+<h3>Préfixes utiles</h3>
+
+<ul>
+    <li><strong>is_ / has_</strong> pour les booléens : <code>is_active</code>, <code>has_permission</code></li>
+    <li><strong>get_</strong> pour les fonctions de lecture : <code>get_user_by_email</code></li>
+    <li><strong>create_</strong> pour les créations : <code>create_order</code></li>
+    <li><strong>update_</strong> pour les modifications : <code>update_user_profile</code></li>
+    <li><strong>delete_</strong> pour les suppressions : <code>delete_product</code></li>
+</ul>
+
+<h3>Longueur des noms</h3>
+
+<ul>
+    <li><strong>Trop court :</strong> <code>u</code>, <code>p</code>, <code>d</code> → manque de clarté</li>
+    <li><strong>Équilibré :</strong> <code>user</code>, <code>product</code>, <code>currentUser</code></li>
+    <li><strong>Trop long :</strong> <code>theCurrentlyAuthenticatedUserInformation</code> → difficile à lire</li>
+</ul>
+
+<h2>Exceptions acceptables</h2>
+
+<ul>
+    <li><strong>Conventions établies :</strong> <code>id</code>, <code>url</code>, <code>api</code></li>
+    <li><strong>Abréviations courantes :</strong> <code>max</code>, <code>min</code>, <code>avg</code></li>
+    <li><strong>Standards métier :</strong> <code>sku</code>, <code>vat</code>, <code>ean</code></li>
+</ul>
+
+<h2>Application des conventions</h2>
+
+<h3>En équipe</h3>
+<ol>
+    <li>Définir un document de conventions</li>
+    <li>Le partager avec toute l'équipe</li>
+    <li>Le revoir régulièrement</li>
+    <li>Faire des code reviews pour vérifier le respect</li>
+</ol>
+
+<h3>En solo</h3>
+<ol>
+    <li>Choisir des conventions dès le début</li>
+    <li>Les documenter dans le README</li>
+    <li>S'y tenir même quand on est seul</li>
+    <li>Refactoriser si nécessaire pour maintenir la cohérence</li>
+</ol>
+
+<div class="figure">
+    <p class="figure-caption">Figure 2 : Exemple de conventions appliquées (image à ajouter)</p>
+</div>

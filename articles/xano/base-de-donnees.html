@@ -1,0 +1,111 @@
+<h1>Base de données Xano</h1>
+
+<h2>Création de tables</h2>
+
+<p>
+    Les tables dans Xano sont l'équivalent des tables dans une base de données relationnelle traditionnelle.
+    Chaque table stocke un type spécifique de données.
+</p>
+
+<h2>Types de champs disponibles</h2>
+
+<h3>Champs basiques</h3>
+<ul>
+    <li><strong>Text :</strong> Chaînes de caractères courtes</li>
+    <li><strong>Integer :</strong> Nombres entiers</li>
+    <li><strong>Float :</strong> Nombres décimaux</li>
+    <li><strong>Boolean :</strong> Vrai/Faux</li>
+    <li><strong>Timestamp :</strong> Date et heure</li>
+</ul>
+
+<h3>Champs avancés</h3>
+<ul>
+    <li><strong>JSON :</strong> Objets JSON structurés</li>
+    <li><strong>File :</strong> Upload de fichiers (images, documents)</li>
+    <li><strong>Enum :</strong> Liste de valeurs prédéfinies</li>
+    <li><strong>Email :</strong> Validation automatique d'email</li>
+    <li><strong>URL :</strong> Validation d'URLs</li>
+</ul>
+
+<h3>Champs calculés</h3>
+<ul>
+    <li><strong>Auto-increment :</strong> ID unique auto-incrémenté</li>
+    <li><strong>Created_at :</strong> Date de création automatique</li>
+    <li><strong>Updated_at :</strong> Date de dernière modification</li>
+</ul>
+
+<h2>Relations entre tables</h2>
+
+<h3>One-to-One (1:1)</h3>
+<p>
+    Un enregistrement dans la table A est lié à exactement un enregistrement dans la table B.
+    Exemple : Un utilisateur a un profil.
+</p>
+
+<h3>One-to-Many (1:N)</h3>
+<p>
+    Un enregistrement dans la table A peut être lié à plusieurs enregistrements dans la table B.
+    Exemple : Un utilisateur peut avoir plusieurs commandes.
+</p>
+
+<h3>Many-to-Many (N:N)</h3>
+<p>
+    Plusieurs enregistrements de la table A peuvent être liés à plusieurs enregistrements de la table B.
+    Exemple : Un produit peut avoir plusieurs catégories, une catégorie peut avoir plusieurs produits.
+</p>
+
+<h2>Exemple pratique : Base de données e-commerce</h2>
+
+<p>
+    Voici comment structurer une base de données simple pour un site e-commerce :
+</p>
+
+<h3>Table "users"</h3>
+<ul>
+    <li>id (auto-increment)</li>
+    <li>email (email)</li>
+    <li>name (text)</li>
+    <li>created_at (timestamp)</li>
+</ul>
+
+<h3>Table "products"</h3>
+<ul>
+    <li>id (auto-increment)</li>
+    <li>name (text)</li>
+    <li>description (text)</li>
+    <li>price (float)</li>
+    <li>image (file)</li>
+    <li>stock (integer)</li>
+</ul>
+
+<h3>Table "orders"</h3>
+<ul>
+    <li>id (auto-increment)</li>
+    <li>user_id (relation vers users)</li>
+    <li>total (float)</li>
+    <li>status (enum: pending, paid, shipped, delivered)</li>
+    <li>created_at (timestamp)</li>
+</ul>
+
+<h3>Table "order_items"</h3>
+<ul>
+    <li>id (auto-increment)</li>
+    <li>order_id (relation vers orders)</li>
+    <li>product_id (relation vers products)</li>
+    <li>quantity (integer)</li>
+    <li>price (float)</li>
+</ul>
+
+<h2>Bonnes pratiques</h2>
+
+<ol>
+    <li><strong>Nommage cohérent :</strong> Utilisez des noms descriptifs et en anglais</li>
+    <li><strong>Indexes :</strong> Ajoutez des index sur les champs fréquemment recherchés</li>
+    <li><strong>Validation :</strong> Définissez des règles de validation pour chaque champ</li>
+    <li><strong>Valeurs par défaut :</strong> Définissez des valeurs par défaut quand c'est pertinent</li>
+    <li><strong>Documentation :</strong> Ajoutez des descriptions à vos tables et champs</li>
+</ol>
+
+<div class="figure">
+    <p class="figure-caption">Figure 2 : Schéma de relations entre tables (image à ajouter)</p>
+</div>

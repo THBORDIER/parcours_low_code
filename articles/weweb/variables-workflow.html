@@ -1,0 +1,108 @@
+<h1>Variables et workflows dans WeWeb</h1>
+
+<h2>Les variables dans WeWeb</h2>
+
+<p>
+    Les variables sont essentielles pour stocker et manipuler des données dans votre application WeWeb.
+    Elles permettent de créer des interfaces dynamiques et interactives.
+</p>
+
+<h2>Types de variables</h2>
+
+<h3>1. Variables globales</h3>
+<p>
+    Accessibles depuis n'importe quelle page de votre application. Idéales pour :
+</p>
+<ul>
+    <li>Informations de l'utilisateur connecté</li>
+    <li>Paramètres de configuration</li>
+    <li>État de l'application (thème, langue, etc.)</li>
+</ul>
+
+<h3>2. Variables de page</h3>
+<p>
+    Spécifiques à une page donnée. Utilisées pour :
+</p>
+<ul>
+    <li>États temporaires de la page</li>
+    <li>Données chargées uniquement sur cette page</li>
+    <li>Filtres et paramètres de recherche</li>
+</ul>
+
+<h3>3. Variables de composant</h3>
+<p>
+    Locales à un composant spécifique. Parfaites pour :
+</p>
+<ul>
+    <li>États internes d'un composant</li>
+    <li>Valeurs de formulaires</li>
+    <li>Données calculées</li>
+</ul>
+
+<h2>Les workflows</h2>
+
+<p>
+    Les workflows permettent de définir des séquences d'actions qui s'exécutent en réponse à des événements.
+</p>
+
+<h2>Déclencheurs de workflows</h2>
+
+<ul>
+    <li><strong>On click :</strong> Clic sur un bouton ou élément</li>
+    <li><strong>On page load :</strong> Chargement d'une page</li>
+    <li><strong>On submit :</strong> Soumission d'un formulaire</li>
+    <li><strong>On change :</strong> Modification d'une valeur</li>
+    <li><strong>On success/error :</strong> Résultat d'une requête API</li>
+</ul>
+
+<h2>Actions disponibles</h2>
+
+<h3>Actions de navigation</h3>
+<ul>
+    <li>Rediriger vers une page</li>
+    <li>Ouvrir un popup/modal</li>
+    <li>Revenir en arrière</li>
+</ul>
+
+<h3>Actions de données</h3>
+<ul>
+    <li>Modifier une variable</li>
+    <li>Effectuer une requête API</li>
+    <li>Créer/modifier/supprimer des données</li>
+</ul>
+
+<h3>Actions conditionnelles</h3>
+<ul>
+    <li>Exécuter si condition remplie</li>
+    <li>Boucles sur des collections</li>
+    <li>Gestion d'erreurs</li>
+</ul>
+
+<h2>Exemple pratique : Workflow de connexion</h2>
+
+<p>
+    Créons un workflow pour gérer la connexion utilisateur :
+</p>
+
+<ol>
+    <li><strong>Déclencheur :</strong> Clic sur le bouton "Se connecter"</li>
+    <li><strong>Action 1 :</strong> Valider que les champs email/password sont remplis</li>
+    <li><strong>Action 2 :</strong> Appeler l'API Xano d'authentification</li>
+    <li><strong>Action 3 (succès) :</strong> Stocker le token dans une variable globale</li>
+    <li><strong>Action 4 (succès) :</strong> Rediriger vers le dashboard</li>
+    <li><strong>Action 5 (erreur) :</strong> Afficher un message d'erreur</li>
+</ol>
+
+<h2>Bonnes pratiques</h2>
+
+<ul>
+    <li><strong>Nommage clair :</strong> Utilisez des noms explicites pour vos variables et workflows</li>
+    <li><strong>Organisation :</strong> Groupez les workflows similaires</li>
+    <li><strong>Réutilisabilité :</strong> Créez des fonctions réutilisables pour les actions communes</li>
+    <li><strong>Gestion d'erreurs :</strong> Prévoyez toujours les cas d'erreur</li>
+    <li><strong>Performance :</strong> Évitez les workflows trop complexes qui ralentissent l'application</li>
+</ul>
+
+<div class="figure">
+    <p class="figure-caption">Figure 3 : Schéma d'un workflow de connexion (image à ajouter)</p>
+</div>

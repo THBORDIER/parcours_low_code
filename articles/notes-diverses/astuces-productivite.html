@@ -1,0 +1,223 @@
+<h1>Astuces de productivité</h1>
+
+<h2>Raccourcis clavier WeWeb</h2>
+
+<h3>Navigation</h3>
+<pre><code>Ctrl/Cmd + P : Quick search (pages, composants)
+Ctrl/Cmd + S : Sauvegarder
+Ctrl/Cmd + Z : Annuler
+Ctrl/Cmd + Shift + Z : Refaire
+Ctrl/Cmd + D : Dupliquer l'élément sélectionné
+</code></pre>
+
+<h3>Édition</h3>
+<pre><code>Ctrl/Cmd + C : Copier
+Ctrl/Cmd + V : Coller
+Ctrl/Cmd + X : Couper
+Delete/Backspace : Supprimer l'élément
+Arrow keys : Déplacer l'élément
+Shift + Arrow keys : Déplacer par incréments plus grands
+</code></pre>
+
+<h3>Vue et preview</h3>
+<pre><code>Ctrl/Cmd + E : Mode édition/preview
+Ctrl/Cmd + / : Afficher/masquer le panneau de propriétés
+</code></pre>
+
+<h2>Workflows efficaces</h2>
+
+<h3>1. Planification avant exécution</h3>
+<ul>
+    <li><strong>Wireframes :</strong> Dessinez d'abord sur papier ou Figma</li>
+    <li><strong>User flows :</strong> Mappez les parcours utilisateur</li>
+    <li><strong>Data model :</strong> Schématisez votre base de données avant de créer les tables</li>
+</ul>
+
+<h3>2. Composants réutilisables</h3>
+<p>
+    Ne dupliquez jamais le même bloc 3 fois. À la place :
+</p>
+<ol>
+    <li>Créez un composant personnalisé</li>
+    <li>Rendez-le configurable avec des propriétés</li>
+    <li>Réutilisez-le partout</li>
+</ol>
+
+<h3>3. Templates de page</h3>
+<ul>
+    <li>Créez une page "template" avec header + footer</li>
+    <li>Dupliquez-la pour chaque nouvelle page</li>
+    <li>Gain de temps considérable</li>
+</ul>
+
+<h2>Organisation du travail</h2>
+
+<h3>Méthode Pomodoro adaptée</h3>
+<pre><code>25 min : Focus sur une tâche précise (ex: créer un endpoint)
+5 min : Pause
+Après 4 pomodoros : Pause de 15-20 min
+</code></pre>
+
+<h3>Priorisation des tâches</h3>
+
+<h4>Matrice Eisenhower</h4>
+<ul>
+    <li><strong>Urgent + Important :</strong> Bugs critiques, deadline proche</li>
+    <li><strong>Important mais pas urgent :</strong> Optimisations, refactoring</li>
+    <li><strong>Urgent mais pas important :</strong> Petites demandes, à déléguer si possible</li>
+    <li><strong>Ni urgent ni important :</strong> À éliminer</li>
+</ul>
+
+<h3>Gestion des tâches</h3>
+<pre><code>Todo aujourd'hui :
+1. [ ] Créer endpoint users
+2. [ ] Intégrer dans WeWeb
+3. [ ] Tester le flow complet
+
+Backlog :
+- Ajouter pagination
+- Optimiser images
+- Documentation API
+</code></pre>
+
+<h2>Astuces Xano</h2>
+
+<h3>1. Dupliquer les endpoints similaires</h3>
+<p>
+    Plutôt que recréer de zéro, dupliquez un endpoint existant et modifiez-le.
+</p>
+
+<h3>2. Fonctions réutilisables</h3>
+<p>
+    Créez des "Custom Functions" pour la logique répétitive :
+</p>
+<ul>
+    <li>send_email</li>
+    <li>validate_input</li>
+    <li>format_date</li>
+    <li>calculate_total</li>
+</ul>
+
+<h3>3. Utilisez les filtres dans les queries</h3>
+<pre><code>Plutôt que charger tous les users et filtrer après,
+utilisez directement les filtres dans "Query All Records"
+</code></pre>
+
+<h3>4. Testez avec le debugger intégré</h3>
+<ul>
+    <li>Utilisez "Run & Debug" pour tester vos endpoints</li>
+    <li>Vérifiez chaque étape du Function Stack</li>
+    <li>Examinez les variables intermédiaires</li>
+</ul>
+
+<h2>Astuces WeWeb</h2>
+
+<h3>1. Variables pour éviter la répétition</h3>
+<pre><code>❌ Mauvais :
+Répéter la même formule complexe 10 fois
+
+✅ Bon :
+Stocker dans une variable et la réutiliser
+</code></pre>
+
+<h3>2. Utilisez les styles globaux</h3>
+<ul>
+    <li>Définissez vos couleurs principales une fois</li>
+    <li>Créez des classes CSS réutilisables</li>
+    <li>Gain de temps et cohérence visuelle</li>
+</ul>
+
+<h3>3. Workflows conditionnels plutôt que multiples workflows</h3>
+<pre><code>✅ Un workflow avec conditions :
+IF user.role === 'admin'
+  THEN redirect to /admin
+  ELSE redirect to /dashboard
+</code></pre>
+
+<h3>4. Mode debug</h3>
+<ul>
+    <li>Activez la console du navigateur</li>
+    <li>Utilisez console.log dans vos formules</li>
+    <li>Tracez l'exécution de vos workflows</li>
+</ul>
+
+<h2>Outils de productivité</h2>
+
+<h3>Snippets de code</h3>
+<p>
+    Créez une bibliothèque de snippets réutilisables :
+</p>
+<ul>
+    <li>Formules de validation</li>
+    <li>Transformations de données courantes</li>
+    <li>Structures de workflows récurrents</li>
+</ul>
+
+<h3>Documentation as you go</h3>
+<ul>
+    <li>Ajoutez des commentaires dans Xano Function Stacks</li>
+    <li>Nommez clairement vos variables et composants</li>
+    <li>Maintenez un changelog des modifications</li>
+</ul>
+
+<h3>Templates de projet</h3>
+<p>
+    Créez un template de base avec :
+</p>
+<ul>
+    <li>Authentification pré-configurée</li>
+    <li>Pages standards (login, signup, profile)</li>
+    <li>Composants communs (header, footer, buttons)</li>
+    <li>Structure de données de base</li>
+</ul>
+
+<h2>Éviter les pièges courants</h2>
+
+<h3>1. Ne pas tester au fur et à mesure</h3>
+<p>
+    Testez chaque fonctionnalité dès qu'elle est créée, pas à la fin.
+</p>
+
+<h3>2. Négliger la gestion d'erreurs</h3>
+<p>
+    Ajoutez toujours un "On Error" workflow pour gérer les cas d'échec.
+</p>
+
+<h3>3. Optimiser trop tôt</h3>
+<p>
+    Faites d'abord fonctionner, optimisez ensuite. "Premature optimization is the root of all evil."
+</p>
+
+<h3>4. Ne pas faire de pauses</h3>
+<p>
+    Les pauses régulières augmentent la productivité et la créativité.
+</p>
+
+<h2>Checklist quotidienne</h2>
+
+<h3>Début de journée</h3>
+<ul>
+    <li>Définir 3 objectifs principaux</li>
+    <li>Vérifier les messages/notifications</li>
+    <li>Prioriser les tâches</li>
+</ul>
+
+<h3>Pendant le travail</h3>
+<ul>
+    <li>Focus sur une tâche à la fois</li>
+    <li>Tester au fur et à mesure</li>
+    <li>Commiter régulièrement (si Git)</li>
+    <li>Documenter les décisions importantes</li>
+</ul>
+
+<h3>Fin de journée</h3>
+<ul>
+    <li>Vérifier que tout fonctionne</li>
+    <li>Noter ce qui reste à faire</li>
+    <li>Sauvegarder le travail</li>
+    <li>Planifier le lendemain</li>
+</ul>
+
+<div class="figure">
+    <p class="figure-caption">Figure 2 : Workflow de productivité optimale (image à ajouter)</p>
+</div>

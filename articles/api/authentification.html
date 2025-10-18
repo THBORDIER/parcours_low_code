@@ -1,0 +1,139 @@
+<h1>Authentification et sécurité des API</h1>
+
+<h2>Pourquoi sécuriser une API ?</h2>
+
+<p>
+    La sécurité est essentielle pour protéger les données des utilisateurs, empêcher les accès non autorisés
+    et garantir l'intégrité de votre application.
+</p>
+
+<h2>JWT (JSON Web Tokens)</h2>
+
+<h3>Qu'est-ce qu'un JWT ?</h3>
+<p>
+    Un JWT est un token crypté qui contient des informations d'identification. Il est composé de trois parties :
+</p>
+<ul>
+    <li><strong>Header :</strong> Type de token et algorithme de chiffrement</li>
+    <li><strong>Payload :</strong> Données utilisateur (id, email, rôle, etc.)</li>
+    <li><strong>Signature :</strong> Garantit que le token n'a pas été modifié</li>
+</ul>
+
+<h3>Exemple de JWT</h3>
+<pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.
+SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+</code></pre>
+
+<h2>Flux d'authentification avec JWT</h2>
+
+<h3>1. Inscription / Connexion</h3>
+<ol>
+    <li>L'utilisateur envoie email + password</li>
+    <li>Le serveur vérifie les credentials</li>
+    <li>Si OK, le serveur génère un JWT</li>
+    <li>Le JWT est renvoyé au client</li>
+</ol>
+
+<h3>2. Requêtes authentifiées</h3>
+<ol>
+    <li>Le client stocke le JWT (localStorage, cookie)</li>
+    <li>Pour chaque requête protégée, le JWT est envoyé dans le header</li>
+    <li>Le serveur vérifie la validité du JWT</li>
+    <li>Si valide, la requête est traitée</li>
+</ol>
+
+<h2>Implémentation dans WeWeb + Xano</h2>
+
+<h3>Côté Xano (Backend)</h3>
+
+<h4>Endpoint /auth/signup</h4>
+<ol>
+    <li>Recevoir email, password, name</li>
+    <li>Hasher le password</li>
+    <li>Créer l'utilisateur en BDD</li>
+    <li>Générer un JWT avec l'id utilisateur</li>
+    <li>Retourner le JWT et les infos utilisateur</li>
+</ol>
+
+<h4>Endpoint /auth/login</h4>
+<ol>
+    <li>Recevoir email et password</li>
+    <li>Vérifier que l'email existe</li>
+    <li>Comparer le password hashé</li>
+    <li>Générer un JWT</li>
+    <li>Retourner le JWT et les infos utilisateur</li>
+</ol>
+
+<h4>Protection des endpoints</h4>
+<p>
+    Dans Xano, activez "Requires Authentication" sur les endpoints protégés.
+    Le token sera automatiquement vérifié.
+</p>
+
+<h3>Côté WeWeb (Frontend)</h3>
+
+<h4>Workflow de connexion</h4>
+<ol>
+    <li>Formulaire avec email + password</li>
+    <li>Appel API POST /auth/login</li>
+    <li>Stocker le JWT dans une variable globale</li>
+    <li>Rediriger vers le dashboard</li>
+</ol>
+
+<h4>Configuration de l'authentification</h4>
+<ul>
+    <li>Aller dans Data Sources > Xano</li>
+    <li>Configurer Authentication</li>
+    <li>Sélectionner "Bearer Token"</li>
+    <li>Lier à votre variable globale JWT</li>
+</ul>
+
+<h2>Gestion des permissions</h2>
+
+<h3>Rôles utilisateurs</h3>
+<p>
+    Définissez différents niveaux d'accès :
+</p>
+<ul>
+    <li><strong>User :</strong> Accès basique</li>
+    <li><strong>Admin :</strong> Accès complet</li>
+    <li><strong>Moderator :</strong> Accès intermédiaire</li>
+</ul>
+
+<h3>Vérification des permissions dans Xano</h3>
+<pre><code>1. Récupérer l'utilisateur authentifié
+2. Vérifier son rôle
+3. Si role !== 'admin', retourner erreur 403
+4. Sinon, continuer le traitement
+</code></pre>
+
+<h2>Bonnes pratiques de sécurité</h2>
+
+<ul>
+    <li><strong>HTTPS uniquement :</strong> Toujours en production</li>
+    <li><strong>Expiration des tokens :</strong> JWT avec durée de vie limitée (ex: 24h)</li>
+    <li><strong>Refresh tokens :</strong> Permettre de renouveler le JWT sans re-login</li>
+    <li><strong>Password fort :</strong> Imposer des règles (longueur, caractères spéciaux)</li>
+    <li><strong>Rate limiting :</strong> Limiter les tentatives de connexion</li>
+    <li><strong>2FA (Two-Factor Auth) :</strong> Pour les comptes sensibles</li>
+    <li><strong>Logs de sécurité :</strong> Tracer les tentatives de connexion</li>
+</ul>
+
+<h2>Gestion de la déconnexion</h2>
+
+<h3>Côté WeWeb</h3>
+<ol>
+    <li>Supprimer le JWT de la variable globale</li>
+    <li>Effacer les données utilisateur en cache</li>
+    <li>Rediriger vers la page de login</li>
+</ol>
+
+<h3>Côté Xano (optionnel)</h3>
+<p>
+    Maintenir une "blacklist" de tokens révoqués pour une sécurité renforcée.
+</p>
+
+<div class="figure">
+    <p class="figure-caption">Figure 2 : Diagramme du flux d'authentification JWT (image à ajouter)</p>
+</div>

@@ -1,0 +1,128 @@
+<h1>Introduction aux REST API</h1>
+
+<h2>Qu'est-ce qu'une API REST ?</h2>
+
+<p>
+    REST (Representational State Transfer) est un style d'architecture pour les API web. Une API REST utilise
+    les méthodes HTTP standard pour permettre la communication entre applications.
+</p>
+
+<h2>Principes fondamentaux de REST</h2>
+
+<h3>1. Ressources</h3>
+<p>
+    Tout est considéré comme une ressource accessible via une URI (URL unique).
+    Exemples : /users, /products, /orders
+</p>
+
+<h3>2. Méthodes HTTP</h3>
+<ul>
+    <li><strong>GET :</strong> Récupérer des données</li>
+    <li><strong>POST :</strong> Créer de nouvelles données</li>
+    <li><strong>PUT/PATCH :</strong> Modifier des données existantes</li>
+    <li><strong>DELETE :</strong> Supprimer des données</li>
+</ul>
+
+<h3>3. Stateless (Sans état)</h3>
+<p>
+    Chaque requête doit contenir toutes les informations nécessaires. Le serveur ne garde pas de "session".
+</p>
+
+<h3>4. Format JSON</h3>
+<p>
+    Les données sont généralement échangées au format JSON (JavaScript Object Notation).
+</p>
+
+<h2>Structure d'une requête REST</h2>
+
+<h3>Exemple de requête GET</h3>
+<pre><code>GET https://api.monsite.com/products/123
+Headers:
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+  Content-Type: application/json
+</code></pre>
+
+<h3>Exemple de requête POST</h3>
+<pre><code>POST https://api.monsite.com/users
+Headers:
+  Content-Type: application/json
+Body:
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "password": "secure123"
+}
+</code></pre>
+
+<h2>Codes de statut HTTP</h2>
+
+<h3>Succès (2xx)</h3>
+<ul>
+    <li><strong>200 OK :</strong> Requête réussie</li>
+    <li><strong>201 Created :</strong> Ressource créée avec succès</li>
+    <li><strong>204 No Content :</strong> Succès sans contenu de retour</li>
+</ul>
+
+<h3>Erreurs client (4xx)</h3>
+<ul>
+    <li><strong>400 Bad Request :</strong> Requête mal formée</li>
+    <li><strong>401 Unauthorized :</strong> Authentification requise</li>
+    <li><strong>403 Forbidden :</strong> Accès refusé</li>
+    <li><strong>404 Not Found :</strong> Ressource non trouvée</li>
+</ul>
+
+<h3>Erreurs serveur (5xx)</h3>
+<ul>
+    <li><strong>500 Internal Server Error :</strong> Erreur serveur générique</li>
+    <li><strong>503 Service Unavailable :</strong> Service temporairement indisponible</li>
+</ul>
+
+<h2>Bonnes pratiques REST</h2>
+
+<ol>
+    <li><strong>URIs cohérentes :</strong> Utilisez des noms de ressources au pluriel (/users, /products)</li>
+    <li><strong>Versioning :</strong> Versionnez votre API (/api/v1/users)</li>
+    <li><strong>Filtres et pagination :</strong> /products?page=2&limit=20</li>
+    <li><strong>HTTPS obligatoire :</strong> Toujours utiliser HTTPS en production</li>
+    <li><strong>Documentation :</strong> Documentez tous vos endpoints</li>
+</ol>
+
+<h2>Exemple complet : CRUD sur les utilisateurs</h2>
+
+<h3>Lister tous les utilisateurs</h3>
+<pre><code>GET /api/users
+Response: 200 OK
+[
+  { "id": 1, "name": "Alice", "email": "alice@example.com" },
+  { "id": 2, "name": "Bob", "email": "bob@example.com" }
+]
+</code></pre>
+
+<h3>Récupérer un utilisateur spécifique</h3>
+<pre><code>GET /api/users/1
+Response: 200 OK
+{ "id": 1, "name": "Alice", "email": "alice@example.com" }
+</code></pre>
+
+<h3>Créer un utilisateur</h3>
+<pre><code>POST /api/users
+Body: { "name": "Charlie", "email": "charlie@example.com" }
+Response: 201 Created
+{ "id": 3, "name": "Charlie", "email": "charlie@example.com" }
+</code></pre>
+
+<h3>Modifier un utilisateur</h3>
+<pre><code>PATCH /api/users/1
+Body: { "name": "Alice Smith" }
+Response: 200 OK
+{ "id": 1, "name": "Alice Smith", "email": "alice@example.com" }
+</code></pre>
+
+<h3>Supprimer un utilisateur</h3>
+<pre><code>DELETE /api/users/1
+Response: 204 No Content
+</code></pre>
+
+<div class="figure">
+    <p class="figure-caption">Figure 1 : Diagramme d'architecture REST (image à ajouter)</p>
+</div>

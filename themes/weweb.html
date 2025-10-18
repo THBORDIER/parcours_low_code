@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeWeb - Base de connaissance Low-Code</title>
+    <link rel="stylesheet" href="../public/css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="../index.html" class="navbar-brand">Base de Connaissance Low-Code</a>
+            <ul class="navbar-menu">
+                <li><a href="weweb.html">WeWeb</a></li>
+                <li><a href="xano.html">Xano</a></li>
+                <li><a href="api.html">API & Backend</a></li>
+                <li><a href="bonnes-pratiques.html">Bonnes pratiques</a></li>
+                <li><a href="notes-diverses.html">Notes diverses</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <div class="container">
+            <div class="two-column-layout">
+                <!-- Colonne gauche : Liste des articles -->
+                <aside class="articles-list">
+                    <h2>Articles WeWeb</h2>
+                    <ul id="articles-menu">
+                        <li><a href="#" data-article="../articles/weweb/introduction-weweb.html">Introduction à WeWeb</a></li>
+                        <li><a href="#" data-article="../articles/weweb/composants-weweb.html">Les composants WeWeb</a></li>
+                        <li><a href="#" data-article="../articles/weweb/variables-workflow.html">Variables et workflows</a></li>
+                    </ul>
+                </aside>
+
+                <!-- Colonne droite : Contenu de l'article -->
+                <article class="article-content" id="article-display">
+                    <div class="default-message">
+                        <p>Sélectionnez un article dans la liste pour l'afficher ici.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Gestion de l'affichage des articles
+        document.addEventListener('DOMContentLoaded', function() {
+            const articleLinks = document.querySelectorAll('#articles-menu a');
+            const articleDisplay = document.getElementById('article-display');
+
+            articleLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Retirer la classe active de tous les liens
+                    articleLinks.forEach(l => l.classList.remove('active'));
+
+                    // Ajouter la classe active au lien cliqué
+                    this.classList.add('active');
+
+                    // Charger l'article
+                    const articleUrl = this.getAttribute('data-article');
+                    loadArticle(articleUrl);
+                });
+            });
+
+            function loadArticle(url) {
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Article non trouvé');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        articleDisplay.innerHTML = html;
+                    })
+                    .catch(error => {
+                        articleDisplay.innerHTML = '<div class="default-message"><p>Erreur lors du chargement de l\'article.</p></div>';
+                        console.error('Erreur:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

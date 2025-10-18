@@ -1,0 +1,170 @@
+<h1>Créer des API endpoints dans Xano</h1>
+
+<h2>Qu'est-ce qu'un endpoint API ?</h2>
+
+<p>
+    Un endpoint API est une URL spécifique qui permet à votre application frontend (WeWeb) de communiquer
+    avec votre backend (Xano) pour récupérer, créer, modifier ou supprimer des données.
+</p>
+
+<h2>Types d'endpoints</h2>
+
+<h3>GET - Récupérer des données</h3>
+<p>
+    Utilisé pour lire des données sans les modifier.
+</p>
+<ul>
+    <li>Liste de tous les produits</li>
+    <li>Détails d'un utilisateur spécifique</li>
+    <li>Recherche avec filtres</li>
+</ul>
+
+<h3>POST - Créer des données</h3>
+<p>
+    Utilisé pour créer de nouvelles entrées dans la base de données.
+</p>
+<ul>
+    <li>Créer un nouvel utilisateur</li>
+    <li>Ajouter un produit au panier</li>
+    <li>Soumettre un formulaire</li>
+</ul>
+
+<h3>PATCH/PUT - Modifier des données</h3>
+<p>
+    Utilisé pour mettre à jour des données existantes.
+</p>
+<ul>
+    <li>Modifier le profil utilisateur</li>
+    <li>Mettre à jour le statut d'une commande</li>
+    <li>Changer la quantité d'un produit</li>
+</ul>
+
+<h3>DELETE - Supprimer des données</h3>
+<p>
+    Utilisé pour supprimer des enregistrements.
+</p>
+<ul>
+    <li>Supprimer un compte utilisateur</li>
+    <li>Retirer un article du panier</li>
+    <li>Annuler une commande</li>
+</ul>
+
+<h2>Structure d'un endpoint dans Xano</h2>
+
+<h3>1. Configuration de base</h3>
+<ul>
+    <li><strong>Nom :</strong> Identifiant de l'endpoint</li>
+    <li><strong>Path :</strong> URL de l'endpoint (ex: /api/products)</li>
+    <li><strong>Méthode :</strong> GET, POST, PATCH, DELETE</li>
+    <li><strong>Authentification :</strong> Public ou authentifié</li>
+</ul>
+
+<h3>2. Inputs (paramètres)</h3>
+<p>
+    Définissez les données que l'endpoint accepte :
+</p>
+<ul>
+    <li><strong>Path parameters :</strong> /products/{id}</li>
+    <li><strong>Query parameters :</strong> /products?category=electronics</li>
+    <li><strong>Body parameters :</strong> Données JSON dans le corps de la requête</li>
+</ul>
+
+<h3>3. Function Stack</h3>
+<p>
+    La logique de l'endpoint, composée de fonctions enchaînées :
+</p>
+<ul>
+    <li>Database queries (lecture/écriture)</li>
+    <li>Transformations de données</li>
+    <li>Conditions et validations</li>
+    <li>Appels externes</li>
+</ul>
+
+<h3>4. Response</h3>
+<p>
+    Les données renvoyées par l'endpoint au format JSON.
+</p>
+
+<h2>Exemple pratique : Endpoint "Get Products"</h2>
+
+<h3>Configuration</h3>
+<pre><code>Nom: get_all_products
+Path: /products
+Méthode: GET
+Auth: Public
+</code></pre>
+
+<h3>Inputs</h3>
+<pre><code>category (query, optionnel): text
+min_price (query, optionnel): integer
+max_price (query, optionnel): integer
+</code></pre>
+
+<h3>Function Stack</h3>
+<ol>
+    <li><strong>Query Database :</strong> Récupérer tous les produits de la table "products"</li>
+    <li><strong>Filter :</strong> Appliquer les filtres de catégorie et prix si fournis</li>
+    <li><strong>Transform :</strong> Formater les données (arrondir les prix, formater les dates)</li>
+    <li><strong>Return :</strong> Renvoyer la liste des produits</li>
+</ol>
+
+<h3>Response exemple</h3>
+<pre><code>{
+  "products": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "price": 999.99,
+      "category": "electronics",
+      "image": "https://..."
+    },
+    {
+      "id": 2,
+      "name": "Mouse",
+      "price": 29.99,
+      "category": "electronics",
+      "image": "https://..."
+    }
+  ],
+  "total": 2
+}
+</code></pre>
+
+<h2>Exemple 2 : Endpoint "Create User"</h2>
+
+<h3>Configuration</h3>
+<pre><code>Nom: create_user
+Path: /auth/signup
+Méthode: POST
+Auth: Public
+</code></pre>
+
+<h3>Inputs (Body)</h3>
+<pre><code>email (required): email
+password (required): text
+name (required): text
+</code></pre>
+
+<h3>Function Stack</h3>
+<ol>
+    <li><strong>Validate :</strong> Vérifier que l'email n'existe pas déjà</li>
+    <li><strong>Hash Password :</strong> Hasher le mot de passe pour la sécurité</li>
+    <li><strong>Create Record :</strong> Créer l'utilisateur dans la table "users"</li>
+    <li><strong>Generate Token :</strong> Créer un token JWT pour l'authentification</li>
+    <li><strong>Return :</strong> Renvoyer le token et les infos utilisateur</li>
+</ol>
+
+<h2>Sécurité et bonnes pratiques</h2>
+
+<ul>
+    <li><strong>Validation :</strong> Validez toujours les inputs reçus</li>
+    <li><strong>Authentification :</strong> Protégez les endpoints sensibles avec JWT</li>
+    <li><strong>Permissions :</strong> Vérifiez que l'utilisateur a le droit d'accéder aux données</li>
+    <li><strong>Rate limiting :</strong> Limitez le nombre de requêtes par utilisateur</li>
+    <li><strong>Error handling :</strong> Renvoyez des messages d'erreur clairs</li>
+    <li><strong>Documentation :</strong> Documentez vos endpoints pour faciliter l'intégration</li>
+</ul>
+
+<div class="figure">
+    <p class="figure-caption">Figure 3 : Schéma d'un Function Stack (image à ajouter)</p>
+</div>

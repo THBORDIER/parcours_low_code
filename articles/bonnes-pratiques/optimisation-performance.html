@@ -1,0 +1,209 @@
+<h1>Optimisation et performance</h1>
+
+<h2>Pourquoi optimiser ?</h2>
+
+<p>
+    Les performances impactent directement :
+</p>
+<ul>
+    <li>L'expérience utilisateur</li>
+    <li>Le taux de conversion</li>
+    <li>Le référencement (SEO)</li>
+    <li>Les coûts d'infrastructure</li>
+</ul>
+
+<h2>Optimisation Frontend (WeWeb)</h2>
+
+<h3>1. Images</h3>
+
+<h4>Bonnes pratiques</h4>
+<ul>
+    <li><strong>Format adapté :</strong> WebP pour les photos, SVG pour les icônes</li>
+    <li><strong>Compression :</strong> Utilisez des outils comme TinyPNG</li>
+    <li><strong>Taille appropriée :</strong> Ne chargez pas une image 4K pour une vignette 200x200</li>
+    <li><strong>Lazy loading :</strong> Chargez les images au scroll</li>
+</ul>
+
+<h4>Tailles recommandées</h4>
+<pre><code>Vignette produit : 300x300px
+Image produit détail : 800x800px
+Bannière : 1920x600px
+Avatar utilisateur : 150x150px
+</code></pre>
+
+<h3>2. Collections et données</h3>
+
+<h4>Pagination</h4>
+<pre><code>❌ Mauvais :
+Charger 10 000 produits d'un coup
+
+✅ Bon :
+Charger 20 produits par page
+Ajouter des boutons Précédent/Suivant
+</code></pre>
+
+<h4>Chargement conditionnel</h4>
+<ul>
+    <li>Utilisez "Fetch on manual trigger" pour les données secondaires</li>
+    <li>Ne chargez que ce qui est visible</li>
+    <li>Lazy load pour les onglets et accordéons</li>
+</ul>
+
+<h4>Cache</h4>
+<ul>
+    <li>Activez le cache sur les collections statiques</li>
+    <li>Durée : 5-15 minutes pour données peu changeantes</li>
+    <li>Invalidez le cache après modification</li>
+</ul>
+
+<h3>3. Workflows</h3>
+
+<h4>Évitez les workflows trop complexes</h4>
+<pre><code>❌ Mauvais :
+20 actions dans un seul workflow avec imbrications complexes
+
+✅ Bon :
+Divisez en plusieurs workflows simples
+Utilisez des fonctions réutilisables
+</code></pre>
+
+<h4>Actions asynchrones</h4>
+<ul>
+    <li>Utilisez "Run in parallel" quand les actions sont indépendantes</li>
+    <li>Ne bloquez pas l'UI pour des actions longues</li>
+    <li>Affichez un loading spinner pendant le traitement</li>
+</ul>
+
+<h3>4. Composants</h3>
+
+<h4>Réutilisation</h4>
+<ul>
+    <li>Créez des composants réutilisables plutôt que dupliquer</li>
+    <li>Réduisez l'imbrication excessive (max 4-5 niveaux)</li>
+</ul>
+
+<h4>Visibilité conditionnelle</h4>
+<pre><code>✅ Bon :
+Utilisez "Display condition" plutôt que de multiplier les composants
+</code></pre>
+
+<h2>Optimisation Backend (Xano)</h2>
+
+<h3>1. Base de données</h3>
+
+<h4>Index</h4>
+<ul>
+    <li><strong>Ajoutez des index sur :</strong>
+        <ul>
+            <li>Clés étrangères</li>
+            <li>Champs de recherche fréquents</li>
+            <li>Champs de tri</li>
+        </ul>
+    </li>
+</ul>
+
+<h4>Requêtes optimisées</h4>
+<pre><code>❌ Mauvais :
+Récupérer tous les utilisateurs puis filtrer côté frontend
+
+✅ Bon :
+Filtrer directement dans la requête Xano (WHERE clause)
+</code></pre>
+
+<h4>Évitez les N+1 queries</h4>
+<pre><code>❌ Mauvais :
+Boucle qui fait une requête DB à chaque itération
+
+✅ Bon :
+Une seule requête avec JOIN ou relation
+</code></pre>
+
+<h3>2. API Endpoints</h3>
+
+<h4>Pagination</h4>
+<pre><code>Implémentez toujours la pagination :
+- Parameter: page (default: 1)
+- Parameter: limit (default: 20, max: 100)
+- Return: items + total + page info
+</code></pre>
+
+<h4>Filtres et tri</h4>
+<ul>
+    <li>Permettez le filtrage côté serveur</li>
+    <li>Tri côté serveur plutôt que côté client</li>
+</ul>
+
+<h4>Sélection de champs</h4>
+<pre><code>❌ Mauvais :
+Renvoyer tous les champs même si on n'en utilise que 3
+
+✅ Bon :
+Parameter: fields=id,name,price
+Ne renvoyer que les champs demandés
+</code></pre>
+
+<h3>3. Function Stack</h3>
+
+<h4>Optimisations</h4>
+<ul>
+    <li>Évitez les boucles imbriquées</li>
+    <li>Utilisez des fonctions natives quand disponibles</li>
+    <li>Mettez en cache les résultats coûteux</li>
+</ul>
+
+<h4>Appels API externes</h4>
+<ul>
+    <li>Timeout approprié (5-10 secondes max)</li>
+    <li>Gestion des erreurs</li>
+    <li>Cache des réponses si pertinent</li>
+</ul>
+
+<h2>Monitoring et mesures</h2>
+
+<h3>Métriques à surveiller</h3>
+
+<h4>Frontend</h4>
+<ul>
+    <li><strong>LCP (Largest Contentful Paint) :</strong> &lt; 2.5s</li>
+    <li><strong>FID (First Input Delay) :</strong> &lt; 100ms</li>
+    <li><strong>CLS (Cumulative Layout Shift) :</strong> &lt; 0.1</li>
+</ul>
+
+<h4>Backend</h4>
+<ul>
+    <li><strong>Temps de réponse API :</strong> &lt; 200ms idéalement</li>
+    <li><strong>Taux d'erreur :</strong> &lt; 1%</li>
+    <li><strong>Utilisation CPU/Mémoire</strong></li>
+</ul>
+
+<h3>Outils</h3>
+<ul>
+    <li><strong>Google PageSpeed Insights :</strong> Performance web</li>
+    <li><strong>Xano Logs :</strong> Temps d'exécution des endpoints</li>
+    <li><strong>Browser DevTools :</strong> Network tab, Performance tab</li>
+</ul>
+
+<h2>Checklist d'optimisation</h2>
+
+<h3>Avant lancement</h3>
+<ul>
+    <li>Toutes les images sont compressées</li>
+    <li>Pagination implémentée sur les listes</li>
+    <li>Cache activé où pertinent</li>
+    <li>Index sur les champs de recherche</li>
+    <li>Workflows optimisés (pas de redondance)</li>
+    <li>Tests de charge effectués</li>
+    <li>Temps de chargement &lt; 3 secondes</li>
+</ul>
+
+<h3>Maintenance continue</h3>
+<ul>
+    <li>Surveiller les logs d'erreurs</li>
+    <li>Analyser les endpoints les plus lents</li>
+    <li>Nettoyer les données obsolètes</li>
+    <li>Optimiser les requêtes problématiques</li>
+</ul>
+
+<div class="figure">
+    <p class="figure-caption">Figure 3 : Dashboard de performance (image à ajouter)</p>
+</div>

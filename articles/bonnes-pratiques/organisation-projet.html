@@ -1,0 +1,126 @@
+<h1>Organisation d'un projet Low-Code</h1>
+
+<h2>Structure de projet recommandée</h2>
+
+<p>
+    Une bonne organisation est essentielle pour maintenir un projet lisible et évolutif,
+    même en no-code/low-code.
+</p>
+
+<h2>Organisation dans WeWeb</h2>
+
+<h3>1. Pages et Navigation</h3>
+<ul>
+    <li><strong>Pages publiques :</strong> Home, About, Contact, Login, Signup</li>
+    <li><strong>Pages authentifiées :</strong> Dashboard, Profile, Settings</li>
+    <li><strong>Pages admin :</strong> Admin Dashboard, Users Management</li>
+</ul>
+
+<h3>2. Organisation des composants</h3>
+<ul>
+    <li>Créez des dossiers pour organiser vos composants réutilisables</li>
+    <li>Nommage clair : <code>Card_Product</code>, <code>Button_Primary</code></li>
+    <li>Documentez l'usage de chaque composant personnalisé</li>
+</ul>
+
+<h3>3. Variables et Collections</h3>
+<ul>
+    <li><strong>Variables globales :</strong> Préfixez avec <code>global_</code> (ex: global_currentUser)</li>
+    <li><strong>Variables de page :</strong> Préfixez avec le nom de page (ex: dashboard_filters)</li>
+    <li><strong>Collections :</strong> Noms au pluriel (products, users, orders)</li>
+</ul>
+
+<h2>Organisation dans Xano</h2>
+
+<h3>1. Structure de la base de données</h3>
+<ul>
+    <li><strong>Nommage des tables :</strong> Singulier ou pluriel cohérent (users, products)</li>
+    <li><strong>Relations claires :</strong> Utilisez des foreign keys bien nommées</li>
+    <li><strong>Documentation :</strong> Ajoutez des descriptions aux tables et champs</li>
+</ul>
+
+<h3>2. Organisation des API endpoints</h3>
+<ul>
+    <li><strong>Groupes par ressource :</strong> Auth, Users, Products, Orders</li>
+    <li><strong>Nommage cohérent :</strong>
+        <ul>
+            <li>GET /users - Liste tous les utilisateurs</li>
+            <li>GET /users/{id} - Détails d'un utilisateur</li>
+            <li>POST /users - Créer un utilisateur</li>
+            <li>PATCH /users/{id} - Modifier un utilisateur</li>
+            <li>DELETE /users/{id} - Supprimer un utilisateur</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>3. Fonctions réutilisables</h3>
+<ul>
+    <li>Créez des "Custom Functions" pour la logique répétitive</li>
+    <li>Exemples : send_email, calculate_tax, format_address</li>
+</ul>
+
+<h2>Documentation du projet</h2>
+
+<h3>Ce qu'il faut documenter</h3>
+<ol>
+    <li><strong>Architecture globale :</strong> Schéma de l'application</li>
+    <li><strong>Modèle de données :</strong> Schéma de la BDD avec relations</li>
+    <li><strong>Endpoints API :</strong> Liste et description de chaque endpoint</li>
+    <li><strong>Workflows importants :</strong> Processus complexes (paiement, inscription, etc.)</li>
+    <li><strong>Variables d'environnement :</strong> Clés API, URLs, configurations</li>
+</ol>
+
+<h3>Outils de documentation</h3>
+<ul>
+    <li><strong>Notion :</strong> Documentation collaborative</li>
+    <li><strong>Figma :</strong> Wireframes et maquettes</li>
+    <li><strong>Miro :</strong> Schémas d'architecture</li>
+    <li><strong>README.md :</strong> Documentation technique</li>
+</ul>
+
+<h2>Gestion de versions et environnements</h2>
+
+<h3>Environnements recommandés</h3>
+<ol>
+    <li><strong>Development :</strong> Tests et développement</li>
+    <li><strong>Staging :</strong> Tests pré-production</li>
+    <li><strong>Production :</strong> Application live</li>
+</ol>
+
+<h3>Dans Xano</h3>
+<ul>
+    <li>Utilisez les "Branches" pour gérer différentes versions</li>
+    <li>Testez les modifications sur une branche avant de merger</li>
+</ul>
+
+<h3>Dans WeWeb</h3>
+<ul>
+    <li>Utilisez les "Environments" pour dev/staging/prod</li>
+    <li>Configurez différentes API URLs par environnement</li>
+</ul>
+
+<h2>Collaboration en équipe</h2>
+
+<h3>Bonnes pratiques</h3>
+<ul>
+    <li><strong>Rôles clairs :</strong> Définissez qui fait quoi (designer, dev, testeur)</li>
+    <li><strong>Conventions communes :</strong> Toute l'équipe suit les mêmes règles</li>
+    <li><strong>Revues de code :</strong> Même en no-code, validez les workflows complexes</li>
+    <li><strong>Communication :</strong> Utilisez Slack/Teams pour coordination</li>
+</ul>
+
+<h2>Checklist avant déploiement</h2>
+
+<ul>
+    <li>Tests complets sur tous les parcours utilisateur</li>
+    <li>Vérification de la sécurité (authentification, permissions)</li>
+    <li>Optimisation des performances (cache, pagination)</li>
+    <li>Configuration des variables d'environnement production</li>
+    <li>Backup de la base de données</li>
+    <li>Documentation à jour</li>
+    <li>Plan de rollback en cas de problème</li>
+</ul>
+
+<div class="figure">
+    <p class="figure-caption">Figure 1 : Schéma d'organisation d'un projet (image à ajouter)</p>
+</div>

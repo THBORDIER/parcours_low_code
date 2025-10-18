@@ -1,0 +1,186 @@
+<h1>Intégration WeWeb-Xano</h1>
+
+<h2>Vue d'ensemble</h2>
+
+<p>
+    L'intégration entre WeWeb (frontend) et Xano (backend) est au cœur du développement low-code.
+    Cette combinaison permet de créer des applications complètes et professionnelles.
+</p>
+
+<h2>Configuration de la connexion</h2>
+
+<h3>Étape 1 : Obtenir l'URL de base Xano</h3>
+<p>
+    Dans Xano, copiez l'URL de base de votre API :
+</p>
+<pre><code>https://x8ki-letl-twmt.n7.xano.io/api:votre-instance
+</code></pre>
+
+<h3>Étape 2 : Configurer la Data Source dans WeWeb</h3>
+<ol>
+    <li>Dans WeWeb, allez dans <strong>Data Sources</strong></li>
+    <li>Cliquez sur <strong>Add a data source</strong></li>
+    <li>Sélectionnez <strong>Xano</strong></li>
+    <li>Collez l'URL de base</li>
+    <li>Configurez l'authentification si nécessaire</li>
+</ol>
+
+<h2>Créer une collection</h2>
+
+<h3>Qu'est-ce qu'une collection ?</h3>
+<p>
+    Une collection dans WeWeb est un ensemble de données récupérées depuis votre API Xano.
+    Elle peut être liée à des composants pour afficher des données dynamiques.
+</p>
+
+<h3>Créer une collection "Products"</h3>
+<ol>
+    <li>Dans WeWeb, allez dans <strong>Collections</strong></li>
+    <li>Créez une nouvelle collection</li>
+    <li>Sélectionnez la data source Xano</li>
+    <li>Choisissez l'endpoint GET /products</li>
+    <li>Configurez le mode de chargement (on page load, manual, etc.)</li>
+</ol>
+
+<h2>Afficher des données</h2>
+
+<h3>Liste de produits</h3>
+<ol>
+    <li>Ajoutez un composant <strong>List</strong> sur votre page</li>
+    <li>Liez-le à la collection "Products"</li>
+    <li>Configurez le template de l'item :
+        <ul>
+            <li>Image liée à <code>item.image</code></li>
+            <li>Texte pour le nom : <code>item.name</code></li>
+            <li>Texte pour le prix : <code>item.price</code></li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Détail d'un produit</h3>
+<ol>
+    <li>Créez une collection "Current Product"</li>
+    <li>Mode : <strong>fetch on page load</strong></li>
+    <li>Endpoint : GET /products/{id}</li>
+    <li>Parameter : Lié à l'URL parameter <code>id</code></li>
+    <li>Affichez les données avec des composants Text et Image</li>
+</ol>
+
+<h2>Créer et modifier des données</h2>
+
+<h3>Workflow de création</h3>
+
+<p>Exemple : Créer un nouveau produit</p>
+
+<ol>
+    <li><strong>Formulaire :</strong> Créez un formulaire avec les champs nécessaires
+        <ul>
+            <li>Input pour le nom</li>
+            <li>Input pour le prix</li>
+            <li>Textarea pour la description</li>
+            <li>File upload pour l'image</li>
+        </ul>
+    </li>
+    <li><strong>Workflow sur Submit :</strong>
+        <ul>
+            <li>Action 1 : Appeler l'API POST /products</li>
+            <li>Body : Lier chaque champ du formulaire</li>
+            <li>Action 2 (succès) : Rafraîchir la collection products</li>
+            <li>Action 3 (succès) : Afficher un message de succès</li>
+            <li>Action 4 (succès) : Rediriger vers la liste</li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Workflow de modification</h3>
+
+<p>Exemple : Modifier un produit</p>
+
+<ol>
+    <li><strong>Formulaire pré-rempli :</strong>
+        <ul>
+            <li>Charger les données du produit actuel</li>
+            <li>Pré-remplir les champs avec les valeurs existantes</li>
+        </ul>
+    </li>
+    <li><strong>Workflow sur Submit :</strong>
+        <ul>
+            <li>Action 1 : Appeler l'API PATCH /products/{id}</li>
+            <li>Body : Nouvelles valeurs du formulaire</li>
+            <li>Action 2 (succès) : Rafraîchir les données</li>
+            <li>Action 3 (succès) : Message de confirmation</li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Workflow de suppression</h3>
+
+<ol>
+    <li><strong>Bouton supprimer</strong> avec confirmation</li>
+    <li><strong>Workflow :</strong>
+        <ul>
+            <li>Action 1 : Afficher un popup de confirmation</li>
+            <li>Action 2 : Appeler DELETE /products/{id}</li>
+            <li>Action 3 (succès) : Rafraîchir la collection</li>
+            <li>Action 4 (succès) : Rediriger si sur page détail</li>
+        </ul>
+    </li>
+</ol>
+
+<h2>Gestion des erreurs</h2>
+
+<h3>Workflow avec gestion d'erreurs</h3>
+<ol>
+    <li><strong>Action principale :</strong> Requête API</li>
+    <li><strong>Branch "On Success" :</strong>
+        <ul>
+            <li>Rafraîchir les données</li>
+            <li>Afficher message de succès</li>
+        </ul>
+    </li>
+    <li><strong>Branch "On Error" :</strong>
+        <ul>
+            <li>Logger l'erreur en console</li>
+            <li>Afficher un message d'erreur à l'utilisateur</li>
+            <li>Proposer de réessayer</li>
+        </ul>
+    </li>
+</ol>
+
+<h2>Optimisation des performances</h2>
+
+<h3>1. Pagination</h3>
+<p>
+    Pour les grandes listes de données :
+</p>
+<ul>
+    <li>Utilisez les paramètres <code>page</code> et <code>limit</code></li>
+    <li>Affichez des boutons "Précédent / Suivant"</li>
+    <li>Ou implémentez un "Load More"</li>
+</ul>
+
+<h3>2. Caching</h3>
+<ul>
+    <li>Activez le cache sur les collections peu changeantes</li>
+    <li>Définissez une durée de validité appropriée</li>
+</ul>
+
+<h3>3. Chargement conditionnel</h3>
+<ul>
+    <li>Ne chargez les données que quand nécessaire</li>
+    <li>Utilisez "Fetch on manual trigger" pour les données secondaires</li>
+</ul>
+
+<h2>Bonnes pratiques</h2>
+
+<ol>
+    <li><strong>Nommage cohérent :</strong> Collections et variables bien nommées</li>
+    <li><strong>Gestion des états :</strong> Loading, error, empty states</li>
+    <li><strong>Feedback utilisateur :</strong> Toujours informer de l'état des actions</li>
+    <li><strong>Validation :</strong> Côté frontend ET backend</li>
+    <li><strong>Sécurité :</strong> Ne jamais exposer de données sensibles</li>
+</ol>
+
+<div class="figure">
+    <p class="figure-caption">Figure 3 : Architecture d'intégration WeWeb-Xano (image à ajouter)</p>
+</div>
