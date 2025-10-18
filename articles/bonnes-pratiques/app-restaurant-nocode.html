@@ -1,0 +1,217 @@
+<h1>Créer une application de prise de commande au restaurant avec une IA No-Code</h1>
+
+<p class="subtitle">Du besoin métier à la solution digitale</p>
+
+<p>
+    Dans le cadre d'un module d'OpenClassrooms sur la transformation digitale et les applications no-code,
+    nous allons explorer un cas concret vécu par de nombreux restaurateurs : comment digitaliser la prise de
+    commande pour améliorer la productivité, la fluidité du service, et l'expérience client ?
+</p>
+
+<p>
+    Cet article retrace l'histoire d'un patron de restaurant qui souhaite moderniser son établissement,
+    sans recruter une équipe de développeurs. Grâce à une IA spécialisée et une plateforme no-code (comme WeWeb),
+    nous avons conçu une Progressive Web App (PWA) sur mesure.
+</p>
+
+<h2>Problématique : les limites d'une prise de commande manuelle</h2>
+
+<p>Dans un restaurant traditionnel, la prise de commande se déroule généralement ainsi :</p>
+
+<ol>
+    <li>Le serveur prend la commande sur carnet</li>
+    <li>Il transmet manuellement à la cuisine ou au bar</li>
+    <li>En fin de repas, la caisse refait le calcul des plats et boissons consommés</li>
+    <li>Le client attend… parfois trop longtemps</li>
+</ol>
+
+<h3>Conséquences</h3>
+<ul>
+    <li>Erreurs de communication (suppression d'ingrédients, cuisson oubliée, boisson non envoyée)</li>
+    <li>Perte de temps / déplacements entre salle, cuisine et bar</li>
+    <li>Mauvaise expérience client</li>
+    <li>Difficultés pour suivre les commandes en cours et la facturation</li>
+</ul>
+
+<div class="info-box">
+    <strong>Objectif pédagogique (OpenClassrooms) :</strong> Comprendre comment analyser un besoin métier,
+    le modéliser en flux logiques, puis le transformer en application opérationnelle à l'aide d'un outil no-code.
+</div>
+
+<h2>Étape 1 : Comprendre le besoin métier</h2>
+
+<p>Lors de l'analyse, nous avons identifié les points clés :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Besoin métier</th>
+            <th>Objectif digital</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Prendre rapidement les commandes</td>
+            <td>Interface simple et mobile</td>
+        </tr>
+        <tr>
+            <td>Envoyer automatiquement au bon poste</td>
+            <td>Routage intelligent : Cuisine / Bar / Caisse</td>
+        </tr>
+        <tr>
+            <td>Suivre l'état de chaque plat ou boisson</td>
+            <td>Statuts temps réel</td>
+        </tr>
+        <tr>
+            <td>Générer automatiquement la facture</td>
+            <td>Liaison automatique avec la caisse</td>
+        </tr>
+        <tr>
+            <td>Accessible sur toutes les tablettes / smartphones</td>
+            <td>Utilisation d'une PWA</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="info-box">
+    <strong>Lien avec le cours OpenClassrooms :</strong> Cette étape correspond à l'analyse fonctionnelle
+    et la rédaction du cahier des charges, essentielle avant toute conception technique.
+</div>
+
+<h2>Étape 2 : Conception de la solution avec IA + No-Code</h2>
+
+<p>Nous avons choisi une approche no-code pour :</p>
+<ul>
+    <li>Réduire les coûts de développement</li>
+    <li>Gagner du temps</li>
+    <li>Favoriser l'autonomie du manager</li>
+</ul>
+
+<h3>Solution retenue : PWA avec routage automatique des commandes</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Composant</th>
+            <th>Rôle</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>WeWeb (Front)</td>
+            <td>Interface utilisateur + logique conditionnelle</td>
+        </tr>
+        <tr>
+            <td>Base de données (ex : Supabase / Airtable)</td>
+            <td>Stockage des tables, produits, commandes</td>
+        </tr>
+        <tr>
+            <td>Automatisations</td>
+            <td>Envoi automatique vers cuisine et bar</td>
+        </tr>
+        <tr>
+            <td>PWA</td>
+            <td>Application installable comme une app mobile, disponible hors ligne</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="info-box">
+    <strong>Lien pédagogique :</strong> Cette mise en œuvre reflète le chapitre d'OpenClassrooms sur les
+    Progressive Web Apps, mentionnant leur capacité à combiner la flexibilité du web et la puissance d'une
+    application mobile native sans passer par les stores.
+</div>
+
+<h2>Étape 3 : Résolution de la problématique par la logique métier</h2>
+
+<p>
+    Nous avons créé une architecture claire, structurée autour de la séparation des rôles.
+</p>
+
+<h3>Rôles utilisateurs</h3>
+<ul>
+    <li><strong>Serveur :</strong> prend les commandes</li>
+    <li><strong>Cuisinier :</strong> reçoit seulement les plats</li>
+    <li><strong>Barman :</strong> reçoit seulement les boissons</li>
+    <li><strong>Caissier :</strong> facture et encaisse</li>
+    <li><strong>Manager :</strong> supervise et analyse les données</li>
+</ul>
+
+<h3>Fonctionnement automatisé</h3>
+<ol>
+    <li>Le serveur choisit la table → ajoute produits → valide</li>
+    <li>L'IA no-code détecte chaque produit :
+        <ul>
+            <li>Si "plat" → envoi vers l'écran cuisine</li>
+            <li>Si "boisson" → envoi vers l'écran bar</li>
+        </ul>
+    </li>
+    <li>La caisse reçoit directement la commande complète</li>
+    <li>À la fin, génération automatique de la facture</li>
+</ol>
+
+<div class="info-box">
+    <strong>Objectif du module OpenClassrooms :</strong> Démontrer comment automatiser un workflow métier
+    grâce à une architecture modulaire.
+</div>
+
+<h2>Résultat : une application performante et évolutive</h2>
+
+<h3>Bénéfices obtenus</h3>
+<ul>
+    <li>Temps de service réduit</li>
+    <li>Zéro erreur de transmission</li>
+    <li>Suivi temps réel pour chaque poste</li>
+    <li>Factures générées automatiquement</li>
+    <li>Accessible depuis n'importe quel appareil</li>
+    <li>Installation sans store grâce au mode PWA</li>
+</ul>
+
+<h3>Vision long terme</h3>
+<p>Cette architecture permet ensuite d'ajouter :</p>
+<ul>
+    <li>Prise de commande par QR Code à la table</li>
+    <li>Paiement en ligne</li>
+    <li>Statistiques de performance</li>
+    <li>Gestion des stocks automatique</li>
+</ul>
+
+<h2>Conclusion pédagogique</h2>
+
+<p>Ce projet illustre parfaitement les apprentissages clés du parcours OpenClassrooms :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Compétence du parcours</th>
+            <th>Mise en application réelle</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Analyse fonctionnelle</td>
+            <td>Rédaction du cahier des charges métier</td>
+        </tr>
+        <tr>
+            <td>Transformation digitale</td>
+            <td>Passage du papier au digital intelligent</td>
+        </tr>
+        <tr>
+            <td>No-code / Low-code</td>
+            <td>Création rapide sans coder</td>
+        </tr>
+        <tr>
+            <td>Architecture PWA</td>
+            <td>Accessibilité universelle, mode offline</td>
+        </tr>
+        <tr>
+            <td>Automatisation des flux</td>
+            <td>Fiabilité et gain de temps</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="info-box">
+    <strong>La grande leçon à retenir :</strong> La technologie n'est pas une fin en soi. C'est l'analyse
+    métier qui guide l'outil – l'IA et le no-code ne servent qu'à mettre en œuvre une vision claire et structurée.
+</div>
