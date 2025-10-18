@@ -1,0 +1,168 @@
+<h1>Déployer votre site WeWeb</h1>
+
+<h2>Introduction</h2>
+
+<p>
+    <strong>Version vulgarisée :</strong> Déployer votre site WeWeb, c'est comme publier un livre. Vous avez écrit votre contenu (votre application), et maintenant vous voulez que tout le monde puisse le lire sur Internet. Le déploiement rend votre application accessible via une URL que vous pouvez partager.
+</p>
+
+<p>
+    <strong>Version technique :</strong> Le déploiement (<em>deployment</em>) est le processus de publication de votre application WeWeb depuis l'environnement de développement vers un environnement de production. WeWeb génère automatiquement les fichiers statiques et les héberge sur son infrastructure cloud, rendant votre application accessible via une URL publique.
+</p>
+
+<h2>Processus de déploiement étape par étape</h2>
+
+<h3>Étape 1 : Accéder au bouton de déploiement</h3>
+
+<p>
+    <strong>Vulgarisation :</strong> Dans l'éditeur WeWeb, cherchez le bouton "Deploy" (Déployer) généralement situé en haut à droite de votre interface. C'est votre point de départ pour publier votre travail.
+</p>
+
+<p>
+    <strong>Technique :</strong> Le bouton de déploiement initie le processus de build et de publication. Il se trouve dans la barre d'outils principale de l'éditeur WeWeb.
+</p>
+
+<div class="figure">
+    <img src="../../public/images/weweb/deploy/bouton deploy.png" alt="Bouton de déploiement WeWeb">
+    <p class="figure-caption">Figure 1 : Le bouton "Deploy" dans l'interface WeWeb</p>
+</div>
+
+<h3>Étape 2 : Ouvrir la modal de déploiement</h3>
+
+<p>
+    <strong>Vulgarisation :</strong> Lorsque vous cliquez sur le bouton "Deploy", une fenêtre popup (appelée "modal") s'affiche. Cette fenêtre vous propose plusieurs options de publication.
+</p>
+
+<p>
+    <strong>Technique :</strong> La modal de déploiement présente les différentes cibles de publication disponibles (subdomain WeWeb, domaine custom, staging, production).
+</p>
+
+<div class="figure">
+    <img src="../../public/images/weweb/deploy/bouton deploy clic.png" alt="Modal de déploiement WeWeb">
+    <p class="figure-caption">Figure 2 : La modal de déploiement avec les options disponibles</p>
+</div>
+
+<h3>Étape 3 : Sélectionner "Publish to WeWeb subdomain"</h3>
+
+<p>
+    <strong>Vulgarisation :</strong> Choisissez l'option "Publish to WeWeb subdomain". C'est l'option la plus simple pour débuter - WeWeb vous fournit gratuitement une adresse web (un sous-domaine) pour héberger votre site.
+</p>
+
+<p>
+    <strong>Technique :</strong> L'option "Publish to WeWeb subdomain" déploie votre application sur l'infrastructure WeWeb avec un subdomain automatiquement généré (format : <code>xxx-xxx.weweb-preview.io</code>). Cette option ne nécessite aucune configuration DNS.
+</p>
+
+<h3>Étape 4 : Nommer votre publication (commit)</h3>
+
+<p>
+    <strong>Vulgarisation :</strong> Une nouvelle fenêtre vous demande de donner un nom à votre publication. Choisissez un nom clair qui décrit les modifications que vous avez faites (par exemple : "Ajout page contact" ou "Correction bug formulaire"). C'est comme mettre une étiquette sur une version de votre travail.
+</p>
+
+<p>
+    <strong>Technique :</strong> Le champ "Name your publish" attend un message de commit descriptif. Ce message sera utilisé pour identifier cette version spécifique dans l'historique de déploiement et faciliter le rollback si nécessaire.
+</p>
+
+<div class="figure">
+    <img src="../../public/images/weweb/deploy/name your publish.png" alt="Fenêtre de nommage du commit">
+    <p class="figure-caption">Figure 3 : Fenêtre pour nommer votre publication (commit message)</p>
+</div>
+
+<div style="background-color: #f0f0f0; padding: 15px; margin: 20px 0; border-left: 4px solid #6C63FF; font-style: italic;">
+    <p style="margin: 0;"><strong>Note : Qu'est-ce qu'un commit ?</strong></p>
+    <p style="margin: 10px 0 0 0;">
+        Un <strong>commit</strong> (littéralement "validation" en français) est comme une photo instantanée de votre projet à un moment précis. Chaque fois que vous déployez, vous créez un nouveau commit avec un message descriptif. Cela vous permet de garder un historique de toutes les versions de votre site et de revenir en arrière si nécessaire. C'est un concept emprunté au monde du développement logiciel (Git) et adapté par WeWeb pour suivre l'évolution de vos applications.
+    </p>
+</div>
+
+<h3>Étape 5 : Valider le déploiement</h3>
+
+<p>
+    <strong>Vulgarisation :</strong> Une fois votre message saisi, cliquez sur le bouton de validation (souvent "Publish" ou "Deploy"). WeWeb va alors préparer et publier votre site. Cette opération prend généralement quelques secondes à quelques minutes.
+</p>
+
+<p>
+    <strong>Technique :</strong> La validation déclenche le pipeline de déploiement : WeWeb compile votre application, génère les assets statiques, les optimise, puis les déploie sur les serveurs CDN. Le processus inclut la validation des dépendances et la compilation des workflows.
+</p>
+
+<h3>Étape 6 : Suivre le déploiement sur le dashboard</h3>
+
+<p>
+    <strong>Vulgarisation :</strong> Sortez de l'éditeur et allez sur votre tableau de bord WeWeb (dashboard). Vous pouvez y voir la liste de tous vos déploiements, avec leur nom et leur statut. C'est l'historique complet de toutes les versions de votre site.
+</p>
+
+<p>
+    <strong>Technique :</strong> Le dashboard de déploiement affiche l'historique des commits avec leur timestamp, leur status (en cours, réussi, échoué), et permet d'accéder aux logs de build. Chaque commit est identifié par un hash unique et stocke les métadonnées du déploiement.
+</p>
+
+<div class="figure">
+    <img src="../../public/images/weweb/deploy/suivis deploy dashboard.png" alt="Dashboard de suivi des déploiements">
+    <p class="figure-caption">Figure 4 : Le dashboard montrant l'historique des déploiements</p>
+</div>
+
+<h2>Accéder à votre site publié</h2>
+
+<p>
+    <strong>Vulgarisation :</strong> Sur le dashboard, cliquez sur le bouton "Production" correspondant à votre dernier déploiement. Cela ouvrira votre site dans un nouvel onglet de votre navigateur. Vous obtiendrez une adresse web (URL) que vous pourrez partager avec qui vous voulez !
+</p>
+
+<p>
+    <strong>Technique :</strong> En cliquant sur "Production", vous accédez à l'URL de production de votre application. L'URL suit le format : <code>https://[id-unique].weweb-preview.io/</code>. Cette URL est permanente et pointe toujours vers la dernière version déployée en production.
+</p>
+
+<p>
+    <strong>Exemple d'URL de production :</strong><br>
+    <code>https://d5d4b8c2-1ba1-418e-9041-482e915cb54f.weweb-preview.io/</code>
+</p>
+
+<h2>Bonnes pratiques de déploiement</h2>
+
+<ul>
+    <li><strong>Messages de commit clairs :</strong> Utilisez des messages descriptifs et concis (ex: "Ajout formulaire contact" plutôt que "modif")</li>
+    <li><strong>Testez avant de déployer :</strong> Vérifiez toujours votre application en mode preview avant de publier</li>
+    <li><strong>Déployez régulièrement :</strong> Faites des déploiements fréquents avec de petites modifications plutôt que de rares gros déploiements</li>
+    <li><strong>Conservez un historique propre :</strong> L'historique des commits facilite le debugging et le rollback en cas de problème</li>
+</ul>
+
+<h2>Glossaire technique</h2>
+
+<dl style="margin-top: 20px;">
+    <dt><strong>Déploiement (Deployment)</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Processus de publication d'une application depuis l'environnement de développement vers un environnement accessible publiquement (production). Inclut la compilation, l'optimisation et la mise à disposition sur des serveurs.
+    </dd>
+
+    <dt><strong>Commit</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Snapshot (instantané) d'une version spécifique de votre application, accompagné d'un message descriptif. Permet de garder un historique versionné et de faciliter les rollbacks.
+    </dd>
+
+    <dt><strong>Subdomain (Sous-domaine)</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Préfixe ajouté à un domaine principal (ex: <code>mon-app.weweb-preview.io</code> où "mon-app" est le subdomain de "weweb-preview.io"). WeWeb génère automatiquement un subdomain unique pour chaque projet.
+    </dd>
+
+    <dt><strong>Production</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Environnement live où votre application est accessible aux utilisateurs finaux. Contrairement à l'environnement de développement ou staging, la production est l'URL publique définitive de votre application.
+    </dd>
+
+    <dt><strong>Dashboard</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Interface de gestion centralisée où vous pouvez visualiser et administrer vos projets, déploiements, utilisateurs, et autres ressources WeWeb. C'est le panneau de contrôle de votre workspace.
+    </dd>
+
+    <dt><strong>Build</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Processus de compilation et d'optimisation de votre application avant déploiement. WeWeb transforme vos composants visuels et workflows en code HTML/CSS/JavaScript optimisé pour la production.
+    </dd>
+
+    <dt><strong>Rollback</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Action de revenir à une version précédente de votre application en cas de problème. L'historique des commits permet de restaurer rapidement une version stable antérieure.
+    </dd>
+
+    <dt><strong>CDN (Content Delivery Network)</strong></dt>
+    <dd style="margin-left: 20px; margin-bottom: 15px;">
+        Réseau de serveurs distribués géographiquement qui hébergent et servent votre application. Améliore les performances en livrant le contenu depuis le serveur le plus proche de l'utilisateur.
+    </dd>
+</dl>
