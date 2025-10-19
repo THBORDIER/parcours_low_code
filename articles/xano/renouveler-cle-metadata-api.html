@@ -1,0 +1,141 @@
+<h1>Renouveler sa clé Metadata API Xano expirée</h1>
+
+<p class="subtitle">Dans cet article, je vais expliquer comment résoudre le problème d'une clé Metadata API Xano expirée et générer une nouvelle clé sans date d'expiration pour une utilisation stable et permanente.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> Metadata API, Clé API, Authentication, Developer Access, Sécurité</p>
+    <p>📅 <strong>Mise à jour:</strong> 19/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 20 min</p>
+    <p>⚙️ <strong>Stack:</strong> Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Si ta clé Metadata API Xano est expirée, génère-en une nouvelle sans date d'expiration depuis la page compte Xano. La section "Developer Access" est dépréciée et ne doit plus être utilisée.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Situation initiale :</strong></p>
+<p>Tu cherches à obtenir une clé Xano pour l'utiliser avec une intégration externe (comme Supabase ou une autre API externe). En accédant à ta page compte Xano, tu remarques un message indiquant que l'accès développeur (<em>Developer Access</em>) est déprécié. Cela crée une confusion sur l'endroit où récupérer une clé valide.</p>
+
+<p><strong>💡 Symptômes observés :</strong></p>
+<ul>
+    <li>Les appels API nécessitant la clé Metadata échouent</li>
+    <li>Message d'erreur d'authentification ou d'autorisation</li>
+    <li>La section "Developer Access" affiche un avertissement de dépréciation</li>
+    <li>La clé existante ne fonctionne plus</li>
+</ul>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<p><strong>Qu'est-ce qu'une clé Metadata API ?</strong></p>
+<p>La clé Metadata API de Xano est une clé d'authentification spéciale qui permet d'interagir avec les API de métadonnées de Xano. Contrairement aux clés d'API classiques utilisées pour tes endpoints, cette clé sert à manipuler la structure de ton backend (tables, champs, workflows, etc.).</p>
+
+<p><strong>🧠 Analogie :</strong></p>
+<p>Imagine que ton projet Xano est un immeuble :</p>
+<ul>
+    <li>Les <strong>clés d'API classiques</strong> permettent d'entrer dans les appartements (accéder aux données)</li>
+    <li>La <strong>clé Metadata API</strong> est la clé du concierge qui permet de modifier la structure du bâtiment lui-même (ajouter des pièces, changer la plomberie, etc.)</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+La clé Metadata API est très puissante. Elle permet de modifier toute la structure de ton backend Xano. Ne la partage jamais publiquement et ne la commit pas dans un dépôt Git public !
+</div>
+
+<h2>🛠️ Solution : Générer une nouvelle clé</h2>
+
+<h3>Étape 1️⃣ : Accéder à la page compte Xano</h3>
+<p>Connecte-toi à Xano et accède directement à ta page de compte en mode master :</p>
+<p>🔗 <a href="https://app.xano.com/account?mode=master" target="_blank">https://app.xano.com/account?mode=master</a></p>
+
+<h3>Étape 2️⃣ : Localiser la section Metadata API Key</h3>
+<p>Sur la page de ton compte, cherche la section <strong>"Metadata API Key"</strong>. Cette section est distincte de l'ancienne section "Developer Access" qui est maintenant dépréciée.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Si tu vois un message concernant "Developer Access is deprecated", ignore-le. Ce n'est plus la méthode recommandée pour obtenir une clé Metadata.
+</div>
+
+<h3>Étape 3️⃣ : Générer une nouvelle clé sans expiration</h3>
+<p>Dans la section Metadata API Key :</p>
+<ol>
+    <li>Clique sur le bouton pour générer une nouvelle clé</li>
+    <li><strong>Important :</strong> Coche l'option pour créer une clé <strong>SANS date d'expiration</strong></li>
+    <li>Valide la génération</li>
+    <li>Copie immédiatement la clé générée et stocke-la en sécurité</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+La clé ne sera affichée qu'une seule fois. Si tu la perds, tu devras en générer une nouvelle. Stocke-la dans un gestionnaire de mots de passe ou un fichier d'environnement sécurisé.
+</div>
+
+<h3>Étape 4️⃣ : Remplacer l'ancienne clé</h3>
+<p>Partout où tu utilisais l'ancienne clé expirée, remplace-la par la nouvelle :</p>
+<ul>
+    <li>Dans tes variables d'environnement</li>
+    <li>Dans tes fichiers de configuration</li>
+    <li>Dans tes intégrations externes (Supabase, Make, Zapier, etc.)</li>
+</ul>
+
+<h2>🧰 Exemple concret d'utilisation</h2>
+
+<p><strong>Contexte :</strong> Tu utilises la clé Metadata API pour synchroniser automatiquement tes tables Xano avec Supabase.</p>
+
+<pre><code>// Avant (clé expirée)
+const XANO_METADATA_KEY = "xmu_old_expired_key_12345";
+
+// Après (nouvelle clé sans expiration)
+const XANO_METADATA_KEY = "xmu_new_permanent_key_67890";
+
+// Utilisation dans une requête
+fetch('https://x8ki-letl-twmt.n7.xano.io/api:metadata/table/list', {
+  headers: {
+    'Authorization': `Bearer ${XANO_METADATA_KEY}`,
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => response.json())
+.then(data => console.log('Tables:', data));
+</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+La Metadata API de Xano permet de faire bien plus que simplement lister les tables. Tu peux créer des tables, modifier des champs, gérer des relations, et même automatiser la création de ton backend via du code. Explore la documentation officielle de Xano pour découvrir toutes les possibilités.
+</div>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>La section "Developer Access" de Xano est <strong>dépréciée</strong> - ne l'utilise plus</li>
+  <li>Génère ta clé Metadata API depuis la page compte Xano (<em>mode master</em>)</li>
+  <li>Crée toujours une clé <strong>sans date d'expiration</strong> pour éviter les interruptions</li>
+  <li>Stocke ta clé de manière <strong>sécurisée</strong> (jamais en clair dans ton code)</li>
+  <li>La clé Metadata API est très puissante - protège-la comme un mot de passe</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Quelle est la différence entre une clé d'API Xano classique et une clé Metadata API ?</p>
+
+<details>
+<summary>✅ <strong>Voir la réponse</strong></summary>
+<p>Une clé d'API classique permet d'accéder aux <strong>données</strong> via les endpoints que tu as créés (lecture/écriture dans les tables). La clé Metadata API permet de manipuler la <strong>structure</strong> de ton backend Xano lui-même (créer/modifier des tables, des champs, des workflows, etc.).</p>
+</details>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://app.xano.com/account?mode=master" target="_blank">Page compte Xano (mode master)</a></li>
+    <li><a href="https://docs.xano.com/api/metadata-api" target="_blank">Documentation officielle - Metadata API</a></li>
+    <li><a href="https://docs.xano.com/getting-started/authentication" target="_blank">Documentation Xano - Authentication</a></li>
+</ul>
