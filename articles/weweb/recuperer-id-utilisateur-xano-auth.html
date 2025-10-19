@@ -1,0 +1,142 @@
+<h1>Récupérer l'ID utilisateur avec Xano Auth : pas besoin de requête !</h1>
+
+<p class="subtitle">Dans cet article, je vous explique pourquoi vous n'avez PAS besoin de créer une requête Xano pour récupérer l'ID de l'utilisateur connecté, et comment utiliser directement les variables globales du plugin Xano Auth dans WeWeb.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> Xano Auth, user.id, authentification, variables globales, WeWeb</p>
+    <p>📅 <strong>Mise à jour:</strong> 19/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 20min</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Le plugin Xano Auth de WeWeb retourne automatiquement l'objet <code>user</code> complet (incluant l'ID). Vous n'avez pas besoin de créer une requête GET /user/{id} pour récupérer l'ID utilisateur. Utilisez simplement <code>{{ user.id }}</code> partout dans votre application.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<h3>🛑 Situation initiale</h3>
+<p>Vous travaillez sur un projet WeWeb + Xano et souhaitez stocker l'ID de l'utilisateur connecté dans une variable globale pour l'utiliser dans différentes pages et requêtes.</p>
+
+<p>Vous pensiez devoir :</p>
+<ul>
+    <li>Créer une requête Xano de type <code>GET /user/{user_id}</code></li>
+    <li>Passer <code>{{ user.id }}</code> dans cette requête</li>
+    <li>Stocker le résultat dans une variable</li>
+</ul>
+
+<h3>💥 Erreurs rencontrées</h3>
+<p>En mode éditeur WeWeb, vous constatez que :</p>
+<ul>
+    <li>La variable <code>user</code> apparaît comme <code>null</code></li>
+    <li>Des erreurs apparaissent : <code>Cannot read properties of null</code></li>
+    <li>Vous obtenez des <code>Network Error</code> lors des tests</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+En mode éditeur, la variable <code>user</code> est effectivement <code>null</code> car vous n'êtes pas connecté. C'est un comportement normal ! La variable devient accessible uniquement en mode Preview après une authentification réussie.
+</div>
+
+<h2>🔍 Explication : Comment fonctionne Xano Auth dans WeWeb ?</h2>
+
+<h3>🔑 Variables globales automatiques</h3>
+<p>Le plugin <strong>Xano Auth</strong> de WeWeb gère automatiquement l'authentification et met à disposition plusieurs variables globales :</p>
+
+<ul>
+    <li><code>user</code> → Objet utilisateur complet (incluant <code>id</code>, <code>email</code>, <code>name</code>, etc.)</li>
+    <li><code>accessToken</code> → Token d'accès pour les requêtes sécurisées</li>
+    <li><code>isAuthenticated</code> → Booléen indiquant si l'utilisateur est connecté</li>
+</ul>
+
+<h3>🧠 Analogie simple</h3>
+<p>Imaginez le plugin Xano Auth comme un <strong>gardien automatique</strong> :</p>
+<ul>
+    <li>Quand quelqu'un se connecte, le gardien récupère automatiquement sa carte d'identité complète</li>
+    <li>Cette carte (l'objet <code>user</code>) reste disponible tant que la personne est connectée</li>
+    <li>Vous n'avez pas besoin de redemander la carte à chaque fois, elle est déjà là !</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Pour vérifier que la variable <code>user</code> est bien disponible, testez votre application en mode <strong>Preview</strong> après vous être connecté avec un compte valide. Vous verrez alors l'objet <code>user</code> peuplé avec toutes les informations de l'utilisateur.
+</div>
+
+<h2>✅ Solution finale</h2>
+
+<h3>➡️ Utilisation directe de <code>{{ user.id }}</code></h3>
+
+<p>Pour obtenir l'ID de l'utilisateur connecté partout dans votre application WeWeb, il suffit d'utiliser :</p>
+
+<pre><code>{{ user.id }}</code></pre>
+
+<p>Cette variable est gérée automatiquement par le plugin Xano Auth. <strong>Vous n'avez pas besoin de :</strong></p>
+<ul>
+    <li>❌ Créer une requête <code>GET /user/{id}</code></li>
+    <li>❌ Créer une variable personnalisée pour stocker l'ID</li>
+    <li>❌ Faire un appel API supplémentaire</li>
+</ul>
+
+<h3>🧪 Exemples concrets d'utilisation</h3>
+
+<h4>Exemple 1 : Dans une requête Xano</h4>
+<p>Vous voulez récupérer les commandes de l'utilisateur connecté :</p>
+
+<pre><code>GET /orders
+Query parameter: user_id = {{ user.id }}</code></pre>
+
+<h4>Exemple 2 : Affichage conditionnel</h4>
+<p>Afficher un élément uniquement si l'utilisateur est connecté :</p>
+
+<pre><code>Condition: {{ isAuthenticated }}
+Texte affiché: Bonjour {{ user.name }} (ID: {{ user.id }})</code></pre>
+
+<h4>Exemple 3 : Dans un workflow</h4>
+<p>Créer un enregistrement avec l'ID de l'utilisateur :</p>
+
+<pre><code>POST /create_order
+Body:
+{
+  "user_id": {{ user.id }},
+  "product_id": 123,
+  "quantity": 2
+}</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+L'objet <code>user</code> contient toutes les données retournées par votre endpoint d'authentification Xano. Si vous avez ajouté des champs personnalisés (rôle, entreprise, etc.), ils seront également accessibles via <code>{{ user.custom_field }}</code>.
+</div>
+
+<h2>🎯 Bénéfices de cette approche</h2>
+
+<ul>
+    <li>✅ <strong>Simplification</strong> : Pas de requête supplémentaire à créer</li>
+    <li>✅ <strong>Performance</strong> : Moins d'appels API = application plus rapide</li>
+    <li>✅ <strong>Clarté</strong> : Utilisation directe des variables globales du plugin Auth</li>
+    <li>✅ <strong>Centralisation</strong> : L'utilisateur connecté est disponible partout de manière propre et sécurisée</li>
+</ul>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Le plugin Xano Auth retourne automatiquement l'objet <code>user</code> complet après connexion</li>
+  <li>Utilisez <code>{{ user.id }}</code> directement, sans créer de requête supplémentaire</li>
+  <li>En mode éditeur, <code>user</code> est <code>null</code> (normal, car non connecté)</li>
+  <li>Testez toujours en mode Preview après authentification pour vérifier les données</li>
+  <li>Cette approche améliore les performances et simplifie votre code</li>
+</ul>
+</div>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://docs.weweb.io/plugins/xano-auth.html" target="_blank">Documentation WeWeb - Plugin Xano Auth</a></li>
+    <li><a href="https://docs.xano.com/fundamentals/authentication" target="_blank">Documentation Xano - Authentication</a></li>
+    <li><a href="https://docs.weweb.io/data/variables.html" target="_blank">Documentation WeWeb - Variables globales</a></li>
+</ul>
