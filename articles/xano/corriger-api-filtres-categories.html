@@ -1,0 +1,161 @@
+<h1>Pourquoi mon API Xano retourne toujours les mêmes données ?</h1>
+
+<p><em>Comment corriger les JOINs et filtres pour obtenir des résultats filtrés par catégorie</em></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> API, JOINs, Filtres, Xano, Relations, Debugging</p>
+    <p>📅 <strong>Mise à jour:</strong> 19/01/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 20 minutes</p>
+    <p>⚙️ <strong>Stack:</strong> Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Si votre API Xano retourne toujours les mêmes résultats peu importe les paramètres envoyés, vérifiez vos JOINs (liaisons entre tables) et assurez-vous que vos filtres sont appliqués dans l'onglet <strong>FILTER</strong> principal, pas dans un Add-on.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Symptôme :</strong> Votre API retourne toujours les mêmes réparateurs, peu importe la catégorie que vous envoyez en paramètre d'entrée.</p>
+
+<p><strong>💡 Exemple concret :</strong> Vous créez une API qui doit afficher uniquement les plombiers d'un code postal donné. Mais quand vous testez avec "plombier" ou "électricien" en paramètre, vous obtenez toujours la liste complète de tous les réparateurs.</p>
+
+<h2>🔍 Explication du problème</h2>
+
+<p>Dans Xano, pour relier plusieurs tables entre elles, on utilise des <strong>JOINs</strong> (jointures). Ces jointures permettent de combiner les données de différentes tables.</p>
+
+<p><strong>Analogie simple :</strong> Imaginez que vous avez trois boîtes :</p>
+<ul>
+    <li>📦 <strong>Boîte 1 (repairer)</strong> : contient les noms et adresses des réparateurs</li>
+    <li>📦 <strong>Boîte 2 (repairer_category)</strong> : contient les liens entre les réparateurs et leurs catégories</li>
+    <li>📦 <strong>Boîte 3 (category)</strong> : contient les noms des catégories (plombier, électricien...)</li>
+</ul>
+
+<p>Si vous reliez mal ces boîtes entre elles, Xano ne saura pas quelle catégorie correspond à quel réparateur. Résultat : il vous renvoie tout le monde !</p>
+
+<h2>🧪 Solution étape par étape</h2>
+
+<h3>Étape 1️⃣ : Corriger les JOINs (liaisons entre tables)</h3>
+
+<p>Les jointures doivent suivre la logique suivante :</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+        <tr style="background-color: #6C63FF; color: white;">
+            <th style="padding: 10px; border: 1px solid #ddd;">Relation</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">JOIN Correct</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">repairer → repairer_category</td>
+            <td style="padding: 10px; border: 1px solid #ddd;"><code>repairer_category.repairer == repairer.id</code></td>
+        </tr>
+        <tr style="background-color: #f9f9f9;">
+            <td style="padding: 10px; border: 1px solid #ddd;">repairer_category → category</td>
+            <td style="padding: 10px; border: 1px solid #ddd;"><code>repairer_category.category == category.id</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Pour vérifier si vos JOINs sont corrects, demandez-vous : "Est-ce que je relie bien la clé étrangère de la table intermédiaire avec l'ID de la table principale ?"
+</div>
+
+<h3>Étape 2️⃣ : Appliquer les filtres au bon endroit</h3>
+
+<p>Les filtres doivent être appliqués dans l'onglet <strong>FILTER</strong> principal de l'API, <strong>pas dans un Add-on</strong> ni après le Query.</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+        <tr style="background-color: #6C63FF; color: white;">
+            <th style="padding: 10px; border: 1px solid #ddd;">Champ à filtrer</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Table ciblée</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Condition</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">Code postal</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">repairer</td>
+            <td style="padding: 10px; border: 1px solid #ddd;"><code>repairer.zip = input.zip</code></td>
+        </tr>
+        <tr style="background-color: #f9f9f9;">
+            <td style="padding: 10px; border: 1px solid #ddd;">Nom de catégorie</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">category</td>
+            <td style="padding: 10px; border: 1px solid #ddd;"><code>category.name = input.categorie_name</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Si vous appliquez les filtres dans un Add-on <strong>après</strong> avoir fait le Query, Xano a déjà récupéré toutes les données. Le filtre n'aura aucun effet sur la requête SQL initiale, et vous obtiendrez toujours tous les résultats.
+</div>
+
+<h3>Étape 3️⃣ : Tester l'API</h3>
+
+<p>Une fois les corrections appliquées :</p>
+<ol>
+    <li>Cliquez sur <strong>Run & Debug</strong> dans Xano</li>
+    <li>Entrez un code postal (ex: <code>75001</code>)</li>
+    <li>Entrez un nom de catégorie (ex: <code>plombier</code>)</li>
+    <li>Vérifiez que seuls les plombiers du code postal 75001 apparaissent</li>
+</ol>
+
+<h2>🧭 Exemple concret</h2>
+
+<p>Voici la structure de données complète :</p>
+
+<pre><code>// Table : repairer
+{
+  "id": 1,
+  "name": "Jean Dupont",
+  "zip": "75001"
+}
+
+// Table : repairer_category (table de liaison)
+{
+  "repairer": 1,      // ID du réparateur
+  "category": 5       // ID de la catégorie
+}
+
+// Table : category
+{
+  "id": 5,
+  "name": "plombier"
+}
+</code></pre>
+
+<p><strong>Requête API correcte :</strong></p>
+<pre><code>GET /api/repairers?zip=75001&categorie_name=plombier
+
+// Résultat attendu : uniquement les plombiers du 75001
+</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Si vous avez plusieurs catégories par réparateur, vous pouvez utiliser un JOIN de type <strong>LEFT JOIN</strong> pour afficher tous les réparateurs, même ceux sans catégorie. Pensez aussi à ajouter une pagination si votre liste devient longue.
+</div>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Les <strong>JOINs</strong> doivent relier les bonnes clés entre les tables (clé étrangère → ID)</li>
+  <li>Les <strong>filtres</strong> doivent être appliqués dans l'onglet <strong>FILTER</strong> principal, pas dans un Add-on</li>
+  <li>Testez toujours votre API avec différents paramètres pour vérifier que les filtres fonctionnent</li>
+  <li>Si les résultats ne changent pas, vérifiez d'abord les JOINs, puis l'emplacement des filtres</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+<ul>
+    <li><a href="https://docs.xano.com/working-with-your-database/queries" target="_blank">Documentation Xano : Queries et Joins</a></li>
+    <li><a href="https://docs.xano.com/working-with-your-api/filters" target="_blank">Documentation Xano : Filtres</a></li>
+</ul>
