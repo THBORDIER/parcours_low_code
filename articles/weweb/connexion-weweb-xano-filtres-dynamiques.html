@@ -1,0 +1,396 @@
+<h1>Récapitulatif Complet – Connexion WeWeb / Xano + Filtres Dynamiques</h1>
+
+<p><em>Comment configurer correctement une collection WeWeb connectée à Xano avec des filtres dynamiques, et résoudre les problèmes courants d'affichage et d'authentification.</em></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Collections, Xano, Filtres, API, Repeat Items, Workflow, Fetch Collection, Authentification</p>
+    <p>📅 <strong>Mise à jour:</strong> 19/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h30</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Guide complet pour connecter WeWeb à Xano avec des filtres dynamiques. Vous apprendrez à configurer les collections, résoudre les problèmes d'affichage vide, utiliser correctement les conteneurs répétables (Repeat Items), et gérer l'authentification API. Solutions testées pour les erreurs courantes : collection vide, conteneur bloqué sur [0], et problème d'API Key.
+</div>
+
+<h2>🤔 Problèmes rencontrés</h2>
+
+<p>Lors de la mise en place d'une connexion WeWeb/Xano avec des filtres dynamiques, plusieurs problèmes classiques se sont manifestés :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Problème</th>
+            <th>Description</th>
+            <th>Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Collection vide</strong></td>
+            <td>WeWeb ne renvoyait aucun élément dans <code>repairer_list.data</code></td>
+            <td>Impossibilité d'afficher les réparateurs</td>
+        </tr>
+        <tr>
+            <td><strong>API ne renvoyait rien avec <code>null</code></strong></td>
+            <td>Filtrage trop restrictif côté Xano</td>
+            <td>Pas d'affichage par défaut</td>
+        </tr>
+        <tr>
+            <td><strong>Conteneur répétable affichait [0] seulement</strong></td>
+            <td>Mauvaise configuration dans WeWeb</td>
+            <td>Affichait toujours un seul élément</td>
+        </tr>
+        <tr>
+            <td><strong>Workflow n'actualisait pas l'affichage</strong></td>
+            <td>Requête envoyée mais collection non rafraîchie</td>
+            <td>UI figée</td>
+        </tr>
+        <tr>
+            <td><strong>Message d'erreur Xano/WeWeb API Key</strong></td>
+            <td>"Failed to init Xano"</td>
+            <td>Problème d'authentification externe empêchant les requêtes</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Ces problèmes sont souvent liés et se manifestent en cascade. Il est important de les résoudre dans l'ordre : d'abord l'authentification (API Key), puis la configuration Xano (filtres), et enfin la configuration WeWeb (collections et affichage).
+</div>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<h3>Comment fonctionne la connexion WeWeb ↔ Xano ?</h3>
+
+<p>Imaginons WeWeb comme un <strong>tableau de bord visuel</strong> et Xano comme une <strong>base de données intelligente</strong>. Voici le flux de données :</p>
+
+<pre><code>Utilisateur (WeWeb UI)
+    ↓ (change un filtre)
+Workflow WeWeb
+    ↓ (Set Variable + Fetch Collection)
+API Xano
+    ↓ (exécute la requête avec filtres)
+Base de données Xano
+    ↓ (renvoie les résultats)
+Collection WeWeb (repairer_list.data)
+    ↓ (actualisation automatique)
+Conteneur répétable (affichage UI)
+</code></pre>
+
+<h3>Concepts clés</h3>
+
+<ul>
+    <li><strong>Collection (WeWeb)</strong> : Connexion à une API stockée dans le Data Layer de WeWeb. Une fois configurée, elle se met à jour automatiquement.</li>
+    <li><strong>Repeat Items</strong> : Fonction qui répète un conteneur pour chaque élément d'une liste (comme une boucle <code>forEach</code>).</li>
+    <li><strong>item</strong> : Variable représentant l'élément courant lors d'une répétition (ex: <code>item.name</code>, <code>item.zip</code>).</li>
+    <li><strong>Fetch Collection</strong> : Action qui déclenche l'appel de l'API associée à une collection pour rafraîchir les données.</li>
+    <li><strong>Ignore empty values (Xano)</strong> : Option qui supprime les champs vides de la requête automatiquement, permettant des filtres optionnels.</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+La clé d'une intégration réussie est de comprendre que <strong>WeWeb ne stocke pas les données</strong>, il les affiche. C'est Xano qui fait le travail de filtrage et de requête. WeWeb est juste un "miroir intelligent" qui se met à jour quand vous appelez <code>Fetch Collection</code>.
+</div>
+
+<h2>🧪 Solution / Procédure</h2>
+
+<h3>Étape 1️⃣ : Configuration côté Xano</h3>
+
+<p>Voici les actions à mettre en place dans votre API Xano :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>But</th>
+            <th>Résultat</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Activation de <strong>"Ignore empty values"</strong> dans les filtres</td>
+            <td>Permettre les valeurs <code>null</code></td>
+            <td>L'API renvoie tous les enregistrements si aucun filtre n'est fourni</td>
+        </tr>
+        <tr>
+            <td>Utilisation de <strong>JOIN</strong> et <strong>Custom Query</strong> propres</td>
+            <td>Filtrage par zip, categorie_name, dates</td>
+            <td>API dynamique et flexible</td>
+        </tr>
+        <tr>
+            <td>Vérification des permissions de l'API Key</td>
+            <td>Autoriser WeWeb à interroger l'API</td>
+            <td>Authentification fonctionnelle</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Dans Xano, vous pouvez activer "Ignore empty values" directement dans les paramètres de chaque input de votre endpoint. Cela permet de créer des filtres totalement optionnels : si l'utilisateur ne sélectionne rien, le filtre n'est tout simplement pas appliqué.
+</div>
+
+<h3>Étape 2️⃣ : Configuration côté WeWeb</h3>
+
+<p>Voici les actions à mettre en place dans WeWeb :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>But</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Déclaration de <strong>variables</strong> (zip, categorie_name, start_date, end_date)</td>
+            <td>Centraliser les filtres et les rendre accessibles partout</td>
+        </tr>
+        <tr>
+            <td>Utilisation de <strong>Fetch Collection</strong> dans les workflows</td>
+            <td>Rafraîchir dynamiquement les données après un changement de filtre</td>
+        </tr>
+        <tr>
+            <td>Configuration <strong>Repeat Items</strong> = <code>{{ collections.repairer_list.data }}</code></td>
+            <td>Activer le rendu dynamique du conteneur</td>
+        </tr>
+        <tr>
+            <td>Utilisation de <code>item.fieldname</code> à l'intérieur des conteneurs</td>
+            <td>Affichage correct par élément (ex: <code>item.name</code>, <code>item.email</code>)</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention : erreur classique</strong><br>
+Si votre conteneur répétable affiche <code>[0]</code> au lieu des vraies valeurs, c'est que vous avez probablement configuré <strong>Repeat Items</strong> avec la mauvaise source. Assurez-vous d'utiliser <code>collections.repairer_list.data</code> et non <code>collections.repairer_list</code> (qui est l'objet complet, pas juste le tableau de données).
+</div>
+
+<h3>Étape 3️⃣ : Configuration des workflows (filtre dynamique)</h3>
+
+<p>Voici le fonctionnement d'un workflow de filtre complet :</p>
+
+<ol>
+    <li><strong>L'utilisateur change un filtre</strong> (ex: sélectionne une catégorie dans une selectbox)</li>
+    <li><strong>Workflow se déclenche</strong> sur l'événement <code>onChange</code></li>
+    <li><strong>Action 1 : Set Variable</strong><br>
+        Exemple : <code>categorie_name = $event.value</code><br>
+        Cela met à jour la variable qui sera envoyée à Xano
+    </li>
+    <li><strong>Action 2 : Fetch Collection</strong><br>
+        Collection : <code>repairer_list</code><br>
+        Cela force WeWeb à rappeler l'API Xano avec les nouvelles valeurs
+    </li>
+    <li><strong>La collection interroge Xano</strong> avec les paramètres mis à jour</li>
+    <li><strong>Le conteneur répétable se met à jour automatiquement</strong> grâce à la liaison réactive</li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce UX</strong><br>
+Pour améliorer l'expérience utilisateur, vous pouvez ajouter un indicateur de chargement (<code>loading state</code>) pendant que la collection se rafraîchit. WeWeb propose des variables automatiques comme <code>collections.repairer_list.isFetching</code> que vous pouvez utiliser pour afficher un spinner.
+</div>
+
+<h2>🧰 Résolution du problème d'API Key</h2>
+
+<p>Si vous rencontrez le message :</p>
+
+<pre><code>"Failed to init Xano, please ensure your API key has the permission required."
+</code></pre>
+
+<h3>🔍 Causes possibles :</h3>
+
+<ul>
+    <li>La clé API dans WeWeb a expiré ou été supprimée côté Xano</li>
+    <li>Mise à jour des permissions dans Xano (accès restreint)</li>
+    <li>Vous n'avez pas activé l'API dans le bon "API Group" (ex. <code>public</code> ou <code>users</code>)</li>
+    <li>Le header d'authentification a été modifié (ex: <code>X-API-Key</code>)</li>
+</ul>
+
+<h3>🛠️ Solution recommandée :</h3>
+
+<p><strong>Dans Xano :</strong></p>
+<ol>
+    <li>Allez dans <strong>Settings → API Keys</strong></li>
+    <li>Vérifiez si la clé est toujours <strong>active</strong></li>
+    <li>Vérifiez les <strong>permissions</strong> (lecture, exécution)</li>
+    <li>Vérifiez le bon <strong>API Group</strong> (souvent <code>public</code> pour les endpoints non authentifiés)</li>
+</ol>
+
+<p><strong>Dans WeWeb :</strong></p>
+<ol>
+    <li>Allez dans <strong>Data Sources</strong></li>
+    <li><strong>Reconnectez</strong> la source Xano en entrant à nouveau la clé API</li>
+    <li>Vérifiez que l'<strong>API Group</strong> est correct</li>
+    <li>Testez la connexion en appelant un endpoint simple</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Sécurité</strong><br>
+Ne partagez jamais votre API Key publiquement. Si vous travaillez avec Git, assurez-vous de ne pas commit vos clés dans le code. WeWeb stocke ces clés de manière sécurisée dans ses paramètres.
+</div>
+
+<h2>🧭 Exemple concret : le workflow de filtre complet</h2>
+
+<p>Imaginons un système de recherche de réparateurs avec 3 filtres :</p>
+
+<h3>Configuration WeWeb</h3>
+
+<p><strong>Variables créées :</strong></p>
+<pre><code>zip : null (text)
+categorie_name : null (text)
+start_date : null (date)
+</code></pre>
+
+<p><strong>Collection configurée :</strong></p>
+<pre><code>Nom : repairer_list
+Endpoint Xano : /api/repairers
+Query parameters :
+  - zip: {{ variables.zip }}
+  - categorie_name: {{ variables.categorie_name }}
+  - start_date: {{ variables.start_date }}
+</code></pre>
+
+<p><strong>Workflow sur le selectbox "Catégorie" :</strong></p>
+<pre><code>Trigger : onChange
+Actions :
+  1. Set Variable
+     - Variable: categorie_name
+     - Value: {{ $event.value }}
+
+  2. Fetch Collection
+     - Collection: repairer_list
+</code></pre>
+
+<h3>Configuration Xano</h3>
+
+<p><strong>Endpoint : GET /api/repairers</strong></p>
+<pre><code>Inputs :
+  - zip (text) : "Ignore empty values" ✓
+  - categorie_name (text) : "Ignore empty values" ✓
+  - start_date (date) : "Ignore empty values" ✓
+
+Query :
+  SELECT * FROM repairers
+  WHERE (zip = $zip OR $zip IS NULL)
+    AND (category = $categorie_name OR $categorie_name IS NULL)
+    AND (available_from >= $start_date OR $start_date IS NULL)
+</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce SQL</strong><br>
+La condition <code>(field = $param OR $param IS NULL)</code> est un pattern classique pour créer des filtres optionnels en SQL. Combinée avec "Ignore empty values" de Xano, elle permet une API ultra-flexible.
+</div>
+
+<h2>🧠 Glossaire des termes</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Terme</th>
+            <th>Définition</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Collection (WeWeb)</strong></td>
+            <td>Connexion à une API stockée dans le Data Layer de WeWeb</td>
+        </tr>
+        <tr>
+            <td><strong>Repeat Items</strong></td>
+            <td>Fonction qui répète un conteneur pour chaque élément d'une liste</td>
+        </tr>
+        <tr>
+            <td><strong>item</strong></td>
+            <td>Variable représentant l'élément courant lors d'une répétition</td>
+        </tr>
+        <tr>
+            <td><strong>Fetch Collection</strong></td>
+            <td>Action qui déclenche l'appel de l'API associée</td>
+        </tr>
+        <tr>
+            <td><strong>Request (WeWeb)</strong></td>
+            <td>Action API isolée (non liée à une collection automatique)</td>
+        </tr>
+        <tr>
+            <td><strong>Ignore empty values (Xano)</strong></td>
+            <td>Option qui supprime les champs vides de la requête automatiquement</td>
+        </tr>
+        <tr>
+            <td><strong>API Key</strong></td>
+            <td>Clé d'authentification pour sécuriser l'accès à Xano depuis WeWeb</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li><strong>Xano</strong> : Activez "Ignore empty values" pour permettre les filtres optionnels, et configurez correctement les permissions de l'API Key</li>
+    <li><strong>WeWeb</strong> : Utilisez des variables centralisées, <code>Fetch Collection</code> dans les workflows, et configurez <code>Repeat Items</code> avec <code>collections.nom.data</code></li>
+    <li><strong>Workflow de filtre</strong> : Set Variable → Fetch Collection → Actualisation automatique du conteneur</li>
+    <li><strong>Debugging</strong> : Si la collection est vide, vérifiez d'abord l'API Key, puis les filtres Xano, puis la configuration WeWeb</li>
+    <li><strong>Repeat Items</strong> : Toujours utiliser <code>item.fieldname</code> à l'intérieur, et pointer vers <code>collections.nom.data</code> (pas juste <code>collections.nom</code>)</li>
+</ul>
+</div>
+
+<h2>🧭 Défis restants et prochaines étapes</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Défi</th>
+            <th>Prochaines étapes recommandées</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Filtre "Catégorie d'objet" ne fonctionne pas</td>
+            <td>Vérifier si la valeur envoyée correspond <strong>exactement</strong> à ce que Xano attend (string / ID / slug). Utiliser le debugger Xano pour inspecter les requêtes.</td>
+        </tr>
+        <tr>
+            <td>Erreur API Key</td>
+            <td>Reconnecter la source Xano dans WeWeb (Data Sources → Xano → Re-authenticate)</td>
+        </tr>
+        <tr>
+            <td>Amélioration UX</td>
+            <td>Ajouter un bouton "Rechercher" ou un indicateur de chargement (<code>isFetching</code>) pour améliorer le feedback utilisateur</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>🎉 Conclusion</h2>
+
+<p><strong>✅ Ce qui a été mis en place :</strong></p>
+<ul>
+    <li>Une API dynamique avec filtres optionnels côté Xano</li>
+    <li>Un affichage automatique côté WeWeb avec conteneur répétable</li>
+    <li>Des workflows efficaces qui rafraîchissent les données en temps réel</li>
+</ul>
+
+<p><strong>🔒 Ce qui reste à finaliser :</strong></p>
+<ul>
+    <li>La reconnection API Key (si l'erreur persiste)</li>
+    <li>Le mapping exact du filtre catégorie (valider le format attendu)</li>
+    <li>L'amélioration de l'expérience utilisateur avec un feedback visuel</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Une fois cette base fonctionnelle, vous pourrez explorer des concepts avancés comme la <strong>pagination</strong> (pour gérer de grandes listes), le <strong>debouncing</strong> (pour limiter les appels API lors de la saisie), ou encore la <strong>mise en cache</strong> des résultats pour améliorer les performances.
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.weweb.io/data/collections.html" target="_blank">Documentation WeWeb - Collections</a></li>
+    <li><a href="https://docs.weweb.io/workflows/actions.html" target="_blank">Documentation WeWeb - Workflows</a></li>
+    <li><a href="https://docs.xano.com/api-reference/query-filtering" target="_blank">Documentation Xano - Query Filtering</a></li>
+    <li><a href="https://docs.xano.com/authentication/api-keys" target="_blank">Documentation Xano - API Keys</a></li>
+</ul>
