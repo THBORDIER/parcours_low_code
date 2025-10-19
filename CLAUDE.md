@@ -132,6 +132,31 @@ Visual block at the beginning with icons:
 - ⏱️ Temps passé: Time spent on article
 - ⚙️ Stack utilisée: WeWeb + Xano (or other)
 
+**CRITICAL: Keywords Best Practices**
+
+Keywords are used by the search engine to help users find articles. Choose specific, technical keywords that describe:
+1. **The specific problem/concept**: Not "API" but "JOINs", "Query All Records", "Filters"
+2. **Error messages**: Exact error text if applicable
+3. **Technical terms**: Specific function names, API endpoints, Xano features
+4. **Actions/operations**: "Authentication", "Debugging", "Relations", "Pagination"
+
+**Good Keywords Examples:**
+- ✅ "JOINs, Filtres, Query All Records, Relations, Debugging"
+- ✅ "Authentication, Xano Auth, User ID, getCurrentUser"
+- ✅ "Metadata API, Clé expirée, Renouvellement, Configuration Vercel"
+- ✅ "Collections, WeWeb Variables, Dynamic Data, Binding"
+
+**Bad Keywords Examples:**
+- ❌ "API, Xano" (too vague, not searchable)
+- ❌ "repairer, categories" (business domain terms, not technical)
+- ❌ "Backend, Frontend" (too generic)
+
+**Rule of thumb:**
+- Minimum 4-6 keywords per article
+- Mix of: technical terms (40%) + specific problem/solution (40%) + tools/stack (20%)
+- Keywords should answer "What would I search for to find this solution?"
+- After writing keywords, run the index generation script: `node scripts/generate-index.js`
+
 #### 📘 3. Quick Summary (TL;DR)
 Colored box in light purple (OpenClassrooms style):
 ```html
@@ -301,3 +326,59 @@ The `vercel.json` file configures:
 - Avoid spaces and special characters
 - Be descriptive and concise
 - Match article filename to content topic
+
+## Search Functionality
+
+The site includes a global search feature that allows users to find articles by keywords, title, category, and level.
+
+### How It Works
+
+1. **Index Generation**: The `scripts/generate-index.js` script scans all HTML files in `articles/` and extracts:
+   - Title (from `<h1>`)
+   - Category, Level, Keywords (from metadata block)
+   - Theme (from directory structure)
+   - File path
+
+2. **Search Index**: Results are stored in `public/data/articles-index.json`
+
+3. **Search Interface**:
+   - Global search bar in navbar (all pages)
+   - Toggle to switch between "All articles" and "Current theme only" (on theme pages)
+   - Real-time filtering as you type
+   - Searches in: title, keywords, category, level
+
+### Updating the Search Index
+
+**IMPORTANT**: Every time you add a new article or update article metadata, you must regenerate the search index:
+
+```bash
+node scripts/generate-index.js
+```
+
+This will:
+- Scan all articles
+- Extract metadata
+- Update `public/data/articles-index.json`
+- Display statistics by theme
+
+**When to regenerate the index:**
+- After creating a new article
+- After modifying article title or metadata
+- After changing keywords in existing articles
+- Before committing changes to git
+
+### Search Best Practices
+
+For articles to be discoverable:
+1. Always include a complete metadata block with keywords
+2. Use specific, technical keywords (see "Keywords Best Practices" above)
+3. Ensure the title is descriptive and includes key terms
+4. Regenerate the index before deployment
+5. Test search locally to verify articles are findable
+
+### Files Related to Search
+
+- `scripts/generate-index.js` - Index generation script
+- `public/data/articles-index.json` - Search index (auto-generated)
+- `public/js/search.js` - Search functionality (client-side)
+- `public/css/style.css` - Search UI styles (`.navbar-search`, `.search-results`)

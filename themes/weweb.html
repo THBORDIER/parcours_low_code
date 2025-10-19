@@ -18,6 +18,14 @@
                 <li><a href="bonnes-pratiques.html">Bonnes pratiques</a></li>
                 <li><a href="notes-diverses.html">Notes diverses</a></li>
             </ul>
+            <div class="navbar-search">
+                <input type="text" id="global-search-input" placeholder="Rechercher un article..." aria-label="Rechercher un article">
+                <span class="search-icon">🔍</span>
+                <label class="search-scope-toggle">
+                    <input type="checkbox" id="search-scope-toggle">
+                    <span>Dans WeWeb uniquement</span>
+                </label>
+            </div>
         </div>
     </nav>
 
@@ -90,5 +98,8 @@
             }
         });
     </script>
+
+    <!-- Script de recherche -->
+    <script src="../public/js/search.js"></script>
 </body>
 </html>
