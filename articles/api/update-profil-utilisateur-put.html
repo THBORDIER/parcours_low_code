@@ -1,0 +1,232 @@
+<h1>Mettre à jour un profil utilisateur via API PUT sans effacer les données existantes</h1>
+
+<p class="subtitle">Retour d'expérience sur un piège courant : comment éviter de vider les données d'un profil utilisateur lors d'une mise à jour partielle avec WeWeb et Xano.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> API</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> PUT, PATCH, Edit Record, Ignore empty values, WeWeb Placeholder, User Profile Update, Xano API</p>
+    <p>📅 <strong>Mise à jour:</strong> 26/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h30</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Un endpoint PUT remplace intégralement un enregistrement. Si vous envoyez des champs vides depuis WeWeb, Xano les enregistre comme tels et écrase les données existantes. Solution : pré-remplir les champs avec les vraies valeurs utilisateur et activer "Ignore empty input values" dans Xano.
+</div>
+
+<h2>🎯 Objectif de l'article</h2>
+
+<p>Partager une problématique courante rencontrée lors du développement d'une application web avec WeWeb (front) et Xano (backend no-code) :</p>
+
+<p><strong>Comment mettre à jour les informations d'un utilisateur sans écraser ou vider les autres données de son profil ?</strong></p>
+
+<p>Cet article explique :</p>
+<ul>
+    <li>Le problème initial rencontré</li>
+    <li>Les mauvaises pratiques à éviter</li>
+    <li>Les solutions techniques mises en place</li>
+    <li>Le fonctionnement final du système</li>
+    <li>Les pièges potentiels à anticiper</li>
+</ul>
+
+<h2>🔥 Problème rencontré</h2>
+
+<p>Lorsque j'ai mis en place un endpoint <code>PUT /user/{user_id}</code> pour permettre à l'utilisateur de modifier son profil (nom, prénom, email), j'ai observé un comportement inattendu :</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Comportement problématique</strong><br>
+Toutes les données non envoyées dans la requête étaient automatiquement remplacées par des valeurs vides ("").
+</div>
+
+<p><strong>Pourquoi ce comportement ?</strong></p>
+<ul>
+    <li><strong>PUT remplace l'ensemble de l'enregistrement</strong> en base de données (contrairement à PATCH qui ne modifie que les champs spécifiés)</li>
+    <li><strong>WeWeb n'envoie pas les placeholder</strong> : ce sont des valeurs d'affichage uniquement, pas des données réelles</li>
+    <li><strong>Résultat</strong> : si un champ est vide ou non mappé correctement → Xano reçoit du "vide" et l'enregistre</li>
+</ul>
+
+<h2>🧠 Analyse du problème</h2>
+
+<p>Voici un tableau récapitulatif de ce que je pensais vs. la réalité :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Élément</th>
+            <th>Ce que je pensais qu'il faisait</th>
+            <th>Ce qu'il fait réellement</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>PUT</strong></td>
+            <td>Met à jour uniquement ce qui change</td>
+            <td>Remplace tout l'enregistrement</td>
+        </tr>
+        <tr>
+            <td><strong>Placeholder WeWeb</strong></td>
+            <td>Sert de valeur par défaut</td>
+            <td>Affichage uniquement, non envoyé dans la requête</td>
+        </tr>
+        <tr>
+            <td><strong>Champ vide</strong></td>
+            <td>Ignoré automatiquement</td>
+            <td>Interprété comme une valeur vide à stocker</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>➡️ Il fallait donc empêcher l'envoi de valeurs vides ou incomplètes.</p>
+
+<h2>🛠️ Solution mise en place</h2>
+
+<h3>✅ 1. Utilisation de la valeur existante comme valeur initiale</h3>
+
+<p><strong>Dans WeWeb :</strong></p>
+
+<p>On remplit chaque champ avec la vraie valeur utilisateur (<code>value=user.firstname</code>) et <strong>non un placeholder</strong>.</p>
+
+<p>Ainsi, si l'utilisateur ne change pas un champ, sa valeur est conservée et renvoyée dans la requête PUT.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans WeWeb, toujours binder les champs de formulaire avec <code>value</code> et non <code>placeholder</code> pour garantir l'envoi des données existantes.
+</div>
+
+<h3>✅ 2. Activation de l'option dans Xano</h3>
+
+<p><strong>Dans la fonction Edit Record du endpoint PUT :</strong></p>
+
+<p>J'ai activé l'option suivante :</p>
+
+<div class="callout callout-advanced">
+🛡️ <strong>Option Xano</strong><br>
+"Ignore empty input values (keep existing data)"
+<br><br>
+Ce qui signifie que Xano NE remplacera PAS un champ si la valeur reçue est vide ou absente. Les données existantes sont conservées.
+</div>
+
+<h3>✅ 3. Rafraîchissement du profil utilisateur après mise à jour</h3>
+
+<p><strong>Après le PUT :</strong></p>
+
+<ul>
+    <li>Un appel <code>login</code> (fetch user) est déclenché automatiquement</li>
+    <li>Cela met à jour les variables utilisateur dans WeWeb</li>
+    <li>L'interface se réactualise sans rechargement de page</li>
+</ul>
+
+<h2>📌 Résultat final</h2>
+
+<p>Voici le comportement obtenu après la mise en place de la solution :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Action utilisateur</th>
+            <th>Donnée envoyée à Xano</th>
+            <th>Résultat obtenu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Modifie son prénom</td>
+            <td><code>"firstname":"Nouveau"</code></td>
+            <td>Prénom mis à jour ✅</td>
+        </tr>
+        <tr>
+            <td>Ne touche pas au mot de passe</td>
+            <td>Pas de valeur envoyée</td>
+            <td>Mot de passe conservé ✅</td>
+        </tr>
+        <tr>
+            <td>Supprime volontairement une valeur</td>
+            <td><code>"firstname":""</code></td>
+            <td>Champ vidé volontairement ✅</td>
+        </tr>
+    </tbody>
+</table>
+
+<p><strong>✨ Finalité :</strong> un système robuste, flexible et sécurisé pour gérer les mises à jour de profil utilisateur.</p>
+
+<h2>⚠️ Problèmes potentiels à éviter</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Problème</th>
+            <th>Cause</th>
+            <th>Solution</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Données vides enregistrées</td>
+            <td>Value non mappée ou champ vide envoyé</td>
+            <td>Pré-remplir les champs et activer "Ignore empty values"</td>
+        </tr>
+        <tr>
+            <td>Perte totale d'un profil</td>
+            <td>Utilisation du PUT mal configurée</td>
+            <td>Utiliser PATCH ou merge intelligent</td>
+        </tr>
+        <tr>
+            <td>Mauvaise expérience utilisateur</td>
+            <td>Interface non réactualisée</td>
+            <td>Re-fetch des données après PUT</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>🎓 Ce que j'ai appris</h2>
+
+<ul>
+    <li><strong>Comprendre la différence entre PUT et PATCH est essentiel</strong> : PUT remplace tout, PATCH ne modifie que ce qui est spécifié</li>
+    <li><strong>Les placeholders ne remplacent pas de vraies valeurs</strong> : ils sont uniquement visuels dans WeWeb</li>
+    <li><strong>Toujours synchroniser les données locales après mise à jour</strong> pour garantir une interface cohérente</li>
+    <li><strong>Configurer correctement la fonction Edit Record dans Xano change tout</strong> : l'option "Ignore empty values" est cruciale</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Envisager de passer à un endpoint <strong>PATCH</strong> personnalisé pour optimiser encore plus les requêtes et n'envoyer que les champs réellement modifiés. Cela réduit la bande passante et améliore les performances.
+</div>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>PUT remplace tout l'enregistrement</strong>, pas seulement les champs modifiés</li>
+  <li><strong>Pré-remplir les champs de formulaire</strong> avec les vraies valeurs utilisateur (value, pas placeholder)</li>
+  <li><strong>Activer "Ignore empty input values"</strong> dans Xano pour préserver les données existantes</li>
+  <li><strong>Re-fetch les données utilisateur</strong> après mise à jour pour synchroniser l'interface</li>
+  <li><strong>Considérer PATCH</strong> pour des mises à jour partielles plus optimisées</li>
+</ul>
+</div>
+
+<h2>🚀 Conclusion</h2>
+
+<p>Ce cas concret montre qu'un comportement « normal » d'une API PUT peut entraîner des pertes de données si l'on ne maîtrise pas :</p>
+
+<ul>
+    <li>Le fonctionnement des champs dans WeWeb (value vs placeholder)</li>
+    <li>La logique de remplacement totale de PUT dans Xano</li>
+</ul>
+
+<p>Grâce à une bonne configuration et un workflow réfléchi, j'ai mis en place un système professionnel de mise à jour de profil utilisateur <strong>sans risque de perte</strong> et <strong>100% automatisé</strong>.</p>
+
+<h3>🔜 Étapes suivantes pour améliorer encore :</h3>
+
+<ul>
+    <li>➡️ Ajouter une validation côté front et des messages de succès / erreur</li>
+    <li>➡️ Passer à un endpoint PATCH personnalisé pour optimiser encore plus</li>
+</ul>
+
+<div class="callout callout-tip">
+📘 <strong>Documentation</strong><br>
+Cet article fait partie d'une base de connaissances pour la formation Low-Code Developer, afin de mémoriser les bonnes pratiques et éviter les erreurs futures.
+</div>

@@ -32,6 +32,22 @@
     "path": "../articles/api/rest-api.html"
   },
   {
+    "title": "Mettre à jour un profil utilisateur via API PUT sans effacer les données existantes",
+    "category": "API",
+    "level": "Intermédiaire",
+    "keywords": [
+      "PUT",
+      "PATCH",
+      "Edit Record",
+      "Ignore empty values",
+      "WeWeb Placeholder",
+      "User Profile Update",
+      "Xano API"
+    ],
+    "theme": "api",
+    "path": "../articles/api/update-profil-utilisateur-put.html"
+  },
+  {
     "title": "Créer une application de prise de commande au restaurant avec une IA No-Code",
     "category": "",
     "level": "",
