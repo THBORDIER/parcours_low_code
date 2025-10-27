@@ -1,0 +1,222 @@
+<h1>Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb</h1>
+
+<p><strong>Comprendre pourquoi WeWeb ajoute automatiquement [0] et comment accéder au vrai tableau de données pour afficher tous les noms dans une SelectBox.</strong></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> rollup, Collections, SelectBox, Structure de données, Data binding, Formules WeWeb, Auto-insertion [0], get_all_categorie</p>
+    <p>📅 <strong>Mise à jour:</strong> 27/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> Moins d'1 heure</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour afficher une liste de noms depuis une collection dans une SelectBox, utilisez <code>rollup(collection.data, "name")</code>. Ne vous fiez pas au <code>[0]</code> automatiquement inséré par WeWeb quand vous cliquez : il montre UN élément d'exemple, pas le tableau complet.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🎯 Objectif :</strong> Afficher la liste de tous les noms (<code>name</code>) de catégories dans une SelectBox WeWeb, à partir de la collection <code>get_all_categorie</code>.</p>
+
+<p><strong>🚨 Le blocage :</strong></p>
+<ul>
+    <li>La donnée retournée par <code>get_all_categorie</code> n'était pas sous la forme habituelle <code>data.data[]</code>, mais directement accessible via <code>get_all_categorie.data</code></li>
+    <li>En cliquant dans l'arbre de données WeWeb, le système ajoutait automatiquement <code>[0]</code></li>
+    <li>Cela induisait en erreur : WeWeb montrait un <strong>exemple d'élément</strong>, pas le tableau complet</li>
+    <li>Résultat : les formules comme <code>rollup(get_all_categorie.data.data, "name")</code> ne fonctionnaient pas</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Quand vous cliquez sur un tableau dans WeWeb, le système ajoute automatiquement <code>[0]</code> pour vous montrer la structure d'un élément. Ce n'est PAS le chemin à utiliser dans vos formules si vous voulez traiter tout le tableau !
+</div>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<h3>📚 Analogie : la bibliothèque</h3>
+
+<p>Imaginons que votre collection est une bibliothèque :</p>
+
+<ul>
+    <li><strong><code>get_all_categorie.data</code></strong> → toute la bibliothèque (tous les livres)</li>
+    <li><strong><code>get_all_categorie.data[0]</code></strong> → un seul livre (le premier)</li>
+</ul>
+
+<p>Quand vous voulez afficher <strong>tous les titres de livres</strong> dans une liste, vous avez besoin de parcourir toute la bibliothèque, pas de regarder un seul livre !</p>
+
+<h3>🔍 Comprendre la structure des données</h3>
+
+<p>Votre API retourne quelque chose comme ça :</p>
+
+<pre><code>{
+  "data": [
+    { "id": 1, "name": "Vélo" },
+    { "id": 2, "name": "Avion" },
+    { "id": 3, "name": "Pêche" }
+  ]
+}</code></pre>
+
+<ul>
+    <li><code>get_all_categorie.data</code> = le tableau complet <code>[{...}, {...}, {...}]</code></li>
+    <li><code>get_all_categorie.data[0]</code> = seulement <code>{ "id": 1, "name": "Vélo" }</code></li>
+    <li><code>get_all_categorie.data[0].name</code> = seulement <code>"Vélo"</code></li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans WeWeb, au lieu de cliquer dans l'arbre de données (qui ajoute automatiquement <code>[0]</code>), <strong>tapez manuellement</strong> le chemin pour accéder au tableau complet : <code>get_all_categorie.data</code>
+</div>
+
+<h2>❌ Les fausses pistes rencontrées</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fausse piste</th>
+            <th>Pourquoi ça ne marchait pas</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>map(get_all_categorie.data, item => item.name)</code></td>
+            <td>Utile pour créer des objets <code>{label, value}</code>, mais <strong>inutile ici</strong> : tu voulais simplement un tableau de noms, pas transformer les données.</td>
+        </tr>
+        <tr>
+            <td><code>rollup(get_all_categorie.data.data, "name")</code></td>
+            <td><strong>Mauvais niveau de profondeur</strong> : ton API ne renvoie qu'un seul niveau <code>data</code>, pas un double <code>data.data</code>.</td>
+        </tr>
+        <tr>
+            <td>Cliquer sur <code>data</code> dans l'arbre WeWeb</td>
+            <td>WeWeb insère automatiquement <code>[0]</code>, ce qui donne accès à <strong>un élément</strong> du tableau, pas au tableau entier.</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Ces approches compliquaient inutilement un besoin simple.</p>
+
+<h2>✅ La solution fonctionnelle</h2>
+
+<h3>🎯 La formule magique</h3>
+
+<pre><code>rollup(get_all_categorie.data, "name")</code></pre>
+
+<h3>🔬 Pourquoi ça marche ?</h3>
+
+<ol>
+    <li><strong><code>get_all_categorie.data</code></strong> est déjà un tableau d'objets : <code>[{id: 1, name: "Vélo"}, ...]</code></li>
+    <li><strong><code>rollup()</code></strong> parcourt ce tableau et extrait la valeur de la clé <code>"name"</code> pour chaque objet</li>
+    <li><strong>Résultat</strong> : un tableau de noms : <code>["Vélo", "Avion", "Pêche"]</code></li>
+</ol>
+
+<h3>📝 Étapes dans WeWeb</h3>
+
+<p><strong>Étape 1️⃣ : Configurer la SelectBox</strong></p>
+<ul>
+    <li>Sélectionnez votre composant SelectBox</li>
+    <li>Allez dans les propriétés → <strong>Options</strong></li>
+</ul>
+
+<p><strong>Étape 2️⃣ : Utiliser la formule</strong></p>
+<ul>
+    <li>Au lieu de cliquer dans l'arbre de données, <strong>tapez manuellement</strong> :</li>
+</ul>
+
+<pre><code>rollup(get_all_categorie.data, "name")</code></pre>
+
+<p><strong>Étape 3️⃣ : Vérifier le résultat</strong></p>
+<ul>
+    <li>La SelectBox affiche maintenant tous les noms : <strong>Vélo, Avion, Pêche</strong></li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+La fonction <code>rollup()</code> est très puissante : elle permet d'extraire n'importe quelle propriété d'un tableau d'objets. Par exemple, <code>rollup(users, "email")</code> retourne tous les emails des utilisateurs.
+</div>
+
+<h2>🧰 Exemple concret avec code</h2>
+
+<h3>📊 Structure de données retournée par l'API</h3>
+
+<pre><code>{
+  "data": [
+    {
+      "id": 1,
+      "name": "Vélo",
+      "created_at": 1698765432
+    },
+    {
+      "id": 2,
+      "name": "Avion",
+      "created_at": 1698765433
+    },
+    {
+      "id": 3,
+      "name": "Pêche",
+      "created_at": 1698765434
+    }
+  ]
+}</code></pre>
+
+<h3>🎯 Configuration de la SelectBox</h3>
+
+<p><strong>Options :</strong></p>
+<pre><code>rollup(get_all_categorie.data, "name")</code></pre>
+
+<p><strong>Résultat visuel dans la SelectBox :</strong></p>
+<ul>
+    <li>Vélo</li>
+    <li>Avion</li>
+    <li>Pêche</li>
+</ul>
+
+<h3>🚀 Aller plus loin : créer des paires {label, value}</h3>
+
+<p>Si vous voulez utiliser l'ID comme valeur interne et le nom comme label visible :</p>
+
+<pre><code>map(get_all_categorie.data, item => ({
+  label: item.name,
+  value: item.id
+}))</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+La fonction <code>map()</code> est utile quand vous devez transformer la structure des données (par exemple pour créer des objets <code>{label, value}</code>). Mais pour simplement extraire une propriété, <code>rollup()</code> est plus simple et plus lisible.
+</div>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>Ne pas confondre <code>collection.data</code> (tableau complet) et <code>collection.data[0]</code> (un élément)</strong></li>
+  <li><strong>Toujours taper manuellement le chemin</strong> pour accéder au tableau complet, sans cliquer dans l'arbre</li>
+  <li><strong>Utiliser <code>rollup()</code></strong> pour extraire simplement une propriété d'un tableau d'objets</li>
+  <li><strong>WeWeb ajoute <code>[0]</code> automatiquement</strong> pour montrer un exemple, pas pour donner le bon chemin</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.weweb.io/formulas/rollup.html" target="_blank">Documentation WeWeb : fonction rollup()</a></li>
+    <li><a href="https://docs.weweb.io/data/collections.html" target="_blank">Documentation WeWeb : Collections</a></li>
+    <li>Article connexe dans cette base : <em>Comprendre les formules WeWeb</em> (à venir)</li>
+</ul>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Quelle est la différence entre <code>collection.data</code> et <code>collection.data[0]</code> ?</p>
+
+<details>
+    <summary>✅ Voir la réponse</summary>
+    <p><strong>Réponse :</strong></p>
+    <ul>
+        <li><code>collection.data</code> → <strong>tout le tableau</strong> (tous les éléments)</li>
+        <li><code>collection.data[0]</code> → <strong>un seul élément</strong> (le premier du tableau)</li>
+    </ul>
+    <p>Pour traiter tous les éléments avec une formule comme <code>rollup()</code> ou <code>map()</code>, il faut utiliser <code>collection.data</code> (le tableau complet).</p>
+</details>

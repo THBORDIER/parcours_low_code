@@ -112,6 +112,23 @@
     "path": "../articles/notes-diverses/ressources-utiles.html"
   },
   {
+    "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
+    "category": "WeWeb",
+    "level": "Intermédiaire",
+    "keywords": [
+      "rollup",
+      "Collections",
+      "SelectBox",
+      "Structure de données",
+      "Data binding",
+      "Formules WeWeb",
+      "Auto-insertion [0]",
+      "get_all_categorie"
+    ],
+    "theme": "weweb",
+    "path": "../articles/weweb/afficher-liste-selectbox-rollup.html"
+  },
+  {
     "title": "Comprendre l'arborescence d'une page WeWeb : exemple de la page Mon Compte",
     "category": "",
     "level": "",
