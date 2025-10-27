@@ -1,0 +1,384 @@
+<h1>Filtrer par date avec des jointures : résoudre le problème de recouvrement de périodes dans Xano</h1>
+
+<p><strong>Comprendre comment créer des filtres combinés avec des jointures correctes et une logique de recouvrement de dates pour afficher uniquement les résultats réellement disponibles.</strong></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> JOINs, Filtres de dates, Recouvrement de périodes, repairer_category_id, Query All Records, Relations multiples, Date overlap, Retool</p>
+    <p>📅 <strong>Mise à jour:</strong> 27/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1-2 heures</p>
+    <p>⚙️ <strong>Stack:</strong> Xano + Retool</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour filtrer par dates avec des jointures dans Xano, utilisez la bonne clé de relation (<code>repairer_category_id</code> au lieu de <code>repairer_id</code>) et la logique de recouvrement : <code>session.start_date &lt;= input.end_date && session.end_date &gt;= input.start_date</code>.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🎯 Objectif :</strong> Afficher les réparateurs disponibles selon 4 filtres combinés :</p>
+
+<ol>
+    <li><strong>Catégorie</strong> (<code>categorie_name</code>)</li>
+    <li><strong>Code postal</strong> (<code>zip</code>)</li>
+    <li><strong>Date de début</strong> (<code>start_date</code>)</li>
+    <li><strong>Date de fin</strong> (<code>end_date</code>)</li>
+</ol>
+
+<p><strong>🚨 Les blocages :</strong></p>
+
+<ul>
+    <li>Les sessions étaient liées via <code>repairer_id</code>, ce qui ne permettait pas de filtrer par catégorie</li>
+    <li>Les dates étaient ignorées car la jointure n'était pas reliée à la bonne entité</li>
+    <li>Certains tests retournaient <strong>100% de résultats</strong>, même pour des dates hors période</li>
+    <li>La relation utilisée était incorrecte : <code>$db.repairer_category.id == $db.session.repairer_id</code></li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Xano affiche parfois les relations avec des noms lisibles (<code>title</code>, <code>name</code>) au lieu des IDs, ce qui peut induire en erreur. Toujours vérifier quelle colonne est réellement utilisée dans la jointure !
+</div>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<h3>📚 Analogie : réserver un professionnel</h3>
+
+<p>Imaginons que vous cherchez un électricien disponible :</p>
+
+<ul>
+    <li><strong>Mauvaise approche</strong> : "Je cherche tous les professionnels qui ont une session quelque part" → vous obtenez des plombiers, des électriciens, des menuisiers...</li>
+    <li><strong>Bonne approche</strong> : "Je cherche les professionnels <strong>dont la session correspond à la catégorie électricien</strong> et qui sont disponibles aux dates demandées"</li>
+</ul>
+
+<h3>🔗 Comprendre la structure des relations</h3>
+
+<p>Voici la structure de données simplifiée :</p>
+
+<pre><code>repairer (réparateur)
+  ↓ a plusieurs
+repairer_category (catégories proposées par le réparateur)
+  ↓ a plusieurs
+session (périodes de disponibilité pour UNE catégorie)
+</code></pre>
+
+<p><strong>Exemple concret :</strong></p>
+
+<ul>
+    <li><strong>Jean</strong> (repairer) → propose <strong>Vélo</strong> et <strong>Avion</strong> (repairer_category)</li>
+    <li>Pour <strong>Vélo</strong> : disponible du 1er au 10 octobre (session 1)</li>
+    <li>Pour <strong>Avion</strong> : disponible du 5 au 15 octobre (session 2)</li>
+</ul>
+
+<p>Si vous cherchez un réparateur pour <strong>Avion du 8 au 12 octobre</strong>, vous devez :</p>
+<ol>
+    <li>Filtrer par catégorie <strong>Avion</strong></li>
+    <li>Vérifier que la session 2 <strong>chevauche</strong> la période demandée</li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+La clé de la jointure doit être <code>repairer_category_id</code> (pas <code>repairer_id</code>) car chaque session est liée à <strong>une catégorie spécifique</strong> du réparateur, pas au réparateur lui-même.
+</div>
+
+<h2>❌ Les erreurs initiales</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Jointure erronée</th>
+            <th>Pourquoi ça ne marche pas</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>$db.repairer_category.id == $db.session.repairer_id</code></td>
+            <td><strong>Mauvaise relation</strong> : on relie une catégorie à un réparateur, au lieu de relier la catégorie à la session correspondante. Résultat : impossible de filtrer par catégorie.</td>
+        </tr>
+        <tr>
+            <td>Pas de jointure du tout</td>
+            <td><strong>Données isolées</strong> : on ne peut pas croiser les informations entre les tables, donc impossible de filtrer par catégorie ET par dates simultanément.</td>
+        </tr>
+        <tr>
+            <td>Filtre simple sur les dates sans logique de recouvrement</td>
+            <td><strong>Logique incomplète</strong> : vérifier uniquement <code>start_date</code> ou <code>end_date</code> ne couvre pas tous les cas de chevauchement de périodes.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>✅ La solution détaillée</h2>
+
+<h3>🎯 Étape 1 : Corriger la jointure</h3>
+
+<p><strong>Jointure correcte :</strong></p>
+
+<pre><code>$db.repairer_category.id == $db.session.repairer_category_id</code></pre>
+
+<p><strong>Pourquoi ça fonctionne :</strong></p>
+<ul>
+    <li><code>session.repairer_category_id</code> est la clé étrangère qui pointe vers la catégorie du réparateur</li>
+    <li>Cela permet de filtrer les sessions en fonction de la catégorie demandée</li>
+    <li>On accède ainsi aux bonnes données : catégorie → sessions de cette catégorie</li>
+</ul>
+
+<h3>📅 Étape 2 : Implémenter la logique de recouvrement de dates</h3>
+
+<p><strong>Condition de filtrage :</strong></p>
+
+<pre><code>$db.session.start_date <=? $input.end_date
+&&
+$db.session.end_date >=? $input.start_date</code></pre>
+
+<h3>🔬 Pourquoi cette logique fonctionne-t-elle ?</h3>
+
+<p>Cette condition vérifie que la session <strong>chevauche</strong> (overlap) la période demandée. Voici les cas couverts :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Scénario</th>
+            <th>Session</th>
+            <th>Recherche</th>
+            <th>Résultat</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>✅ Session complètement dans la période</td>
+            <td>5 au 10 oct</td>
+            <td>1 au 15 oct</td>
+            <td>Inclus</td>
+        </tr>
+        <tr>
+            <td>✅ Session englobe la période</td>
+            <td>1 au 20 oct</td>
+            <td>5 au 10 oct</td>
+            <td>Inclus</td>
+        </tr>
+        <tr>
+            <td>✅ Chevauchement partiel début</td>
+            <td>1 au 8 oct</td>
+            <td>5 au 15 oct</td>
+            <td>Inclus</td>
+        </tr>
+        <tr>
+            <td>✅ Chevauchement partiel fin</td>
+            <td>12 au 20 oct</td>
+            <td>5 au 15 oct</td>
+            <td>Inclus</td>
+        </tr>
+        <tr>
+            <td>❌ Session avant la période</td>
+            <td>1 au 3 oct</td>
+            <td>5 au 15 oct</td>
+            <td>Exclu</td>
+        </tr>
+        <tr>
+            <td>❌ Session après la période</td>
+            <td>20 au 30 oct</td>
+            <td>5 au 15 oct</td>
+            <td>Exclu</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+La logique de recouvrement peut sembler contre-intuitive, mais souvenez-vous : <strong>start &lt;= end</strong> ET <strong>end &gt;= start</strong>. C'est la formule universelle pour vérifier qu'il y a chevauchement entre deux périodes !
+</div>
+
+<h3>🛠️ Étape 3 : Requête Xano complète</h3>
+
+<p><strong>Configuration dans Query All Records :</strong></p>
+
+<pre><code>{
+  "table": "session",
+  "where": {
+    "and": [
+      {
+        "expression": "$db.session.start_date <=? $input.end_date"
+      },
+      {
+        "expression": "$db.session.end_date >=? $input.start_date"
+      },
+      {
+        "join": "$db.repairer_category.id == $db.session.repairer_category_id"
+      }
+    ]
+  }
+}</code></pre>
+
+<p><strong>Avec les autres filtres (catégorie, code postal) :</strong></p>
+
+<pre><code>{
+  "table": "session",
+  "where": {
+    "and": [
+      {
+        "expression": "$db.session.start_date <=? $input.end_date"
+      },
+      {
+        "expression": "$db.session.end_date >=? $input.start_date"
+      },
+      {
+        "join": "$db.repairer_category.id == $db.session.repairer_category_id"
+      },
+      {
+        "expression": "$db.repairer_category.name ==? $input.categorie_name"
+      },
+      {
+        "expression": "$db.repairer.zip ==? $input.zip"
+      }
+    ]
+  }
+}</code></pre>
+
+<h2>🧰 Exemple concret de requête test</h2>
+
+<h3>📊 Données d'entrée (input)</h3>
+
+<pre><code>{
+  "zip": "51114",
+  "start_date": "2025-10-02T00:00:00.000Z",
+  "end_date": "2025-10-23T23:59:59.000Z",
+  "categorie_name": "Avion"
+}</code></pre>
+
+<h3>✅ Résultat attendu</h3>
+
+<p>La requête retourne les réparateurs qui :</p>
+<ul>
+    <li>✅ Sont dans le code postal <strong>51114</strong></li>
+    <li>✅ Proposent la catégorie <strong>Avion</strong></li>
+    <li>✅ Ont une session disponible <strong>entre le 2 et le 23 octobre 2025</strong></li>
+</ul>
+
+<h3>📋 Structure des données retournées</h3>
+
+<pre><code>[
+  {
+    "repairer": {
+      "id": 123,
+      "name": "Jean Martin",
+      "zip": "51114"
+    },
+    "category": {
+      "id": 45,
+      "name": "Avion"
+    },
+    "session": {
+      "id": 789,
+      "start_date": "2025-10-05T00:00:00.000Z",
+      "end_date": "2025-10-20T23:59:59.000Z",
+      "repairer_category_id": 45
+    }
+  }
+]</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Pour optimiser les performances, créez des <strong>index</strong> sur les colonnes utilisées dans les filtres : <code>start_date</code>, <code>end_date</code>, <code>repairer_category_id</code>, et <code>zip</code>. Cela accélérera considérablement les requêtes avec de gros volumes de données.
+</div>
+
+<h2>🧪 Cas de test pour valider la logique</h2>
+
+<p>Testez votre requête avec ces scénarios pour vous assurer qu'elle fonctionne correctement :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Cas de test</th>
+            <th>Input dates</th>
+            <th>Session dates</th>
+            <th>Attendu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Session exactement dans la période</td>
+            <td>1 au 10 oct</td>
+            <td>3 au 8 oct</td>
+            <td>✅ Inclus</td>
+        </tr>
+        <tr>
+            <td>Session englobe la période</td>
+            <td>5 au 10 oct</td>
+            <td>1 au 15 oct</td>
+            <td>✅ Inclus</td>
+        </tr>
+        <tr>
+            <td>Chevauchement début</td>
+            <td>5 au 15 oct</td>
+            <td>1 au 8 oct</td>
+            <td>✅ Inclus</td>
+        </tr>
+        <tr>
+            <td>Chevauchement fin</td>
+            <td>5 au 15 oct</td>
+            <td>12 au 20 oct</td>
+            <td>✅ Inclus</td>
+        </tr>
+        <tr>
+            <td>Dates exactement identiques</td>
+            <td>5 au 10 oct</td>
+            <td>5 au 10 oct</td>
+            <td>✅ Inclus</td>
+        </tr>
+        <tr>
+            <td>Session complètement avant</td>
+            <td>10 au 20 oct</td>
+            <td>1 au 5 oct</td>
+            <td>❌ Exclu</td>
+        </tr>
+        <tr>
+            <td>Session complètement après</td>
+            <td>1 au 10 oct</td>
+            <td>15 au 20 oct</td>
+            <td>❌ Exclu</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce de test</strong><br>
+Utilisez l'onglet "Test & Preview" de Xano pour tester ces différents cas. Créez plusieurs sessions avec des dates variées pour valider que seuls les bons résultats sont retournés.
+</div>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>Utiliser la bonne clé de relation</strong> : <code>repairer_category_id</code> (pas <code>repairer_id</code>) car chaque session est liée à une catégorie spécifique</li>
+  <li><strong>Logique de recouvrement</strong> : <code>start_date &lt;= input.end_date && end_date &gt;= input.start_date</code> couvre tous les cas de chevauchement</li>
+  <li><strong>Tester avec des cas limites</strong> : dates identiques, chevauchements partiels, périodes complètement en dehors</li>
+  <li><strong>Optimiser avec des index</strong> sur les colonnes de dates pour de meilleures performances</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/working-with-your-database/queries/filtering-your-results" target="_blank">Documentation Xano : Filtrer les résultats</a></li>
+    <li><a href="https://docs.xano.com/working-with-your-database/queries/joins-and-relationships" target="_blank">Documentation Xano : Jointures et relations</a></li>
+    <li>Article connexe dans cette base : <em>Pourquoi mon API Xano retourne toujours les mêmes données ?</em></li>
+    <li>Article connexe : <em>Intégration Xano + WeWeb : Afficher dynamiquement les catégories</em></li>
+</ul>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Pourquoi utilise-t-on <code>start_date &lt;= input.end_date</code> ET <code>end_date &gt;= input.start_date</code> plutôt qu'une simple comparaison ?</p>
+
+<details>
+    <summary>✅ Voir la réponse</summary>
+    <p><strong>Réponse :</strong></p>
+    <p>Cette double condition permet de capturer <strong>tous les types de chevauchement</strong> :</p>
+    <ul>
+        <li><code>start_date &lt;= input.end_date</code> → la session commence avant ou pendant la fin de recherche</li>
+        <li><code>end_date &gt;= input.start_date</code> → la session se termine après ou pendant le début de recherche</li>
+    </ul>
+    <p>Si les deux conditions sont vraies, il y a forcément un chevauchement ! Une seule condition ne suffirait pas à couvrir tous les scénarios (chevauchement partiel début/fin, session englobante, etc.).</p>
+</details>

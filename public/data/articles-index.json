@@ -239,6 +239,23 @@
     "path": "../articles/xano/corriger-api-filtres-categories.html"
   },
   {
+    "title": "Filtrer par date avec des jointures : résoudre le problème de recouvrement de périodes dans Xano",
+    "category": "Xano",
+    "level": "Intermédiaire",
+    "keywords": [
+      "JOINs",
+      "Filtres de dates",
+      "Recouvrement de périodes",
+      "repairer_category_id",
+      "Query All Records",
+      "Relations multiples",
+      "Date overlap",
+      "Retool"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/filtrage-dates-jointures-recouvrement.html"
+  },
+  {
     "title": "Intégration Xano + WeWeb : Afficher dynamiquement les catégories pour chaque réparateur",
     "category": "Xano",
     "level": "Intermédiaire",
