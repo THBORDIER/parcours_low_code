@@ -256,6 +256,23 @@
     "path": "../articles/xano/filtrage-dates-jointures-recouvrement.html"
   },
   {
+    "title": "Xano + WeWeb : Comment filtrer des sessions par utilisateur et par date avec une seule API dynamique",
+    "category": "Xano",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Filtrage utilisateur",
+      "API dynamique",
+      "Relations tables",
+      "reservation vs session",
+      "Query All Records",
+      "Filtres conditionnels",
+      "WeWeb integration",
+      "user_id"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/filtrer-sessions-utilisateur-api-dynamique.html"
+  },
+  {
     "title": "Intégration Xano + WeWeb : Afficher dynamiquement les catégories pour chaque réparateur",
     "category": "Xano",
     "level": "Intermédiaire",

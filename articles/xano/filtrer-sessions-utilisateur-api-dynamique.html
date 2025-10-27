@@ -1,0 +1,407 @@
+<h1>Xano + WeWeb : Comment filtrer des sessions par utilisateur et par date avec une seule API dynamique</h1>
+
+<p><strong>Comprendre pourquoi votre API renvoie toujours les mêmes résultats et comment identifier la bonne table source pour filtrer par utilisateur.</strong></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Filtrage utilisateur, API dynamique, Relations tables, reservation vs session, Query All Records, Filtres conditionnels, WeWeb integration, user_id</p>
+    <p>📅 <strong>Mise à jour:</strong> 27/10/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1-2 heures</p>
+    <p>⚙️ <strong>Stack:</strong> Xano + WeWeb</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour filtrer des sessions par utilisateur, interrogez la table <strong>reservation</strong> (qui contient <code>user_id</code>) plutôt que la table <strong>session</strong>. Utilisez un input dynamique (<code>filter</code>) pour gérer plusieurs cas (passé, à venir, annulé) avec une seule API.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🎯 Objectif :</strong> Créer une seule API Xano permettant de récupérer les sessions d'un utilisateur, filtrées selon trois cas :</p>
+
+<ol>
+    <li><strong>Sessions à venir</strong> (upcoming)</li>
+    <li><strong>Sessions passées</strong> (past)</li>
+    <li><strong>Sessions annulées</strong> (cancelled)</li>
+</ol>
+
+<p>Cette API devait être appelée depuis WeWeb avec un seul input dynamique (<code>filter</code>) et afficher les résultats dans trois répétiteurs distincts.</p>
+
+<p><strong>🚨 Symptôme observé :</strong></p>
+
+<ul>
+    <li>Peu importe le <code>user_id</code> envoyé depuis WeWeb, l'API renvoyait <strong>toujours les 20 mêmes résultats</strong></li>
+    <li>Le filtrage par utilisateur ne fonctionnait pas</li>
+    <li>Seuls les filtres par date semblaient s'appliquer</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Si votre API retourne toujours les mêmes résultats peu importe les paramètres, c'est souvent le signe que vous interrogez la <strong>mauvaise table source</strong> !
+</div>
+
+<h2>🔍 Analyse du problème</h2>
+
+<h3>❌ L'approche initiale (incorrecte)</h3>
+
+<p>La requête était écrite sur la table <code>session</code>, en essayant de filtrer par utilisateur via une jointure :</p>
+
+<pre><code>Table principale : session
+Filtres tentés : user_id, dates, status
+Résultat : Impossible de filtrer par utilisateur</code></pre>
+
+<h3>🔍 La cause racine</h3>
+
+<p><strong>Erreur logique :</strong></p>
+<ul>
+    <li>La table <code>session</code> ne contient <strong>pas d'information sur l'utilisateur</strong></li>
+    <li>C'est la table <code>reservation</code> qui relie un utilisateur (<code>reservation.user</code>) à une session (<code>reservation.session</code>)</li>
+</ul>
+
+<p><strong>Conclusion :</strong> On ne peut pas filtrer correctement par <code>user_id</code> en interrogeant directement la table <code>session</code>.</p>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<h3>📚 Analogie : chercher les livres empruntés par un lecteur</h3>
+
+<p>Imaginons que vous gérez une bibliothèque :</p>
+
+<ul>
+    <li><strong>❌ Mauvaise approche</strong> : Consulter la liste complète des livres dans la bibliothèque
+        <ul>
+            <li>Problème : la liste des livres ne dit pas <strong>qui</strong> a emprunté quoi</li>
+            <li>Vous obtenez tous les livres, impossible de filtrer par lecteur</li>
+        </ul>
+    </li>
+    <li><strong>✅ Bonne approche</strong> : Consulter les fiches d'emprunt
+        <ul>
+            <li>Chaque fiche contient : le lecteur, le livre emprunté, les dates</li>
+            <li>Vous pouvez facilement filtrer par lecteur</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>🗂️ Structure des données</h3>
+
+<p>Voici la structure simplifiée des tables :</p>
+
+<pre><code>user (utilisateur)
+  ↓ fait des
+reservation (réservations)
+  ↓ pointe vers
+session (créneaux de disponibilité)
+</code></pre>
+
+<table>
+    <thead>
+        <tr>
+            <th>Table</th>
+            <th>Contient</th>
+            <th>Utilité</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>session</code></td>
+            <td>Créneaux de disponibilité (dates, réparateur, catégorie)</td>
+            <td>Définit <strong>quand</strong> un service est disponible</td>
+        </tr>
+        <tr>
+            <td><code>reservation</code></td>
+            <td>Réservations faites par les utilisateurs (user_id, session_id, status)</td>
+            <td>Définit <strong>qui</strong> a réservé <strong>quoi</strong></td>
+        </tr>
+        <tr>
+            <td><code>user</code></td>
+            <td>Informations utilisateur (nom, email, etc.)</td>
+            <td>Identifie <strong>qui</strong> fait les réservations</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-tip">
+✨ <strong>Règle d'or</strong><br>
+Toujours partir de la table qui contient l'information principale pour votre filtre. Ici, vous voulez filtrer par <strong>utilisateur</strong>, donc partez de la table <code>reservation</code> qui contient <code>user_id</code>.
+</div>
+
+<h2>❌ Solutions testées (et pourquoi elles n'ont pas fonctionné)</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Méthode</th>
+            <th>Résultat</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Filtrer directement sur la table <code>session</code></td>
+            <td>Renvoie toutes les sessions, impossible de filtrer par utilisateur</td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td>Ajout de JOIN manuels multiples (user, repairer, category)</td>
+            <td>Génère des doublons ou ignore le <code>user_id</code></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td>Filtrage par date uniquement</td>
+            <td>Fonctionne pour les dates, mais ne règle pas le problème utilisateur</td>
+            <td>⚠️</td>
+        </tr>
+        <tr>
+            <td>Filtrer via la table <code>reservation</code> + JOIN <code>session</code></td>
+            <td>Filtre correctement par utilisateur ET par date</td>
+            <td>✅</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>✅ La solution détaillée</h2>
+
+<h3>🎯 Étape 1 : Identifier la bonne table source</h3>
+
+<p><strong>Table principale :</strong> <code>reservation</code></p>
+
+<p><strong>Pourquoi ?</strong></p>
+<ul>
+    <li>Elle contient <code>user_id</code> → permet de filtrer par utilisateur</li>
+    <li>Elle contient <code>session_id</code> → permet de récupérer les dates via JOIN</li>
+    <li>Elle contient <code>status</code> → permet de filtrer par statut (annulé, confirmé, etc.)</li>
+</ul>
+
+<h3>🔗 Étape 2 : Configurer le JOIN vers session</h3>
+
+<p>Xano gère automatiquement les relations si elles sont configurées dans la base de données :</p>
+
+<pre><code>Table principale : reservation
+JOIN automatique : reservation.session → session
+Accès aux données : session.start_date, session.end_date</code></pre>
+
+<h3>🎨 Étape 3 : Ajouter le filtre dynamique</h3>
+
+<p><strong>Inputs de l'API :</strong></p>
+
+<pre><code>{
+  "user_id": 10,
+  "date": "2025-10-27T00:00:00.000Z",
+  "filter": "upcoming"  // valeurs possibles : "past", "upcoming", "cancelled"
+}</code></pre>
+
+<p><strong>Logique conditionnelle dans Xano :</strong></p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Filter</th>
+            <th>Condition appliquée</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>"past"</code></td>
+            <td><code>session.end_date &lt; input.date</code></td>
+            <td>Sessions déjà terminées</td>
+        </tr>
+        <tr>
+            <td><code>"upcoming"</code></td>
+            <td><code>session.start_date &gt; input.date</code></td>
+            <td>Sessions à venir</td>
+        </tr>
+        <tr>
+            <td><code>"cancelled"</code></td>
+            <td><code>reservation.status == "annulé"</code></td>
+            <td>Sessions annulées</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>🛠️ Requête Xano complète (Query All Records)</h3>
+
+<p><strong>Configuration de base :</strong></p>
+
+<pre><code>{
+  "table": "reservation",
+  "where": {
+    "and": [
+      {
+        "expression": "$db.reservation.user ==? $input.user_id"
+      }
+    ]
+  }
+}</code></pre>
+
+<p><strong>Avec conditions dynamiques (utiliser Function Stack) :</strong></p>
+
+<pre><code>// 1. Query All Records sur table "reservation"
+// Filtre par user_id :
+$db.reservation.user ==? $input.user_id
+
+// 2. Condition IF pour appliquer le bon filtre :
+
+IF $input.filter == "past"
+  THEN Filter : $db.session.end_date &lt; $input.date
+
+ELSE IF $input.filter == "upcoming"
+  THEN Filter : $db.session.start_date &gt; $input.date
+
+ELSE IF $input.filter == "cancelled"
+  THEN Filter : $db.reservation.status == "annulé"</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce Xano</strong><br>
+Utilisez un <strong>Function Stack</strong> avec des conditions IF pour gérer plusieurs cas de filtrage. C'est plus maintenable qu'avoir 3 APIs différentes !
+</div>
+
+<h2>🧰 Exemple concret</h2>
+
+<h3>📊 Structure des tables (simplifiée)</h3>
+
+<p><strong>Table : user</strong></p>
+<pre><code>{
+  "id": 10,
+  "name": "Marie Dupont",
+  "email": "marie@example.com"
+}</code></pre>
+
+<p><strong>Table : session</strong></p>
+<pre><code>{
+  "id": 45,
+  "start_date": "2025-11-05T09:00:00.000Z",
+  "end_date": "2025-11-05T17:00:00.000Z",
+  "repairer_category_id": 12
+}</code></pre>
+
+<p><strong>Table : reservation</strong></p>
+<pre><code>{
+  "id": 789,
+  "user": 10,           // FK vers user
+  "session": 45,        // FK vers session
+  "status": "confirmé",
+  "created_at": "2025-10-20T10:00:00.000Z"
+}</code></pre>
+
+<h3>📥 Exemple de requête API</h3>
+
+<p><strong>Input :</strong></p>
+<pre><code>{
+  "user_id": 10,
+  "date": "2025-10-27T00:00:00.000Z",
+  "filter": "upcoming"
+}</code></pre>
+
+<p><strong>Output attendu :</strong></p>
+<pre><code>[
+  {
+    "id": 789,
+    "user": {
+      "id": 10,
+      "name": "Marie Dupont"
+    },
+    "session": {
+      "id": 45,
+      "start_date": "2025-11-05T09:00:00.000Z",
+      "end_date": "2025-11-05T17:00:00.000Z"
+    },
+    "status": "confirmé"
+  }
+]</code></pre>
+
+<h2>🔗 Intégration WeWeb</h2>
+
+<h3>📡 Configuration de la collection Xano</h3>
+
+<p><strong>Étape 1 : Créer la collection</strong></p>
+<ul>
+    <li>Nom : <code>user_sessions</code></li>
+    <li>Endpoint : votre API Xano (ex: <code>/get_user_sessions</code>)</li>
+    <li>Mode : <strong>Query parameters</strong></li>
+</ul>
+
+<p><strong>Étape 2 : Configurer les paramètres dynamiques</strong></p>
+<ul>
+    <li><code>user_id</code> : <code>getCurrentUser().id</code> (ou variable WeWeb)</li>
+    <li><code>date</code> : <code>new Date()</code> (date du jour)</li>
+    <li><code>filter</code> : valeur selon le répétiteur</li>
+</ul>
+
+<h3>🔄 Configuration des répétiteurs</h3>
+
+<p><strong>Répétiteur 1 : Sessions à venir</strong></p>
+<pre><code>Collection : user_sessions
+Paramètres :
+  - user_id : getCurrentUser().id
+  - date : new Date()
+  - filter : "upcoming"</code></pre>
+
+<p><strong>Répétiteur 2 : Sessions passées</strong></p>
+<pre><code>Collection : user_sessions
+Paramètres :
+  - user_id : getCurrentUser().id
+  - date : new Date()
+  - filter : "past"</code></pre>
+
+<p><strong>Répétiteur 3 : Sessions annulées</strong></p>
+<pre><code>Collection : user_sessions
+Paramètres :
+  - user_id : getCurrentUser().id
+  - date : new Date()
+  - filter : "cancelled"</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Vous pouvez ajouter d'autres filtres combinés : par catégorie, par réparateur, par plage de dates personnalisée. L'architecture avec <code>filter</code> dynamique permet d'étendre facilement les fonctionnalités sans multiplier les APIs.
+</div>
+
+<h2>🚀 Bénéfices de cette approche</h2>
+
+<ul>
+    <li>✅ <strong>API unique</strong>, facile à maintenir</li>
+    <li>✅ <strong>Cohérence des données</strong> : un seul endpoint pour 3 cas d'usage</li>
+    <li>✅ <strong>Performance optimisée</strong> : pas de requêtes multiples inutiles</li>
+    <li>✅ <strong>Intégration fluide</strong> côté WeWeb avec collections dynamiques</li>
+    <li>✅ <strong>Architecture évolutive</strong> : facile d'ajouter de nouveaux filtres</li>
+</ul>
+
+<h2>💡 Lessons Learned</h2>
+
+<div class="summary">
+📌 <strong>Leçons à retenir :</strong>
+<ul>
+  <li><strong>Partir de la bonne table</strong> : celle qui contient l'information principale pour votre filtre (ici, <code>user_id</code> dans <code>reservation</code>)</li>
+  <li><strong>Une API dynamique > plusieurs APIs</strong> : utiliser un input <code>filter</code> pour gérer plusieurs cas</li>
+  <li><strong>Tester progressivement</strong> : isoler chaque condition pour identifier les problèmes</li>
+  <li><strong>Comprendre les relations</strong> : savoir quelle table contient quelle information évite des heures de debugging</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/working-with-your-database/database-tables/relationships" target="_blank">Documentation Xano : Relations entre tables</a></li>
+    <li><a href="https://docs.xano.com/api-functions/queries" target="_blank">Documentation Xano : Query All Records</a></li>
+    <li>Article connexe dans cette base : <em>Filtrer par date avec des jointures</em></li>
+    <li>Article connexe : <em>Pourquoi mon API Xano retourne toujours les mêmes données ?</em></li>
+</ul>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Pourquoi est-il préférable de créer une seule API avec un paramètre <code>filter</code> plutôt que 3 APIs distinctes (une pour chaque cas) ?</p>
+
+<details>
+    <summary>✅ Voir la réponse</summary>
+    <p><strong>Réponse :</strong></p>
+    <ul>
+        <li><strong>Maintenance simplifiée</strong> : un seul endpoint à maintenir et débugger</li>
+        <li><strong>Cohérence</strong> : la logique de filtrage utilisateur est centralisée</li>
+        <li><strong>Performance</strong> : pas de duplication de code ni de requêtes redondantes</li>
+        <li><strong>Évolutivité</strong> : ajouter un nouveau filtre ne nécessite qu'une condition supplémentaire, pas une nouvelle API</li>
+        <li><strong>Code plus propre</strong> : moins d'endpoints, architecture plus claire</li>
+    </ul>
+    <p>En général, privilégiez toujours la flexibilité et la réutilisabilité : une API dynamique bien conçue vaut mieux que plusieurs APIs statiques.</p>
+</details>
