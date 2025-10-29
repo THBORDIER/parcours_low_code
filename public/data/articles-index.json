@@ -273,6 +273,21 @@
     "path": "../articles/xano/filtrer-sessions-utilisateur-api-dynamique.html"
   },
   {
+    "title": "Intégration des Add-ons Xano pour enrichir les réponses API",
+    "category": "Xano",
+    "level": "Débutant",
+    "keywords": [
+      "Add-ons Xano",
+      "Relations tables",
+      "Query enrichment",
+      "Reservation API",
+      "Foreign keys",
+      "Nommage add-ons"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/integration-addons-reservation.html"
+  },
+  {
     "title": "Intégration Xano + WeWeb : Afficher dynamiquement les catégories pour chaque réparateur",
     "category": "Xano",
     "level": "Intermédiaire",
