@@ -1,0 +1,249 @@
+<h1>🎛️ Remplir un sélecteur dynamique dans WeWeb à partir d'une requête</h1>
+
+<p><em>WeWeb permet de créer des interfaces riches et interactives sans code. Parmi les besoins les plus courants : afficher une liste déroulante dynamique alimentée par des données issues d'une API ou d'une base de données.</em></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> Select, Options dynamiques, Data binding, Requêtes, item.name, item.id, get_all_categorie, Menu déroulant</p>
+    <p>📅 <strong>Mise à jour:</strong> 07/01/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 20min</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour remplir un composant Select dans WeWeb avec des données dynamiques, utilisez la formule <code>get_all_categorie.data</code> dans <strong>Options</strong>, puis <code>item.name</code> pour le <strong>Label per item</strong> et <code>item.id</code> pour le <strong>Value per item</strong>. Simple, rapide, et sans code !
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p>Lors de la création d'un formulaire ou d'une interface, on a souvent besoin d'afficher un menu déroulant (Select) qui propose à l'utilisateur une liste de choix dynamiques :</p>
+
+<ul>
+    <li>📦 Liste de catégories de produits</li>
+    <li>👥 Liste d'utilisateurs ou de clients</li>
+    <li>🏢 Liste de services, départements, ou statuts</li>
+    <li>🚗 Liste de moyens de transport (Vélo, Avion, Bateau, etc.)</li>
+</ul>
+
+<p>Le problème ? Ces données ne sont pas statiques : elles proviennent d'une base de données et peuvent changer à tout moment.</p>
+
+<p><strong>💡 Exemple utilisateur :</strong> Vous créez un formulaire d'ajout de produit, et vous voulez que l'utilisateur puisse sélectionner une catégorie dans un menu déroulant. La liste des catégories est stockée dans Xano et doit être récupérée dynamiquement.</p>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<p>Dans WeWeb, un composant <strong>Select</strong> (menu déroulant) peut être alimenté par des données issues d'une requête API. Pour cela, il faut :</p>
+
+<ol>
+    <li>📡 <strong>Récupérer les données</strong> via une requête (ex: <code>get_all_categorie</code>)</li>
+    <li>🔗 <strong>Lier ces données</strong> au composant Select via le champ <strong>Options</strong></li>
+    <li>👁️ <strong>Définir ce qui s'affiche</strong> (le texte visible) avec <strong>Label per item</strong></li>
+    <li>💾 <strong>Définir ce qui est stocké</strong> (la valeur exploitable) avec <strong>Value per item</strong></li>
+</ol>
+
+<p>Cela permet de créer un menu déroulant totalement dynamique, qui se met à jour automatiquement lorsque les données changent dans votre base.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+WeWeb utilise le contexte <code>item</code> pour représenter chaque élément de la liste. Ainsi, <code>item.name</code> accède au champ "name" de chaque objet, et <code>item.id</code> accède à l'identifiant.
+</div>
+
+<h2>🧪 Solution : Procédure étape par étape</h2>
+
+<h3>Étape 1️⃣ : Préparer la requête</h3>
+
+<p>Dans le menu <strong>Data → Requests</strong> de WeWeb, vérifiez que votre requête renvoie bien une liste de données structurées.</p>
+
+<p><strong>Exemple de réponse attendue :</strong></p>
+
+<pre><code>[
+  { "id": 1, "name": "Vélo" },
+  { "id": 2, "name": "Avion" },
+  { "id": 3, "name": "Bateau" }
+]</code></pre>
+
+<p>Chaque objet doit contenir au minimum :</p>
+<ul>
+    <li>Un <strong>identifiant</strong> (ici <code>id</code>)</li>
+    <li>Un <strong>nom ou libellé</strong> (ici <code>name</code>)</li>
+</ul>
+
+<h3>Étape 2️⃣ : Ajouter le composant Select</h3>
+
+<p>Sur votre page WeWeb :</p>
+
+<ol>
+    <li>Ajoutez un composant <strong>Select</strong> (menu déroulant)</li>
+    <li>Sélectionnez-le dans l'arborescence à gauche</li>
+    <li>Dans le panneau de droite, repérez les paramètres suivants :
+        <ul>
+            <li><strong>Option type</strong> : choisissez <code>Text</code></li>
+            <li><strong>Options</strong></li>
+            <li><strong>Label per item</strong></li>
+            <li><strong>Value per item</strong></li>
+            <li><strong>Initial value</strong> (facultatif)</li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Étape 3️⃣ : Lier les données de la requête</h3>
+
+<p>🧠 <strong>Étape clé :</strong> Remplir les options dynamiquement</p>
+
+<ol>
+    <li>Cliquez sur <strong>Edit formula</strong> (icône fx) à côté du champ <strong>Options</strong></li>
+    <li>Saisissez la formule suivante :</li>
+</ol>
+
+<pre><code>get_all_categorie.data</code></pre>
+
+<p>Cette formule indique à WeWeb d'utiliser les données renvoyées par la requête <code>get_all_categorie</code>.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Assurez-vous que votre requête est bien déclenchée avant l'affichage du composant Select (par exemple, au chargement de la page). Sinon, le menu sera vide.
+</div>
+
+<h3>Étape 4️⃣ : Définir le texte visible (Label per item)</h3>
+
+<p>Pour que chaque option affiche un texte lisible (ex: "Vélo", "Avion", "Bateau"), configurez le <strong>Label per item</strong> :</p>
+
+<ol>
+    <li>Cliquez sur <strong>Edit formula</strong> à côté de <strong>Label per item</strong></li>
+    <li>Saisissez :</li>
+</ol>
+
+<pre><code>item.name</code></pre>
+
+<p>Cela affichera le contenu du champ <code>name</code> de chaque objet dans la liste déroulante.</p>
+
+<h3>Étape 5️⃣ : Définir la valeur stockée (Value per item)</h3>
+
+<p>Pour que WeWeb sache quelle valeur renvoyer lorsque l'utilisateur sélectionne une option (généralement l'identifiant), configurez le <strong>Value per item</strong> :</p>
+
+<ol>
+    <li>Cliquez sur <strong>Edit formula</strong> à côté de <strong>Value per item</strong></li>
+    <li>Saisissez :</li>
+</ol>
+
+<pre><code>item.id</code></pre>
+
+<p>Ainsi, lorsque l'utilisateur sélectionne "Vélo", la valeur <code>1</code> sera stockée et exploitable dans vos workflows ou requêtes.</p>
+
+<h3>Étape 6️⃣ : (Optionnel) Définir une valeur par défaut</h3>
+
+<p>Si vous souhaitez qu'une option soit sélectionnée automatiquement au chargement, configurez le champ <strong>Initial value</strong> :</p>
+
+<pre><code>get_all_categorie.data[0].id</code></pre>
+
+<p>Cela sélectionnera automatiquement le premier élément de la liste (index <code>[0]</code>).</p>
+
+<h2>📊 Résumé des formules à utiliser</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Élément</th>
+            <th>Formule</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Options</strong></td>
+            <td><code>get_all_categorie.data</code></td>
+            <td>Liste complète des données de la requête</td>
+        </tr>
+        <tr>
+            <td><strong>Label per item</strong></td>
+            <td><code>item.name</code></td>
+            <td>Texte affiché pour chaque option</td>
+        </tr>
+        <tr>
+            <td><strong>Value per item</strong></td>
+            <td><code>item.id</code></td>
+            <td>Valeur renvoyée lors de la sélection</td>
+        </tr>
+        <tr>
+            <td><strong>Initial value</strong> (facultatif)</td>
+            <td><code>get_all_categorie.data[0].id</code></td>
+            <td>Sélection automatique du premier élément</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>🧰 Tester le sélecteur</h2>
+
+<p>Une fois la configuration terminée :</p>
+
+<ol>
+    <li>Passez votre projet en mode <strong>Preview</strong></li>
+    <li>Vérifiez que le menu déroulant affiche bien la liste des catégories</li>
+    <li>Sélectionnez une option et vérifiez que la valeur correcte est stockée (visible dans l'onglet de débogage ou en l'envoyant à un workflow)</li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce de débogage</strong><br>
+Utilisez l'onglet <strong>Data</strong> de WeWeb pour inspecter en temps réel la valeur sélectionnée dans votre composant Select. Cela vous aidera à vérifier que <code>item.id</code> est bien renvoyé.
+</div>
+
+<h2>🚀 Pour aller plus loin</h2>
+
+<p>Une fois votre sélecteur fonctionnel, vous pouvez :</p>
+
+<ul>
+    <li>🔍 <strong>Filtrer des données sur la page</strong> en fonction de la catégorie sélectionnée</li>
+    <li>📤 <strong>Envoyer la valeur sélectionnée</strong> à une autre requête ou un workflow (ex: créer un produit avec la catégorie choisie)</li>
+    <li>💾 <strong>Stocker la valeur dans une base de données</strong> via un bouton "Ajouter" ou "Sauvegarder"</li>
+    <li>🔄 <strong>Cascader plusieurs sélecteurs</strong> : par exemple, sélectionner une catégorie, puis afficher les sous-catégories correspondantes dans un second Select</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Vous pouvez également utiliser des filtres avancés directement dans la formule <strong>Options</strong>. Par exemple, pour n'afficher que les catégories actives : <code>get_all_categorie.data.filter(item => item.active === true)</code>
+</div>
+
+<h2>🧭 Exemple concret</h2>
+
+<p><strong>Cas d'usage :</strong> Formulaire d'ajout d'un réparateur</p>
+
+<p>Vous créez un formulaire pour ajouter un nouveau réparateur dans votre application. L'utilisateur doit pouvoir sélectionner la catégorie de réparation (Vélo, Avion, Bateau, etc.).</p>
+
+<p><strong>Configuration :</strong></p>
+<ul>
+    <li><strong>Requête :</strong> <code>get_all_categorie</code> renvoie la liste des catégories depuis Xano</li>
+    <li><strong>Composant Select :</strong> Configuré avec les formules ci-dessus</li>
+    <li><strong>Bouton "Ajouter" :</strong> Envoie une requête <code>create_repairer</code> avec la valeur <code>Select.value</code> (qui contient l'ID de la catégorie sélectionnée)</li>
+</ul>
+
+<p><strong>Résultat :</strong> L'utilisateur sélectionne "Vélo", et l'ID <code>1</code> est automatiquement envoyé à votre API pour créer le réparateur avec la bonne catégorie.</p>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Utilisez <code>get_all_categorie.data</code> dans <strong>Options</strong> pour alimenter le Select</li>
+  <li>Configurez <code>item.name</code> pour le <strong>Label per item</strong> (texte affiché)</li>
+  <li>Configurez <code>item.id</code> pour le <strong>Value per item</strong> (valeur stockée)</li>
+  <li>WeWeb gère automatiquement le contexte <code>item</code> pour chaque élément de la liste</li>
+  <li>Vous pouvez enchaîner facilement avec des workflows ou d'autres requêtes</li>
+</ul>
+</div>
+
+<h2>🎓 Conclusion</h2>
+
+<p>Configurer un sélecteur dynamique dans WeWeb à partir d'une requête est simple et puissant. En quelques formules, vous offrez à vos utilisateurs une interface interactive et connectée à vos données en temps réel.</p>
+
+<p>WeWeb s'impose ainsi comme un outil de choix pour créer des applications riches et modernes, sans code mais avec une vraie logique de développement.</p>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.weweb.io/" target="_blank">Documentation officielle WeWeb</a></li>
+    <li><a href="https://docs.weweb.io/data/data-sources.html" target="_blank">WeWeb - Data Sources</a></li>
+    <li><a href="#" data-article="../articles/weweb/variables-workflow.html">Variables et Workflows dans WeWeb</a></li>
+    <li><a href="#" data-article="../articles/weweb/connexion-weweb-xano-filtres-dynamiques.html">Connexion WeWeb-Xano avec filtres dynamiques</a></li>
+</ul>

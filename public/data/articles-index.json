@@ -186,6 +186,14 @@
     "path": "../articles/weweb/limites-composants-weweb.html"
   },
   {
+    "title": "Mettre à jour la photo de profil utilisateur via un modal WeWeb",
+    "category": "",
+    "level": "",
+    "keywords": [],
+    "theme": "weweb",
+    "path": "../articles/weweb/mettre-a-jour-photo-profil-modal.html"
+  },
+  {
     "title": "Récupérer l'ID utilisateur avec Xano Auth : pas besoin de requête !",
     "category": "WeWeb",
     "level": "Débutant",
@@ -198,6 +206,23 @@
     ],
     "theme": "weweb",
     "path": "../articles/weweb/recuperer-id-utilisateur-xano-auth.html"
+  },
+  {
+    "title": "🎛️ Remplir un sélecteur dynamique dans WeWeb à partir d'une requête",
+    "category": "WeWeb",
+    "level": "Débutant",
+    "keywords": [
+      "Select",
+      "Options dynamiques",
+      "Data binding",
+      "Requêtes",
+      "item.name",
+      "item.id",
+      "get_all_categorie",
+      "Menu déroulant"
+    ],
+    "theme": "weweb",
+    "path": "../articles/weweb/remplir-selecteur-dynamique-requete.html"
   },
   {
     "title": "Variables et workflows dans WeWeb",

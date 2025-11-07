@@ -1,0 +1,282 @@
+<h1>Mettre à jour la photo de profil utilisateur via un modal WeWeb</h1>
+
+<p>
+Dans cet article, je vais t'expliquer comment permettre à un utilisateur de changer sa photo de profil depuis une fenêtre modale (popup) dans WeWeb, puis envoyer automatiquement la nouvelle URL à ton API Xano pour mettre à jour le champ <code>profile_photo_path</code> dans la table <code>user</code>.
+</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie :</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau :</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés :</strong> Modal, Variable bidirectionnelle, Xano API, PUT Request, profile_photo_path, WeWeb v3, Binding, Workflow, currentUser</p>
+    <p>📅 <strong>Mise à jour :</strong> 04/11/2025</p>
+    <p>⏱️ <strong>Temps passé :</strong> 1h-2h</p>
+    <p>⚙️ <strong>Stack :</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour mettre à jour une photo de profil depuis un modal WeWeb, crée une variable de page (ex: <code>newPhotoURL</code>), lie-la au champ texte du modal, puis configure un workflow avec une action Xano Request (PUT) qui envoie la nouvelle URL à ton API.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p>
+Tu voulais permettre à un utilisateur de changer sa photo de profil depuis une fenêtre modale (popup) dans WeWeb, puis envoyer automatiquement la nouvelle URL à ton API Xano pour mettre à jour le champ <code>profile_photo_path</code> dans la table <code>user</code>.
+</p>
+
+<p><strong>💡 Contexte utilisateur :</strong></p>
+<p>
+L'utilisateur clique sur "Modifier ma photo", un modal s'ouvre avec un champ texte pour coller l'URL de la nouvelle photo, puis il clique sur "Sauvegarder". La photo devrait se mettre à jour immédiatement dans l'interface et dans la base de données Xano.
+</p>
+
+<h3>⚙️ Difficultés rencontrées</h3>
+
+<p>Cependant, plusieurs obstacles empêchaient le bon fonctionnement :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Difficulté</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>1️⃣ Mauvais type d'action</strong></td>
+            <td>L'action WeWeb <code>new_profile_path</code> utilisait le type "Return a value" au lieu d'un appel API Xano. Aucun appel réel n'était exécuté.</td>
+        </tr>
+        <tr>
+            <td><strong>2️⃣ Changements WeWeb v3</strong></td>
+            <td>L'option "Value" du champ input n'existe plus directement. WeWeb v3 repose sur des <strong>variables</strong> et des <strong>bindings</strong> pour lier les données.</td>
+        </tr>
+        <tr>
+            <td><strong>3️⃣ Absence de liaison</strong></td>
+            <td>La donnée saisie par l'utilisateur dans le modal n'était pas transmise à la requête Xano.</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention : WeWeb v3 a changé la gestion des formulaires</strong><br>
+Dans WeWeb v3, les options "Get data from component" ont été déplacées. Le système repose désormais sur des <strong>variables de page</strong> et des <strong>bindings bidirectionnels</strong> pour lier les champs de formulaire aux workflows.
+</div>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<p>
+Pour comprendre comment ça fonctionne, imagine une <strong>boîte à lettres</strong> (la variable) qui reçoit et stocke temporairement l'URL de la photo.
+</p>
+
+<ul>
+    <li><strong>La variable</strong> (<code>newPhotoURL</code>) : C'est une "boîte" qui stocke l'URL saisie par l'utilisateur.</li>
+    <li><strong>Le binding</strong> : C'est le "fil" qui relie le champ texte du modal à cette boîte. Quand l'utilisateur tape, la valeur dans la boîte change automatiquement.</li>
+    <li><strong>Le workflow</strong> : C'est la "procédure d'envoi" qui prend le contenu de la boîte et l'envoie à Xano via une requête PUT.</li>
+</ul>
+
+<h3>🧠 Concepts clés</h3>
+
+<p><strong>Variable de page :</strong></p>
+<p>
+Une variable locale à ta page WeWeb, qui stocke temporairement des données. Elle peut être liée à des éléments d'interface (inputs, images, etc.) et utilisée dans des workflows.
+</p>
+
+<p><strong>Binding bidirectionnel :</strong></p>
+<p>
+Quand tu lies un champ texte à une variable, les changements dans le champ mettent automatiquement à jour la variable, et vice-versa. C'est ce qui permet de récupérer facilement la valeur saisie.
+</p>
+
+<p><strong>Workflow avec actions Xano :</strong></p>
+<p>
+Un workflow est une série d'actions déclenchées par un événement (ex: clic sur un bouton). Pour appeler ton API Xano, tu dois utiliser une action de type "Xano Request", pas "Return a value".
+</p>
+
+<h2>✅ Solution / Procédure complète</h2>
+
+<h3>Étape 1️⃣ : Configuration de l'endpoint Xano</h3>
+
+<p>Dans Xano, crée ou configure un endpoint pour mettre à jour la photo de profil :</p>
+
+<ul>
+    <li><strong>Type :</strong> <code>PUT</code></li>
+    <li><strong>Path :</strong> <code>/user/{user_id}/profile_photo_path</code></li>
+    <li><strong>Inputs :</strong>
+        <ul>
+            <li><code>user_id</code> (integer, path parameter)</li>
+            <li><code>profile_photo_path</code> (text, body parameter)</li>
+        </ul>
+    </li>
+    <li><strong>Retour :</strong> <code>updated_user</code> (l'objet utilisateur mis à jour)</li>
+</ul>
+
+<p><strong>Exemple de body attendu par Xano :</strong></p>
+<pre><code>{
+  "profile_photo_path": "https://example.com/new-photo.jpg"
+}
+</code></pre>
+
+<h3>Étape 2️⃣ : Créer la variable WeWeb</h3>
+
+<p>Dans WeWeb, crée une variable de page pour stocker l'URL saisie :</p>
+
+<ol>
+    <li>Ouvre le panneau <strong>Variables</strong> (icône <code>{x}</code> dans la barre latérale)</li>
+    <li>Clique sur <strong>Add variable</strong></li>
+    <li>Configure :
+        <ul>
+            <li><strong>Name :</strong> <code>newPhotoURL</code></li>
+            <li><strong>Type :</strong> Text</li>
+            <li><strong>Scope :</strong> Page (local à ta page)</li>
+            <li><strong>Default value :</strong> Laisse vide ou mets une URL de placeholder</li>
+        </ul>
+    </li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : Prévisualisation en temps réel</strong><br>
+Tu peux lier cette variable à un élément <code>&lt;img&gt;</code> pour afficher une prévisualisation de la photo pendant que l'utilisateur tape l'URL dans le champ texte. Ça améliore l'expérience utilisateur !
+</div>
+
+<h3>Étape 3️⃣ : Lier le champ texte du modal à la variable</h3>
+
+<p>Maintenant, lie le champ texte de ton modal à la variable <code>newPhotoURL</code> :</p>
+
+<ol>
+    <li>Sélectionne le <strong>champ texte</strong> (input) dans ton modal</li>
+    <li>Dans le panneau de propriétés, trouve la section <strong>Bindings</strong></li>
+    <li>Pour le champ <strong>Value</strong>, clique sur l'icône de binding (🔗)</li>
+    <li>Sélectionne <code>{{ newPhotoURL }}</code> dans la liste des variables</li>
+    <li>Active l'option <strong>Bidirectional binding</strong> si disponible (permet la mise à jour automatique dans les deux sens)</li>
+</ol>
+
+<p><strong>Résultat :</strong> Quand l'utilisateur tape dans le champ, la variable <code>newPhotoURL</code> se met automatiquement à jour.</p>
+
+<h3>Étape 4️⃣ : Configurer le workflow du bouton "Sauvegarder"</h3>
+
+<p>Sur le bouton "Sauvegarder" de ton modal, configure un workflow avec 3 actions :</p>
+
+<h4>Action 1 : Appel API Xano (PUT Request)</h4>
+<ul>
+    <li><strong>Type :</strong> Xano → Request</li>
+    <li><strong>Endpoint :</strong> <code>new_profile_path</code> (ou le nom que tu as donné dans WeWeb)</li>
+    <li><strong>Paramètres :</strong>
+        <ul>
+            <li><code>user_id</code> : <code>{{ currentUser.id }}</code></li>
+            <li><code>profile_photo_path</code> : <code>{{ newPhotoURL }}</code></li>
+        </ul>
+    </li>
+</ul>
+
+<h4>Action 2 : Fermer le modal</h4>
+<ul>
+    <li><strong>Type :</strong> Navigate → Close all popups</li>
+    <li><strong>Effet :</strong> Ferme automatiquement la fenêtre modale après l'enregistrement</li>
+</ul>
+
+<h4>Action 3 (Optionnel) : Mettre à jour l'affichage immédiatement</h4>
+<ul>
+    <li><strong>Type :</strong> Variable → Change variable value</li>
+    <li><strong>Variable :</strong> <code>currentUser.profile_photo_path</code></li>
+    <li><strong>Nouvelle valeur :</strong> <code>{{ newPhotoURL }}</code></li>
+    <li><strong>Effet :</strong> L'image de profil se met à jour instantanément sans recharger la page</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin : Gestion des erreurs</strong><br>
+Ajoute une action conditionnelle pour vérifier si la requête Xano a réussi. Si elle échoue, affiche un message d'erreur à l'utilisateur et ne ferme pas le modal. Utilise <code>{{ action.result.success }}</code> comme condition.
+</div>
+
+<h3>Étape 5️⃣ : Tester le workflow</h3>
+
+<ol>
+    <li>Ouvre le modal</li>
+    <li>Colle une URL d'image dans le champ texte (ex: <code>https://i.pravatar.cc/300</code>)</li>
+    <li>Clique sur "Sauvegarder"</li>
+    <li>Vérifie dans la <strong>console réseau</strong> (F12 → Network) qu'une requête <code>PUT</code> est envoyée à Xano</li>
+    <li>Vérifie que le champ <code>profile_photo_path</code> est bien mis à jour dans ta table <code>user</code> dans Xano</li>
+</ol>
+
+<h2>🧰 Exemple concret</h2>
+
+<p><strong>Requête envoyée à Xano :</strong></p>
+
+<pre><code>PUT /api:v1/user/42/profile_photo_path
+
+Headers:
+  Authorization: Bearer &lt;authtoken&gt;
+  Content-Type: application/json
+
+Body:
+{
+  "profile_photo_path": "https://i.pravatar.cc/300"
+}
+</code></pre>
+
+<p><strong>Réponse de Xano :</strong></p>
+
+<pre><code>{
+  "id": 42,
+  "email": "user@example.com",
+  "profile_photo_path": "https://i.pravatar.cc/300",
+  "updated_at": 1699027200000
+}
+</code></pre>
+
+<p><strong>Workflow WeWeb (résumé visuel) :</strong></p>
+
+<pre><code>1. User clicks "Modifier ma photo"
+   ↓
+2. Modal opens with input field (bound to {{ newPhotoURL }})
+   ↓
+3. User pastes URL → {{ newPhotoURL }} updates automatically
+   ↓
+4. User clicks "Sauvegarder"
+   ↓
+5. Action 1: Xano PUT request
+      - user_id: {{ currentUser.id }}
+      - profile_photo_path: {{ newPhotoURL }}
+   ↓
+6. Action 2: Close modal
+   ↓
+7. Action 3: Update {{ currentUser.profile_photo_path }} (optional)
+   ↓
+8. Photo updates in UI ✅
+</code></pre>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>WeWeb v3 utilise des variables et des bindings</strong> pour lier les champs de formulaire aux workflows, pas l'ancienne option "Value" directe.</li>
+  <li><strong>Crée toujours une variable de page</strong> pour stocker temporairement les données saisies par l'utilisateur avant de les envoyer à l'API.</li>
+  <li><strong>Utilise un binding bidirectionnel</strong> pour synchroniser automatiquement le champ texte et la variable.</li>
+  <li><strong>Configure une action Xano Request (PUT)</strong> dans le workflow, pas "Return a value" qui ne fait qu'un retour local.</li>
+  <li><strong>Ferme le modal après succès</strong> avec "Close all popups" pour une meilleure expérience utilisateur.</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Pourquoi doit-on créer une variable de page plutôt que d'accéder directement à la valeur du champ texte dans le workflow ?</p>
+
+<details>
+    <summary>✅ Voir la réponse</summary>
+    <p><strong>Réponse :</strong></p>
+    <ul>
+        <li>Dans WeWeb v3, les workflows n'ont pas d'accès direct à la valeur des champs de formulaire sans binding.</li>
+        <li>La variable de page sert d'<strong>intermédiaire</strong> entre l'interface (input) et le backend (API).</li>
+        <li>Elle permet aussi de <strong>réutiliser</strong> la valeur dans plusieurs actions du workflow (ex: prévisualisation, validation, envoi).</li>
+        <li>C'est une bonne pratique pour séparer la logique d'interface et la logique métier.</li>
+    </ul>
+</details>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.weweb.io/variables.html" target="_blank">Documentation WeWeb : Variables</a></li>
+    <li><a href="https://docs.weweb.io/workflows.html" target="_blank">Documentation WeWeb : Workflows</a></li>
+    <li><a href="https://docs.xano.com/api-endpoints/put-requests" target="_blank">Documentation Xano : PUT Requests</a></li>
+    <li><a href="https://docs.weweb.io/xano-integration.html" target="_blank">Documentation WeWeb : Intégration Xano</a></li>
+</ul>
