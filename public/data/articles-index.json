@@ -112,6 +112,24 @@
     "path": "../articles/notes-diverses/ressources-utiles.html"
   },
   {
+    "title": "Projet 2 : Prise en main de WeWeb",
+    "category": "Rétrospectives",
+    "level": "Débutant",
+    "keywords": [
+      "WeWeb",
+      "Figma",
+      "Formation OpenClassrooms",
+      "Frustrations",
+      "Apprentissage autonome",
+      "Plugin Figma",
+      "Bibliothèques de styles",
+      "Mentorat",
+      "No-code"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet-2-weweb.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",

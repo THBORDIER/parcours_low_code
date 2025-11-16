@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API & Backend - Base de connaissance Low-Code</title>
+    <title>Rétrospectives - Base de connaissance Low-Code</title>
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
@@ -24,7 +24,7 @@
                 <span class="search-icon">🔍</span>
                 <label class="search-scope-toggle">
                     <input type="checkbox" id="search-scope-toggle">
-                    <span>Dans API uniquement</span>
+                    <span>Dans Rétrospectives uniquement</span>
                 </label>
             </div>
         </div>
@@ -36,13 +36,9 @@
             <div class="two-column-layout">
                 <!-- Colonne gauche : Liste des articles -->
                 <aside class="articles-list">
-                    <h2>Articles API & Backend</h2>
+                    <h2>Carnets de route</h2>
                     <ul id="articles-menu">
-                        <li><a href="#" data-article="../articles/api/rest-api.html">Introduction aux REST API</a></li>
-                        <li><a href="#" data-article="../articles/api/authentification.html">Authentification et sécurité</a></li>
-                        <li><a href="#" data-article="../articles/api/integration-weweb-xano.html">Intégration WeWeb-Xano</a></li>
-                        <li><a href="#" data-article="../articles/api/resoudre-erreur-workflow-weweb-xano.html">Résoudre l'erreur workflow WeWeb-Xano</a></li>
-                        <li><a href="#" data-article="../articles/api/update-profil-utilisateur-put.html">Mettre à jour un profil utilisateur (PUT vs vide)</a></li>
+                        <li><a href="#" data-article="../articles/retrospectives/projet-2-weweb.html">Projet 2 : Prise en main de WeWeb</a></li>
                     </ul>
                 </aside>
 
@@ -57,6 +53,7 @@
     </main>
 
     <script>
+        // Gestion de l'affichage des articles
         document.addEventListener('DOMContentLoaded', function() {
             const articleLinks = document.querySelectorAll('#articles-menu a');
             const articleDisplay = document.getElementById('article-display');
@@ -64,8 +61,14 @@
             articleLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
+
+                    // Retirer la classe active de tous les liens
                     articleLinks.forEach(l => l.classList.remove('active'));
+
+                    // Ajouter la classe active au lien cliqué
                     this.classList.add('active');
+
+                    // Charger l'article
                     const articleUrl = this.getAttribute('data-article');
                     loadArticle(articleUrl);
                 });
@@ -74,7 +77,9 @@
             function loadArticle(url) {
                 fetch(url)
                     .then(response => {
-                        if (!response.ok) throw new Error('Article non trouvé');
+                        if (!response.ok) {
+                            throw new Error('Article non trouvé');
+                        }
                         return response.text();
                     })
                     .then(html => {
