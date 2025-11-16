@@ -1,0 +1,344 @@
+<h1>Filtrer des sessions sans réservations : la solution avec LEFT JOIN et IS NULL</h1>
+
+<p><strong>Dans cet article, je vais expliquer comment récupérer toutes les sessions qui ne sont pas réservées dans Xano, en utilisant LEFT JOIN et IS NULL. Je vais aussi montrer pourquoi les méthodes "évidentes" (NOT IN, filtres classiques) ne fonctionnent pas et comment contourner les limitations de Xano.</strong></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> LEFT JOIN, IS NULL, Filtres WHERE, NOT IN, Query All Records, Debugging Xano, JOINs multiples, Xano AI</p>
+    <p>📅 <strong>Mise à jour:</strong> 16/11/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 3 heures</p>
+    <p>⚙️ <strong>Stack:</strong> Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour filtrer les sessions sans réservations dans Xano, utilisez un LEFT JOIN sur <code>reservation</code> avec les filtres de dates directement dans le JOIN, puis ajoutez un WHERE <code>$db.reservation.id == null</code>. Cette méthode évite les erreurs "Invalid value for param" et les comportements inattendus des filtres appliqués après le JOIN.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>Objectif :</strong> Récupérer toutes les sessions d'un réparateur qui ne sont pas réservées.</p>
+
+<p>En SQL classique, c'est trivial :</p>
+
+<pre><code>SELECT * FROM session
+WHERE session.id NOT IN (
+  SELECT session FROM reservation
+)</code></pre>
+
+<p>Ou encore :</p>
+
+<pre><code>SELECT * FROM session
+LEFT JOIN reservation ON session.id = reservation.session
+WHERE reservation.id IS NULL</code></pre>
+
+<p><strong>Symptômes rencontrés dans Xano :</strong></p>
+<ul>
+    <li>❌ Erreur <code>Invalid value for param: "session.id"</code> avec l'opérateur NOT IN</li>
+    <li>❌ LEFT JOIN retourne des résultats vides ou incomplets</li>
+    <li>❌ Les filtres de dates "écrasent" les lignes NULL générées par le LEFT JOIN</li>
+    <li>❌ Les tentatives de transformation de listes (variables, pluck) compliquent inutilement le code</li>
+    <li>❌ Xano AI détruit l'endpoint en modifiant les steps et inputs</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention : Xano AI peut aggraver le problème</strong><br>
+Xano AI a tendance à supprimer vos inputs, modifier vos steps, et restructurer vos endpoints sans demander. Si vous l'utilisez, vérifiez TOUJOURS que vos inputs et filtres sont encore présents après son intervention. Dans ce cas précis, Xano AI a "pulvérisé" l'API au lieu d'aider.
+</div>
+
+<h2>🔍 Explication : Pourquoi les méthodes "évidentes" ne marchent pas</h2>
+
+<h3>❌ Méthode 1 : NOT IN avec une colonne joinée</h3>
+
+<p>Vous essayez :</p>
+
+<pre><code>WHERE $db.session.id NOT IN $db.reservation.session</code></pre>
+
+<p><strong>Pourquoi ça échoue :</strong></p>
+<ul>
+    <li>L'opérateur <code>NOT IN</code> attend une <strong>liste de valeurs</strong></li>
+    <li>Dans Xano, <code>$db.reservation.session</code> n'est pas une liste, mais une <strong>colonne d'une table joinée</strong></li>
+    <li>Xano renvoie : <code>Invalid value for param: "session.id"</code></li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : Différence entre liste et colonne</strong><br>
+Une <strong>liste</strong> dans Xano est un tableau de valeurs (par exemple : <code>[1, 2, 3]</code>). Une <strong>colonne joinée</strong> est un champ qui existe dans chaque ligne du résultat du JOIN. NOT IN ne peut pas travailler avec une colonne, uniquement avec une liste.
+</div>
+
+<h3>❌ Méthode 2 : LEFT JOIN + filtres de dates après le JOIN</h3>
+
+<p>Vous essayez :</p>
+
+<pre><code>LEFT JOIN reservation ON session.id = reservation.session
+WHERE session.start_date <= $input.end_date
+  AND session.end_date >= $input.start_date
+  AND reservation.id IS NULL</code></pre>
+
+<p><strong>Pourquoi ça échoue :</strong></p>
+<ul>
+    <li>Le LEFT JOIN génère correctement des lignes avec <code>reservation.id = NULL</code> pour les sessions non réservées</li>
+    <li><strong>Mais</strong> : les filtres de dates appliqués <strong>après</strong> le JOIN éliminent ces lignes NULL</li>
+    <li>Résultat : même les sessions non réservées n'apparaissent pas comme NULL</li>
+</ul>
+
+<p><strong>Ordre d'exécution SQL (simplifié) :</strong></p>
+
+<pre><code>1. FROM session
+2. LEFT JOIN reservation → génère NULL pour sessions sans réservations
+3. WHERE session.start_date <= ... → filtre les lignes, y compris celles avec NULL
+   ⚠️ Si une session non réservée ne correspond pas aux filtres de dates,
+      elle est éliminée avant même qu'on puisse tester IS NULL</code></pre>
+
+<h3>❌ Méthode 3 : Variables et transformations de listes</h3>
+
+<p>Vous pourriez essayer de :</p>
+<ol>
+    <li>Créer une variable contenant la liste des IDs de sessions réservées</li>
+    <li>Utiliser une fonction de transformation (pluck, map, etc.)</li>
+    <li>Appliquer NOT IN sur cette variable</li>
+</ol>
+
+<p><strong>Pourquoi c'est trop compliqué :</strong></p>
+<ul>
+    <li>Certaines versions de Xano n'ont pas le bloc <code>Pluck</code></li>
+    <li>Les fonctions de transformation varient selon les versions</li>
+    <li>Ça ajoute des étapes inutiles pour un problème simple</li>
+    <li>Moins maintenable et moins lisible</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin : Pourquoi Xano n'a pas NOT IN simplifié</strong><br>
+Dans un SQL classique, <code>NOT IN (SELECT ...)</code> est une sous-requête. Xano ne supporte pas nativement les sous-requêtes dans ses filtres WHERE. C'est pourquoi il faut contourner avec des JOINs et des tests de NULL. C'est une limitation de l'abstraction visuelle de Xano, qui privilégie les JOINs explicites.
+</div>
+
+<h2>✅ La solution qui fonctionne : LEFT JOIN avec filtres dans le JOIN</h2>
+
+<h3>🎯 Principe de la solution</h3>
+
+<p>La clé est de <strong>placer les filtres de dates DANS le JOIN</strong> plutôt que dans le WHERE. Cela permet de :</p>
+
+<ol>
+    <li>Préserver les lignes NULL générées par le LEFT JOIN</li>
+    <li>Appliquer les conditions de dates au bon moment</li>
+    <li>Utiliser un simple <code>WHERE reservation.id IS NULL</code> pour exclure les sessions réservées</li>
+</ol>
+
+<h3>📋 Configuration dans Xano Query All Records</h3>
+
+<p><strong>Étape 1️⃣ : LEFT JOIN sur <code>session</code> avec conditions de dates</strong></p>
+
+<p>Dans votre Query All Records, configurez le JOIN sur <code>session</code> :</p>
+
+<pre><code>LEFT JOIN session
+ON session.repairer = $input.repairer_id
+AND session.start_date <= $input.end_date
+AND session.end_date >= $input.start_date</code></pre>
+
+<p><strong>Points clés :</strong></p>
+<ul>
+    <li>Les filtres de dates sont dans le <code>ON</code>, pas dans le <code>WHERE</code></li>
+    <li>Cela garantit que le LEFT JOIN ne sera pas "annulé" par les filtres</li>
+</ul>
+
+<p><strong>Étape 2️⃣ : LEFT JOIN sur <code>reservation</code></strong></p>
+
+<pre><code>LEFT JOIN reservation
+ON reservation.session = session.id</code></pre>
+
+<p><strong>Explication :</strong></p>
+<ul>
+    <li>Pour chaque session, Xano cherche une réservation correspondante</li>
+    <li>Si aucune réservation n'existe, <code>reservation.id</code> sera <code>NULL</code></li>
+</ul>
+
+<p><strong>Étape 3️⃣ : Filtre WHERE sur <code>reservation.id</code></strong></p>
+
+<pre><code>WHERE $db.reservation.id == null</code></pre>
+
+<p><strong>Résultat :</strong></p>
+<ul>
+    <li>✅ Toutes les sessions <strong>sans réservations</strong> sont retournées</li>
+    <li>✅ Toutes les sessions <strong>avec réservations</strong> sont exclues</li>
+    <li>✅ Les filtres de dates sont respectés</li>
+    <li>✅ Pas besoin de variables ni de transformations</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : La différence entre ON et WHERE</strong><br>
+<ul>
+    <li><strong>ON</strong> : Conditions appliquées <strong>pendant</strong> le JOIN. Les lignes qui ne matchent pas restent dans le résultat avec NULL (LEFT JOIN).</li>
+    <li><strong>WHERE</strong> : Conditions appliquées <strong>après</strong> le JOIN. Les lignes qui ne matchent pas sont éliminées complètement.</li>
+</ul>
+Pour un LEFT JOIN, si vous voulez garder les NULL, mettez vos conditions dans le ON.
+</div>
+
+<h2>🧰 Exemple concret</h2>
+
+<h3>Contexte</h3>
+
+<p>Vous avez :</p>
+<ul>
+    <li>Une table <code>session</code> avec des sessions de réparation</li>
+    <li>Une table <code>reservation</code> avec une foreign key vers <code>session</code></li>
+    <li>Vous voulez récupérer les sessions d'un réparateur entre deux dates, mais <strong>uniquement celles qui ne sont pas réservées</strong></li>
+</ul>
+
+<h3>Structure des tables</h3>
+
+<pre><code>session
+├── id
+├── repairer (foreign key → repairer.id)
+├── start_date
+├── end_date
+└── ...
+
+reservation
+├── id
+├── session (foreign key → session.id)
+└── ...</code></pre>
+
+<h3>Configuration Xano</h3>
+
+<p><strong>Inputs de l'endpoint :</strong></p>
+
+<pre><code>{
+  "repairer_id": 42,
+  "start_date": "2025-11-01",
+  "end_date": "2025-11-30"
+}</code></pre>
+
+<p><strong>Query All Records configuration :</strong></p>
+
+<pre><code>Table: session
+
+LEFT JOIN reservation
+  ON reservation.session == $db.session.id
+
+WHERE:
+  AND [
+    $db.session.repairer == $input.repairer_id,
+    $db.session.start_date <= $input.end_date,
+    $db.session.end_date >= $input.start_date,
+    $db.reservation.id == null
+  ]</code></pre>
+
+<h3>Résultat attendu</h3>
+
+<p>API retourne :</p>
+
+<pre><code>[
+  {
+    "id": 101,
+    "repairer": 42,
+    "start_date": "2025-11-05",
+    "end_date": "2025-11-05",
+    "reservation": null  ← Pas de réservation
+  },
+  {
+    "id": 103,
+    "repairer": 42,
+    "start_date": "2025-11-12",
+    "end_date": "2025-11-12",
+    "reservation": null  ← Pas de réservation
+  }
+]</code></pre>
+
+<p>Les sessions avec réservations (session 102, par exemple) sont <strong>exclues</strong> du résultat.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention : Ordre des JOINs</strong><br>
+L'ordre des JOINs peut affecter les performances. Dans ce cas, faites d'abord le JOIN sur <code>session</code> (avec vos filtres de dates et repairer) pour réduire le nombre de lignes, puis le JOIN sur <code>reservation</code>. Cela évite de charger toutes les réservations de la base.
+</div>
+
+<h2>🧠 Pourquoi cette solution marche (et les autres non)</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Méthode</th>
+            <th>Problème</th>
+            <th>Solution finale</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>NOT IN avec colonne</td>
+            <td>NOT IN attend une liste, pas une colonne joinée</td>
+            <td>Utilise IS NULL au lieu de NOT IN</td>
+        </tr>
+        <tr>
+            <td>LEFT JOIN + WHERE dates</td>
+            <td>WHERE élimine les lignes NULL avant le test IS NULL</td>
+            <td>Met les filtres de dates dans le ON du JOIN</td>
+        </tr>
+        <tr>
+            <td>Variables + transformations</td>
+            <td>Trop complexe, dépend de la version Xano</td>
+            <td>Utilise SQL pur avec LEFT JOIN</td>
+        </tr>
+    </tbody>
+</table>
+
+<p><strong>Cette solution est robuste parce que :</strong></p>
+
+<ol>
+    <li>Les filtres de dates sont dans le JOIN <code>session</code> → empêche le LEFT JOIN d'être annulé</li>
+    <li>LEFT JOIN sur <code>reservation</code> → génère NULL quand il n'y a pas de réservation</li>
+    <li>Filtrer sur <code>reservation.id IS NULL</code> → logique SQL classique pour trouver les lignes sans correspondance</li>
+</ol>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin : LEFT JOIN vs INNER JOIN</strong><br>
+<ul>
+    <li><strong>INNER JOIN</strong> : Ne retourne que les lignes qui ont une correspondance dans les deux tables. Si vous faites INNER JOIN reservation, vous n'aurez QUE les sessions réservées.</li>
+    <li><strong>LEFT JOIN</strong> : Retourne TOUTES les lignes de la table de gauche (session), même si aucune correspondance n'existe dans la table de droite (reservation). Les colonnes de reservation seront NULL pour ces lignes.</li>
+</ul>
+C'est pourquoi LEFT JOIN + IS NULL est la technique standard pour trouver "les éléments A qui n'ont pas de correspondance dans B".
+</div>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>NOT IN</strong> ne fonctionne pas avec une colonne joinée dans Xano, uniquement avec une liste</li>
+  <li>Les filtres appliqués dans le <strong>WHERE</strong> après un LEFT JOIN éliminent les lignes NULL</li>
+  <li>La solution : mettre les filtres de dates <strong>dans le ON du JOIN</strong>, puis utiliser <strong>WHERE reservation.id IS NULL</strong></li>
+  <li>LEFT JOIN + IS NULL est la technique SQL standard pour "trouver A sans B"</li>
+  <li>Xano AI peut détruire vos endpoints — vérifiez toujours vos inputs et steps après son intervention</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<details>
+    <summary><strong>Question 1 :</strong> Pourquoi <code>NOT IN</code> ne fonctionne pas avec <code>$db.reservation.session</code> dans Xano ?</summary>
+    <p><strong>Réponse :</strong> Parce que <code>NOT IN</code> attend une <strong>liste de valeurs</strong> (par exemple <code>[1, 2, 3]</code>), mais <code>$db.reservation.session</code> est une <strong>colonne joinée</strong>, pas une liste. Xano renvoie donc une erreur <code>Invalid value for param</code>.</p>
+</details>
+
+<details>
+    <summary><strong>Question 2 :</strong> Quelle est la différence entre mettre un filtre dans le <code>ON</code> d'un LEFT JOIN et dans le <code>WHERE</code> ?</summary>
+    <p><strong>Réponse :</strong></p>
+    <ul>
+        <li><strong>ON</strong> : Condition appliquée <strong>pendant</strong> le JOIN. Les lignes qui ne matchent pas restent dans le résultat avec NULL (pour un LEFT JOIN).</li>
+        <li><strong>WHERE</strong> : Condition appliquée <strong>après</strong> le JOIN. Les lignes qui ne matchent pas sont complètement éliminées du résultat.</li>
+    </ul>
+    <p>Pour un LEFT JOIN où vous voulez garder les NULL, mettez vos conditions dans le ON.</p>
+</details>
+
+<details>
+    <summary><strong>Question 3 :</strong> Pourquoi utilise-t-on <code>LEFT JOIN</code> plutôt que <code>INNER JOIN</code> pour trouver les sessions sans réservations ?</summary>
+    <p><strong>Réponse :</strong> Avec un <code>INNER JOIN</code>, seules les sessions qui ont une réservation seraient retournées. Le <code>LEFT JOIN</code> retourne <strong>toutes</strong> les sessions, même celles sans réservation (avec <code>reservation = NULL</code>). On peut ensuite filtrer sur <code>IS NULL</code> pour garder uniquement celles sans réservation.</p>
+</details>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/working-with-your-database/query-all-records" target="_blank">Documentation Xano : Query All Records</a></li>
+    <li><a href="https://docs.xano.com/working-with-your-database/joins" target="_blank">Documentation Xano : JOINs</a></li>
+    <li>Article connexe : <a href="#" data-article="../articles/xano/filtrage-par-date-jointures-recouvrement.html">Filtrer par date avec des jointures : résoudre le problème de recouvrement de périodes dans Xano</a></li>
+    <li>Article connexe : <a href="#" data-article="../articles/xano/filtrer-sessions-par-utilisateur-api-dynamique.html">Filtrer des sessions par utilisateur avec une API dynamique dans Xano</a></li>
+</ul>

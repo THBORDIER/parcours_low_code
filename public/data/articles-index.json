@@ -281,6 +281,23 @@
     "path": "../articles/xano/filtrage-dates-jointures-recouvrement.html"
   },
   {
+    "title": "Filtrer des sessions sans réservations : la solution avec LEFT JOIN et IS NULL",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "LEFT JOIN",
+      "IS NULL",
+      "Filtres WHERE",
+      "NOT IN",
+      "Query All Records",
+      "Debugging Xano",
+      "JOINs multiples",
+      "Xano AI"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/filtrer-sessions-sans-reservations-left-join.html"
+  },
+  {
     "title": "Xano + WeWeb : Comment filtrer des sessions par utilisateur et par date avec une seule API dynamique",
     "category": "Xano",
     "level": "Intermédiaire",
