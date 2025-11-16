@@ -1,0 +1,307 @@
+<h1>Projet 3 : Prise en main de Xano</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Rétrospectives</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Xano, Base de données, SQL, API REST, Add-ons, Filtres, ChatGPT, IA Xano, Convention de nommage, Authentification, Plugin WeWeb</p>
+    <p>📅 <strong>Mise à jour:</strong> Novembre 2024</p>
+    <p>⏱️ <strong>Temps passé:</strong> ~25h (sur 2-3 semaines)</p>
+    <p>⚙️ <strong>Stack:</strong> Xano + WeWeb + ChatGPT</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Projet très attendu pour enfin mettre les mains dans les données. Malgré une expérience SQL quotidienne, Xano impose ses contraintes et bride la liberté des requêtes. L'IA intégrée est décevante (rappelle GPT-3.5), mais ChatGPT externe aide bien. Beaucoup de temps perdu sur des tâches basiques (WHERE, add-ons), manque de conventions de nommage. Projet bouclé en moins de temps que prévu, mais insatisfaction sur la durée réelle. Encore une formation "débrouillez-vous" sans cours structurés. Le mentor reste un atout précieux.
+</div>
+
+<h2>📝 Résumé du projet</h2>
+
+<p>
+Le Projet 3 marque mon entrée dans l'univers Xano, le backend no-code de la stack. Après avoir pris en main WeWeb pour le frontend, <strong>j'avais hâte de mettre directement les mains dans les données</strong> et de pouvoir les récupérer sur mon interface WeWeb.
+</p>
+
+<p>
+L'objectif : créer une base de données, construire des API REST, gérer l'authentification, et connecter le tout à WeWeb pour une application fonctionnelle.
+</p>
+
+<h2>🎯 Objectifs initiaux</h2>
+
+<p>Ce que le projet demandait :</p>
+
+<ul>
+    <li>Concevoir un schéma de base de données pour l'application</li>
+    <li>Créer les tables et relations dans Xano</li>
+    <li>Construire des API REST pour exposer les données</li>
+    <li>Implémenter des filtres dynamiques (par date, catégorie, nom)</li>
+    <li>Intégrer l'authentification Xano avec WeWeb</li>
+    <li>Connecter les API à l'interface WeWeb</li>
+</ul>
+
+<h2>🚀 Premières impressions</h2>
+
+<h3>💪 Confiance initiale</h3>
+
+<p>
+<strong>J'utilise déjà du SQL au quotidien</strong>, donc j'espérais pouvoir passer des requêtes simples sans trop de difficultés. J'avais déjà une idée simple de tables pour mettre en place le projet. Je me disais : "ça va rouler facilement".
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Optimisme initial</strong><br>
+Forte expérience SQL, schéma de base simple en tête, envie de manipuler des données réelles. Tout semblait bien parti !
+</div>
+
+<h3>😕 Première déconvenue : schéma imposé</h3>
+
+<p>
+Je prends connaissance du projet dans sa globalité. Au cours d'une vidéo, je constate qu'un <strong>schéma est plus ou moins imposé</strong>. Il va falloir que je réfléchisse avec les idées de quelqu'un d'autre… Soit, je ferai avec. Mais c'est une première déconvenue.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Contrainte du schéma imposé</strong><br>
+Le projet impose un schéma de base de données préconçu, limitant la liberté de conception. Frustration de devoir suivre la logique d'autrui plutôt que d'appliquer ses propres choix d'architecture.
+</div>
+
+<h3>🤖 Construction rapide avec l'IA</h3>
+
+<p>
+Je construis ma base de données rapidement avec quelques captures d'écran et l'aide de l'IA. <strong>Xano me la construit également rapidement avec l'IA intégrée.</strong>
+</p>
+
+<p>
+Ensuite, je commence à suivre des tutos glanés sur le web. <strong>J'utilise énormément ChatGPT</strong> pour lui copier-coller des images de WeWeb et Xano afin qu'il me guide. Il n'est pas très à jour (l'outil Xano évoluant rapidement), mais ça suffit pour me faire avancer.
+</p>
+
+<h2>😤 Difficultés rencontrées</h2>
+
+<h3>🤖 IA intégrée Xano : une catastrophe</h3>
+
+<p>
+Je tente l'utilisation de l'IA intégrée à Xano. <strong>C'est une catastrophe.</strong>
+</p>
+
+<p>
+J'ai l'impression de revenir trois ans en arrière en devant rappeler en permanence un contexte, mettre des exemples et faire de multiples essais-erreurs. <strong>L'IA a tendance à supprimer du contenu, retirer des choses qui fonctionnent.</strong>
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Déception IA Xano</strong><br>
+L'IA intégrée rappelle avec dégoût les premiers programmes C# avec GPT-3.5 : contexte perdu en permanence, suggestions qui cassent le code fonctionnel, régression constante.
+</div>
+
+<h3>📛 Absence de convention de nommage</h3>
+
+<p>
+Je remarque qu'une <strong>convention de nommage claire et précise m'aurait aidé pour la suite</strong>. Je me mélange souvent les pinceaux à savoir ce qui est utilisé et par quoi.
+</p>
+
+<p>
+<strong>C'est un gros foutoir où les brouillons côtoient les API de prod.</strong> Impossible de distinguer rapidement ce qui est en développement, en test, ou en production.
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Leçon apprise</strong><br>
+Définir une convention de nommage AVANT de commencer le projet. Par exemple : préfixes "dev_", "test_", "prod_" pour les API, suffixes "_draft" pour les brouillons, noms explicites pour les endpoints.
+</div>
+
+<h3>🧩 Add-ons Xano : incompréhension totale</h3>
+
+<p>
+Je galère plusieurs heures avec le <strong>principe d'add-on sur Xano pour ajouter des données à mes outputs</strong>. Rien ne me semble logique.
+</p>
+
+<p>
+L'interface est belle et c'est bien mignon d'ajouter des choses en cliquant, mais <strong>c'est beaucoup moins clair que du code en brut pour moi</strong>.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Frustration no-code</strong><br>
+Pour quelqu'un habitué au code SQL brut, l'interface visuelle Xano peut sembler opaque. Les add-ons manquent de documentation claire et de logique évidente pour les développeurs traditionnels.
+</div>
+
+<h3>🔍 WHERE : un combat permanent</h3>
+
+<p>
+Je passe également <strong>beaucoup d'heures à me battre pour faire un simple WHERE</strong>. Xano me bloque et me bride en permanence. <strong>Je ne suis pas libre de mes requêtes et impossible de les écrire moi-même.</strong>
+</p>
+
+<p>
+Je perds un temps monstre pour des choses qui me semblaient basiques. Mais c'est ça aussi, réapprendre un autre outil.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Limitation majeure</strong><br>
+Xano ne permet pas d'écrire du SQL brut. Tout passe par l'interface visuelle, ce qui limite la flexibilité et oblige à contourner les contraintes de l'outil.
+</div>
+
+<h3>📅 Filtres réparateur : bugs récurrents</h3>
+
+<p>
+Je passe beaucoup de temps sur le <strong>filtrage réparateur par date, par nom, par catégorie</strong>.
+</p>
+
+<p>
+À plusieurs reprises, <strong>mon API fonctionne puis le lendemain ne fonctionne plus</strong>. Il faudra que je repasse dessus à un moment.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Instabilité</strong><br>
+Certaines API fonctionnent de manière intermittente. Possibles causes : cache Xano, mise à jour de l'outil, problème de configuration. À investiguer ultérieurement.
+</div>
+
+<h2>💪 Débrouillardise et solutions</h2>
+
+<h3>🤖 ChatGPT comme béquille</h3>
+
+<p>
+Face aux limitations de l'IA Xano, <strong>ChatGPT devient mon allié principal</strong>. Je lui copie-colle des captures d'écran de Xano et WeWeb pour qu'il me guide pas à pas.
+</p>
+
+<p>
+Même s'il n'est pas toujours à jour sur les dernières versions de Xano, <strong>ses explications suffisent pour avancer</strong>.
+</p>
+
+<h3>📈 Progression graduelle</h3>
+
+<p>
+Au fur et à mesure de la progression, je me permets des requêtes avec plus d'input, avec des <code>if</code>, avec des <code>WHERE</code> qui fonctionnent. <strong>J'envisage des API qui répondent à plusieurs besoins.</strong>
+</p>
+
+<p>
+Je pense qu'avec une base de données mieux maîtrisée, j'aurais pu limiter grandement les API pour ne pas en avoir dans tous les sens. Je vais faire avec… <strong>Ce projet de ReparEvou, je n'aurai pas à le maintenir heureusement !</strong>
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Astuce</strong><br>
+Concevoir des API génériques avec des paramètres dynamiques permet de réduire le nombre d'endpoints et de simplifier la maintenance.
+</div>
+
+<h2>✨ Points positifs</h2>
+
+<h3>🔐 Plugin Xano Auth : très pratique</h3>
+
+<p>
+Xano propose un <strong>plugin sur WeWeb pour les inscriptions, modification de mot de passe, déconnexion et login</strong>. C'est très pratique !
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Gain de temps</strong><br>
+Le plugin Xano Auth pour WeWeb évite de devoir construire manuellement tout le système d'authentification. Connexion, inscription, déconnexion, et gestion du mot de passe fonctionnent immédiatement.
+</div>
+
+<h3>🚀 Construction rapide de la base</h3>
+
+<p>
+Malgré les contraintes, la construction initiale de la base de données avec l'IA Xano est rapide. Les tables se créent facilement via l'interface visuelle.
+</p>
+
+<h3>🧑‍🏫 Mentor exceptionnel</h3>
+
+<p>
+<strong>Mon mentor m'accompagne parfaitement et est très généreux de son temps.</strong> Il maîtrise parfaitement l'outil et c'est un plaisir d'échanger avec lui.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Atout majeur</strong><br>
+Le mentorat compense largement le manque de cours structurés. Un mentor compétent et disponible fait toute la différence dans l'apprentissage.
+</div>
+
+<h2>😮‍💨 Points négatifs</h2>
+
+<h3>⏱️ Temps perdu sur des tâches basiques</h3>
+
+<p>
+Je boucle le projet en moins de temps que prévu (environ 25h sur 2-3 semaines), mais <strong>je ne suis clairement pas satisfait du temps qu'il m'a fallu pour le boucler</strong>.
+</p>
+
+<p>
+Je pense avoir avancé sur d'autres projets en même temps, ce qui explique l'étalement sur plusieurs semaines.
+</p>
+
+<h3>📚 Encore une fois : "débrouillez-vous"</h3>
+
+<p>
+Encore une fois, le projet c'est du <strong>"débrouillez-vous"</strong> : pas de cours, pas d'exercices. Seulement des ressources externes en anglais, pas toujours à jour, pas ludiques.
+</p>
+
+<p>
+<strong>Au final, je paie un mentor à valider les compétences que je me débrouille pour acquérir tout seul.</strong> C'est plus un examen continu qu'une formation.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Critique de la pédagogie</strong><br>
+La formation OpenClassrooms Low-Code ressemble davantage à un parcours d'autodidacte validé par un mentor qu'à une vraie formation structurée avec cours théoriques et exercices progressifs.
+</div>
+
+<h3>💸 Partage d'espaces : encore payant</h3>
+
+<p>
+Nous sommes censés partager nos espaces Xano et WeWeb, mais <strong>rien ne permet de faire ça sans payer, encore une fois</strong>.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Barrière financière</strong><br>
+Les fonctionnalités de partage et de collaboration nécessitent des abonnements payants, limitant les possibilités de travail en équipe pour les étudiants.
+</div>
+
+<h2>🎓 Apprentissages clés</h2>
+
+<div class="summary">
+📌 <strong>Ce que j'ai retenu :</strong>
+<ul>
+  <li><strong>Xano n'est pas du SQL brut</strong> : Il faut accepter les contraintes de l'interface visuelle et abandonner l'idée d'écrire des requêtes SQL manuellement</li>
+  <li><strong>Convention de nommage indispensable</strong> : Sans organisation claire, le projet devient rapidement ingérable</li>
+  <li><strong>IA Xano décevante</strong> : L'IA intégrée n'est pas à la hauteur ; préférer ChatGPT externe pour l'aide</li>
+  <li><strong>Add-ons Xano opaques</strong> : Nécessitent du temps pour comprendre la logique, mais puissants une fois maîtrisés</li>
+  <li><strong>Plugin Xano Auth</strong> : Gain de temps considérable pour l'authentification</li>
+  <li><strong>Mentorat précieux</strong> : Le mentor compense le manque de cours structurés</li>
+  <li><strong>API génériques</strong> : Concevoir des API réutilisables avec paramètres dynamiques évite la multiplication d'endpoints</li>
+  <li><strong>Patience et persévérance</strong> : Réapprendre un outil no-code prend du temps, même avec une expérience SQL solide</li>
+</ul>
+</div>
+
+<h2>📊 Bilan global</h2>
+
+<h3>✅ Validation du projet</h3>
+
+<p>
+Je boucle le projet en <strong>~25h réparties sur 2-3 semaines</strong>, soit moins que l'estimation initiale. Cependant, je ne suis pas satisfait de ce délai, car beaucoup de temps a été perdu sur des tâches qui auraient dû être simples.
+</p>
+
+<h3>🤔 Ressenti général</h3>
+
+<p>
+Un projet avec un <strong>mélange d'excitation et de frustration</strong>. Excitation de manipuler enfin des données réelles et de construire des API, mais frustration face aux contraintes de Xano et au manque de formation structurée.
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Nuance importante</strong><br>
+Malgré les frustrations, Xano reste un outil puissant pour le no-code backend. Les contraintes deviennent acceptables une fois qu'on a intégré la logique de l'outil.
+</div>
+
+<h3>🚀 Projection vers les projets personnels</h3>
+
+<p>
+<strong>Je commence à envisager des projets perso sur cette stack pour mes projets finaux.</strong> L'association WeWeb + Xano offre des possibilités intéressantes pour créer rapidement des applications complètes.
+</p>
+
+<h2>➡️ Et après ?</h2>
+
+<p>
+Avec WeWeb et Xano maîtrisés (dans une certaine mesure), je me sens capable d'aborder des projets plus ambitieux. <strong>Direction les projets finaux avec des idées personnelles !</strong>
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Projection positive</strong><br>
+Malgré les difficultés, la stack WeWeb + Xano commence à faire sens. Les frustrations initiales laissent place à des perspectives créatives.
+</div>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://www.xano.com" target="_blank">Xano - Site officiel</a></li>
+    <li><a href="https://docs.xano.com" target="_blank">Documentation Xano (en anglais)</a></li>
+    <li><a href="https://www.weweb.io" target="_blank">WeWeb - Site officiel</a></li>
+    <li><a href="https://chat.openai.com" target="_blank">ChatGPT - Aide externe précieuse</a></li>
+</ul>

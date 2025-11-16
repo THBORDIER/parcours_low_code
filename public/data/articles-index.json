@@ -130,6 +130,26 @@
     "path": "../articles/retrospectives/projet-2-weweb.html"
   },
   {
+    "title": "Projet 3 : Prise en main de Xano",
+    "category": "Rétrospectives",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Xano",
+      "Base de données",
+      "SQL",
+      "API REST",
+      "Add-ons",
+      "Filtres",
+      "ChatGPT",
+      "IA Xano",
+      "Convention de nommage",
+      "Authentification",
+      "Plugin WeWeb"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet-3-xano.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",
