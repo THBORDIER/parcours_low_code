@@ -1,0 +1,443 @@
+<h1>Xano : Filtrer des sessions par date (même jour) en ignorant l'heure — Mission impossible ?</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Query Builder, Timestamps, Filtres, format_timestamp, WHERE clause, Limitations Xano, Debugging</p>
+    <p>📅 <strong>Mise à jour:</strong> 19/11/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 3h30</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Comparer uniquement le <strong>jour</strong> de deux timestamps (en ignorant l'heure) est trivial en SQL. Mais dans Xano, c'est un enfer : le Query Builder refuse <code>format_timestamp()</code> dans les WHERE, ne permet pas de parser ou convertir correctement les timestamps, et n'offre aucune visibilité sur le SQL généré. Cet article décortique TOUTES les approches tentées et explique pourquoi le Query Builder de Xano est inadapté pour cette opération basique.
+</div>
+
+<h2>🤔 Le besoin (apparemment) trivial</h2>
+
+<p>Tu veux faire quelque chose de <strong>parfaitement banal</strong> :</p>
+
+<blockquote>
+Récupérer toutes les sessions dont <code>session.start_date</code> est <strong>le même jour</strong> que <code>input.date_debut</code>, <strong>sans tenir compte de l'heure</strong>.
+</blockquote>
+
+<p><strong>Exemple concret :</strong></p>
+
+<ul>
+    <li>Input WeWeb : <code>date_debut: 1763578800000</code> (timestamp en millisecondes = 19 novembre 2025, 00:00:00)</li>
+    <li>Session en base : <code>start_date: 2025-11-19 14:30:00</code></li>
+    <li><strong>Résultat attendu :</strong> Cette session doit être retournée car <code>19/11/2025 == 19/11/2025</code></li>
+</ul>
+
+<p>En SQL natif, ce serait :</p>
+
+<pre><code>SELECT *
+FROM session
+WHERE DATE(start_date) = DATE(FROM_UNIXTIME(:date_debut / 1000))
+</code></pre>
+
+<p><strong>SIMPLE. ÉVIDENT. UNIVERSEL.</strong></p>
+
+<p>Sauf que dans Xano... c'est une autre histoire.</p>
+
+<h2>🔍 Les 7 approches tentées (toutes bloquées)</h2>
+
+<h3>1️⃣ Utiliser <code>format_timestamp()</code> dans le WHERE</h3>
+
+<p><strong>Idée :</strong></p>
+
+<pre><code>format_timestamp(db.session.start_date, "Y-m-d") == format_timestamp(input.date_debut, "Y-m-d")
+</code></pre>
+
+<p><strong>Résultat :</strong></p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Refusé par Xano</strong><br>
+Le Query Builder n'accepte PAS <code>format_timestamp()</code> dans un WHERE.<br>
+Message d'erreur : <code>Invalid filter</code>
+</div>
+
+<p><strong>Pourquoi ça ne marche pas :</strong></p>
+
+<ul>
+    <li><code>format_timestamp()</code> est uniquement disponible dans les <strong>Responses</strong></li>
+    <li>Le Query Builder SQL de Xano n'expose pas cette fonction dans les conditions WHERE</li>
+    <li>Incohérence totale : la fonction existe, mais pas là où on en a besoin</li>
+</ul>
+
+<hr>
+
+<h3>2️⃣ Utiliser les pipes (<code>value|format_timestamp</code>)</h3>
+
+<p><strong>Idée :</strong></p>
+
+<pre><code>db.session.start_date|format_timestamp:"Y-m-d" == input.date_debut|format_timestamp:"Y-m-d"
+</code></pre>
+
+<p><strong>Résultat :</strong></p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Refusé aussi</strong><br>
+Les pipes ne fonctionnent que dans les <strong>Responses</strong>, jamais dans un WHERE.<br>
+Le Query Builder bloque la syntaxe.
+</div>
+
+<hr>
+
+<h3>3️⃣ Utiliser <code>to_timestamp()</code> ou <code>parse_timestamp()</code></h3>
+
+<p><strong>Idée :</strong></p>
+
+<pre><code>to_timestamp(input.date_debut) == db.session.start_date
+</code></pre>
+
+<p><strong>Résultat :</strong></p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Toujours rejeté dans un WHERE</strong><br>
+Ces fonctions existent dans Xano Functions, mais ne sont <strong>pas utilisables</strong> dans la couche SQL du Query Builder.
+</div>
+
+<hr>
+
+<h3>4️⃣ Tronquer le timestamp avec modulo (technique SQL classique)</h3>
+
+<p><strong>Idée :</strong></p>
+
+<pre><code>timestamp - (timestamp % 86400000) == input.date_debut - (input.date_debut % 86400000)
+</code></pre>
+
+<p><strong>Explication :</strong> 86400000 ms = 1 jour. En retirant le modulo, on tronque la date à minuit.</p>
+
+<p><strong>Résultat :</strong></p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Erreur : Not numeric</strong><br>
+Xano ne considère pas <code>input.date_debut</code> comme un nombre dans ce contexte, même si c'est bien un <code>1763578800000</code> en JSON.
+</div>
+
+<p><strong>Pourquoi :</strong></p>
+
+<ul>
+    <li>Le typage des inputs est <strong>flou</strong> dans Xano</li>
+    <li>Un input peut être vu comme string, number, ou timestamp selon le contexte</li>
+    <li>Les opérations arithmétiques ne sont pas toujours autorisées</li>
+</ul>
+
+<hr>
+
+<h3>5️⃣ Utiliser la fonction SQL <code>date()</code></h3>
+
+<p><strong>Idée :</strong></p>
+
+<pre><code>date(db.session.start_date) == date(input.date_debut)
+</code></pre>
+
+<p><strong>Résultat :</strong></p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Comparaison toujours fausse</strong><br>
+Xano ne convertit <strong>pas correctement</strong> <code>input.date_debut</code> en datetime SQL.
+</div>
+
+<p><strong>Ce qui se passe réellement :</strong></p>
+
+<pre><code>DATE(db.session.start_date) → 2025-11-19
+DATE(input.date_debut)      → DATE(1763578800000) ❌
+</code></pre>
+
+<p>Xano garde ton timestamp en millisecondes comme un <code>INT</code>, <strong>pas comme un DATETIME</strong>.</p>
+
+<p>En SQL pur, il faudrait :</p>
+
+<pre><code>DATE(FROM_UNIXTIME(input.date_debut / 1000))
+</code></pre>
+
+<p><strong>Mais <code>FROM_UNIXTIME()</code> n'est pas accessible dans le Query Builder.</strong></p>
+
+<hr>
+
+<h3>6️⃣ Comparer des plages temporelles (début du jour → fin du jour)</h3>
+
+<p><strong>Idée :</strong></p>
+
+<p>La méthode SQL universelle pour comparer uniquement le jour :</p>
+
+<pre><code>start_date >= début_du_jour
+AND start_date < fin_du_jour
+</code></pre>
+
+<p><strong>Problème :</strong></p>
+
+<ul>
+    <li>Tu ne peux pas <strong>calculer</strong> <code>début_du_jour</code> et <code>fin_du_jour</code> dans un WHERE</li>
+    <li>Il faudrait les calculer en amont (dans une Function), mais c'est lourd</li>
+    <li>Xano refuse les fonctions nécessaires (format, parse) ailleurs que dans les Responses</li>
+</ul>
+
+<hr>
+
+<h3>7️⃣ Utiliser un Custom Query avec SQL brut</h3>
+
+<div class="callout callout-tip">
+✨ <strong>C'EST LA SEULE SOLUTION QUI FONCTIONNE</strong><br>
+Si tu utilises un <strong>Custom Query</strong> dans Xano et écris directement le SQL, tu peux utiliser <code>FROM_UNIXTIME()</code> et <code>DATE()</code>.
+</div>
+
+<p><strong>SQL qui fonctionne :</strong></p>
+
+<pre><code>SELECT *
+FROM session
+WHERE DATE(start_date) = DATE(FROM_UNIXTIME(:date_debut / 1000))
+</code></pre>
+
+<p><strong>Mais :</strong></p>
+
+<ul>
+    <li>Tu perds l'interface visuelle du Query Builder</li>
+    <li>Tu dois maintenir du SQL à la main</li>
+    <li>Ça casse la promesse "no-code" de Xano</li>
+</ul>
+
+<h2>🛑 Pourquoi le Query Builder de Xano est inadapté ici</h2>
+
+<p>On ne va pas tourner autour du pot. Voici les raisons objectives pour lesquelles Xano est <strong>inadapté</strong> pour cette tâche basique :</p>
+
+<h3>1. Le Query Builder n'a pas été pensé pour manipuler les dates</h3>
+
+<p>Tu n'as accès à :</p>
+
+<ul>
+    <li>❌ Aucune vraie fonction SQL (<code>FROM_UNIXTIME</code>, <code>DATE</code>, <code>CAST</code>)</li>
+    <li>❌ Aucun contrôle sur les conversions de timestamps</li>
+    <li>❌ Aucun cast explicite de types</li>
+</ul>
+
+<p>Xano impose une couche d'abstraction, mais <strong>pas compatible</strong> avec des opérations basiques sur les dates.</p>
+
+<h3>2. Les fonctions Xano ne sont pas utilisables là où on en a besoin</h3>
+
+<ul>
+    <li><code>format_timestamp()</code> marche en <strong>Response</strong>, mais pas en <strong>WHERE</strong></li>
+    <li><code>parse_timestamp()</code> marche dans <strong>Functions</strong>, mais pas en <strong>WHERE</strong></li>
+</ul>
+
+<p>Xano n'a <strong>pas un langage homogène</strong> : le Query Builder et les Functions n'ont pas les mêmes capacités.</p>
+
+<h3>3. Pas de logs SQL, pas de visibilité</h3>
+
+<p>Tu ne vois jamais :</p>
+
+<ul>
+    <li>Les conversions internes appliquées</li>
+    <li>Le SQL final généré</li>
+    <li>Les types manipulés (string, number, datetime ?)</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Debugging impossible</strong><br>
+Le "Run & Debug" ne montre que l'entrée et la sortie.<br>
+Pas de trace intermédiaire, pas de SQL visible.
+</div>
+
+<h3>4. Le typage est flou et change selon le contexte</h3>
+
+<p>Un input JSON <code>"1763578800000"</code> peut être :</p>
+
+<ul>
+    <li>Un <strong>string</strong> en WHERE</li>
+    <li>Un <strong>number</strong> en Response</li>
+    <li>Un <strong>timestamp</strong> ailleurs</li>
+    <li>Un <strong>datetime</strong> si passé par un parse</li>
+    <li>Un <strong>INT MySQL</strong> s'il n'est pas casté</li>
+</ul>
+
+<p><strong>C'est incohérent.</strong></p>
+
+<h3>5. Ce que tu veux faire est simple... mais pas dans Xano</h3>
+
+<p>Comparer uniquement le <strong>jour</strong> d'un timestamp est :</p>
+
+<ul>
+    <li>✅ Trivial en SQL</li>
+    <li>✅ Trivial en PHP/Python</li>
+    <li>✅ Trivial en JavaScript</li>
+    <li>✅ Trivial en NoCode comme Supabase ou Firebase</li>
+    <li>❌ <strong>Impossible proprement dans Xano Query Builder</strong></li>
+</ul>
+
+<p>Parce qu'ils ont <strong>bridé toutes les routes logiques</strong>.</p>
+
+<h2>🧰 Solutions de contournement (si tu restes sur Xano)</h2>
+
+<h3>Option 1 : Custom Query avec SQL brut ✅ (recommandé)</h3>
+
+<p>Utilise un <strong>Custom Query</strong> dans ton endpoint Xano :</p>
+
+<pre><code>SELECT *
+FROM session
+WHERE DATE(start_date) = DATE(FROM_UNIXTIME(:date_debut / 1000))
+</code></pre>
+
+<p><strong>Avantages :</strong></p>
+
+<ul>
+    <li>✅ Ça fonctionne</li>
+    <li>✅ SQL standard, compréhensible</li>
+    <li>✅ Performances correctes</li>
+</ul>
+
+<p><strong>Inconvénients :</strong></p>
+
+<ul>
+    <li>❌ Tu perds l'interface visuelle</li>
+    <li>❌ Maintenance manuelle du SQL</li>
+</ul>
+
+<hr>
+
+<h3>Option 2 : Calculer la plage en amont (Function) ⚠️</h3>
+
+<p>Crée une <strong>Function</strong> qui calcule :</p>
+
+<pre><code>{
+  "day_start": timestamp du début du jour (00:00:00),
+  "day_end": timestamp de fin du jour (23:59:59)
+}
+</code></pre>
+
+<p>Puis dans ton Query Builder :</p>
+
+<pre><code>start_date >= var.day_start
+AND start_date < var.day_end
+</code></pre>
+
+<p><strong>Avantages :</strong></p>
+
+<ul>
+    <li>✅ Reste dans le Query Builder</li>
+    <li>✅ Logique réutilisable</li>
+</ul>
+
+<p><strong>Inconvénients :</strong></p>
+
+<ul>
+    <li>❌ Code lourd pour une opération simple</li>
+    <li>❌ Nécessite une étape intermédiaire</li>
+</ul>
+
+<hr>
+
+<h3>Option 3 : Filtrer côté WeWeb (JS) ❌ (à éviter)</h3>
+
+<p>Récupère TOUTES les sessions, puis filtre en JavaScript dans WeWeb.</p>
+
+<p><strong>Avantages :</strong></p>
+
+<ul>
+    <li>✅ Tu contrôles tout en JS</li>
+</ul>
+
+<p><strong>Inconvénients :</strong></p>
+
+<ul>
+    <li>❌ Performances catastrophiques si tu as beaucoup de sessions</li>
+    <li>❌ Tu charges des données inutiles</li>
+    <li>❌ Pagination impossible</li>
+    <li>❌ <strong>Mauvaise pratique absolue</strong></li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Ne fais ça que si tu as moins de 100 sessions max</strong>
+</div>
+
+<h2>🧭 Exemple concret : Custom Query fonctionnel</h2>
+
+<p>Voici un endpoint Xano complet avec Custom Query :</p>
+
+<h3>Étape 1️⃣ : Input</h3>
+
+<pre><code>{
+  "date_debut": 1763578800000
+}
+</code></pre>
+
+<h3>Étape 2️⃣ : Custom Query</h3>
+
+<pre><code>SELECT
+  session.id,
+  session.title,
+  session.start_date,
+  session.end_date
+FROM session
+WHERE DATE(start_date) = DATE(FROM_UNIXTIME(:date_debut / 1000))
+ORDER BY start_date ASC
+</code></pre>
+
+<h3>Étape 3️⃣ : Response</h3>
+
+<pre><code>[
+  {
+    "id": 42,
+    "title": "Session de réparation",
+    "start_date": "2025-11-19 14:30:00",
+    "end_date": "2025-11-19 16:30:00"
+  },
+  {
+    "id": 43,
+    "title": "Session de diagnostic",
+    "start_date": "2025-11-19 09:00:00",
+    "end_date": "2025-11-19 11:00:00"
+  }
+]
+</code></pre>
+
+<p><strong>Résultat :</strong> Toutes les sessions du 19 novembre 2025, peu importe l'heure. ✅</p>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Le <strong>Query Builder de Xano</strong> ne permet pas de manipuler les dates dans les WHERE (pas de <code>format_timestamp</code>, <code>parse_timestamp</code>, <code>FROM_UNIXTIME</code>)</li>
+  <li>Les fonctions Xano existent, mais <strong>ne sont pas utilisables partout</strong> (incohérence entre Responses, Functions, et Query Builder)</li>
+  <li>Le typage des inputs est <strong>flou</strong> : un timestamp peut être vu comme string, number, ou datetime selon le contexte</li>
+  <li>Pas de <strong>logs SQL</strong>, pas de visibilité sur les conversions internes → debugging impossible</li>
+  <li><strong>Solution recommandée :</strong> Utiliser un <strong>Custom Query</strong> avec SQL brut et <code>FROM_UNIXTIME()</code></li>
+  <li><strong>Alternative :</strong> Calculer la plage temporelle en amont dans une Function, puis utiliser des comparaisons <code>&gt;=</code> et <code>&lt;</code></li>
+  <li>❌ <strong>Éviter absolument :</strong> Filtrer côté WeWeb (performances catastrophiques)</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Pourquoi <code>format_timestamp(db.session.start_date, "Y-m-d")</code> ne fonctionne pas dans un WHERE ?</p>
+
+<p><strong>Réponse attendue :</strong></p>
+
+<ul>
+    <li><code>format_timestamp()</code> est uniquement disponible dans les <strong>Responses</strong></li>
+    <li>Le Query Builder SQL de Xano n'expose pas cette fonction dans les conditions WHERE</li>
+    <li>Il faut utiliser un <strong>Custom Query</strong> avec <code>DATE()</code> et <code>FROM_UNIXTIME()</code> pour contourner cette limitation</li>
+</ul>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/working-with-data/custom-query" target="_blank">Documentation Xano : Custom Query</a></li>
+    <li><a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html" target="_blank">Documentation MySQL : Fonctions de date et heure</a></li>
+    <li><a href="https://docs.xano.com/working-with-data/functions" target="_blank">Documentation Xano : Functions</a></li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Si tu veux approfondir les limitations du Query Builder et les stratégies de contournement, explore :
+<ul>
+  <li>Les <strong>Custom Queries</strong> pour un contrôle SQL total</li>
+  <li>Les <strong>Database Triggers</strong> pour automatiser les calculs de dates</li>
+  <li>Les <strong>Computed Fields</strong> pour stocker des dates tronquées au jour (si utilisé fréquemment)</li>
+</ul>
+</div>

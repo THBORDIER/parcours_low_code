@@ -319,6 +319,22 @@
     "path": "../articles/xano/filtrage-dates-jointures-recouvrement.html"
   },
   {
+    "title": "Xano : Filtrer des sessions par date (même jour) en ignorant l'heure — Mission impossible ?",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Query Builder",
+      "Timestamps",
+      "Filtres",
+      "format_timestamp",
+      "WHERE clause",
+      "Limitations Xano",
+      "Debugging"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/filtrer-sessions-meme-jour-sans-heure.html"
+  },
+  {
     "title": "Filtrer des sessions sans réservations : la solution avec LEFT JOIN et IS NULL",
     "category": "Xano",
     "level": "Avancé",
