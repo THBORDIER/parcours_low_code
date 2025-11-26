@@ -1,0 +1,207 @@
+<h1>Intégrer Stripe Checkout avec Xano : résolution des erreurs courantes</h1>
+
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Stripe Checkout, External API Request, Headers key/value, URL-encoded, Variables d'environnement, $env, Payment Session</p>
+    <p>📅 <strong>Mise à jour:</strong> 26/11/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Stripe</p>
+</div>
+
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour intégrer Stripe Checkout avec Xano : (1) les headers doivent être en format key/value et non text[], (2) le body doit être en <code>application/x-www-form-urlencoded</code> et non JSON, (3) la clé API doit être stockée dans <code>$env.STRIPE_SECRET_KEY</code>.
+</div>
+
+<h2>🤔 Contexte et objectif</h2>
+
+<p>L'objectif était d'intégrer Stripe Checkout dans une API Xano afin de :</p>
+
+<ul>
+    <li>Créer une session de paiement depuis Xano</li>
+    <li>Transmettre les <code>line_items</code>, le montant, la devise et les URLs de redirection</li>
+    <li>Obtenir en réponse l'URL Checkout Stripe</li>
+    <li>Rediriger l'utilisateur vers cette page pour finaliser le paiement</li>
+</ul>
+
+<p>L'idée était d'avoir une intégration propre, sécurisée, utilisant les variables d'environnement Xano, et compatible avec les bonnes pratiques Stripe.</p>
+
+<h2>🛑 Problèmes rencontrés</h2>
+
+<p>Pendant cette intégration, plusieurs obstacles techniques se sont accumulés :</p>
+
+<h3>Problème 1 : Les headers n'apparaissaient pas sous forme key/value</h3>
+
+<p>Xano ne proposait pas sa structure normale :</p>
+
+<pre><code>Key:
+Value:</code></pre>
+
+<p>À la place, le champ <code>headers</code> apparaissait comme un simple tableau <code>text[]</code>, ce qui empêchait l'ajout correct de headers HTTP.</p>
+
+<h3>Problème 2 : Impossible de transmettre correctement la clé Stripe</h3>
+
+<p>En utilisant :</p>
+
+<pre><code>Authorization: Bearer {{clé}}</code></pre>
+
+<p>Stripe renvoyait :</p>
+
+<pre><code>Invalid API Key provided: {{sk_test_...}}</code></pre>
+
+<p>À cause du mauvais type du champ headers, Xano envoyait littéralement les accolades <code>{{ }}</code> dans la requête au lieu d'interpréter la variable.</p>
+
+<h3>Problème 3 : Erreurs internes Xano</h3>
+
+<p>Des erreurs comme <code>"Text filter requires a string…"</code> apparaissaient lors des tentatives de concaténation du header avec une variable, car :</p>
+
+<ul>
+    <li>La valeur n'était pas reconnue comme un texte</li>
+    <li>La variable d'environnement n'était pas prise en compte</li>
+</ul>
+
+<h2>🔍 Analyse des causes</h2>
+
+<p>Les difficultés étaient causées par trois éléments :</p>
+
+<ol>
+    <li><strong>Le champ headers avait été converti par erreur en <code>text[]</code></strong>, ce qui empêchait Xano d'utiliser son format natif key/value.</li>
+    <li><strong>Les variables Xano entre <code>{{ }}</code> ne sont pas interprétées</strong> dans les headers de type <code>text[]</code>.</li>
+    <li><strong>Stripe Checkout nécessite obligatoirement un body en <code>application/x-www-form-urlencoded</code></strong> et un header Authorization correctement formaté.</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Si vos headers apparaissent comme un tableau <code>text[]</code> au lieu du format key/value avec les champs <code>Key:</code> et <code>Value:</code>, Xano n'interprétera pas vos variables. C'est souvent la cause des erreurs "Invalid API Key".
+</div>
+
+<h2>🔧 Solutions apportées</h2>
+
+<h3>Solution 1 : Recréation propre de l'External API Request</h3>
+
+<p>La requête API a été supprimée puis recréée proprement, ce qui a permis à Xano de restaurer la bonne structure du champ headers.</p>
+
+<p>Xano a alors ré-affiché :</p>
+
+<pre><code>+ Add Header
+ Key:
+ Value:</code></pre>
+
+<p>Ce qui a permis d'ajouter correctement les headers.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Lorsqu'un champ Xano est du mauvais type, il vaut mieux recréer l'étape plutôt que de tenter de la réparer. Cela prend 2 minutes et évite des heures de débogage.
+</div>
+
+<h3>Solution 2 : Utilisation des variables d'environnement Xano</h3>
+
+<p>Pour éviter les problèmes avec les accolades <code>{{ }}</code>, la clé Stripe a été stockée dans les variables d'environnement Xano :</p>
+
+<pre><code>$env.STRIPE_SECRET_KEY</code></pre>
+
+<p>Dans le header Authorization, on configure :</p>
+
+<ul>
+    <li><strong>Key:</strong> <code>Authorization</code></li>
+    <li><strong>Value:</strong> <code>Bearer </code> suivi de la valeur de la clé (via le sélecteur de variable)</li>
+</ul>
+
+<p>En XanoScript, cela peut s'écrire :</p>
+
+<pre><code>"Authorization: Bearer " ~ $env.STRIPE_SECRET_KEY</code></pre>
+
+<h3>Solution 3 : Formatage correct du body Stripe</h3>
+
+<p>Stripe Checkout n'accepte pas le JSON. Le body doit être en URL-encoded, avec des clés complexes :</p>
+
+<pre><code>line_items[0][price_data][currency] = eur
+line_items[0][price_data][unit_amount] = 5000
+line_items[0][price_data][product_data][name] = Nom du produit
+line_items[0][quantity] = 1
+mode = payment
+success_url = https://monsite.com/success
+cancel_url = https://monsite.com/cancel</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Le format <code>application/x-www-form-urlencoded</code> est différent du JSON. Au lieu d'envoyer <code>{"line_items": [{"price_data": {"currency": "eur"}}]}</code>, on envoie <code>line_items[0][price_data][currency]=eur</code>. C'est un format plat où les objets imbriqués sont représentés par des crochets.
+</div>
+
+<h3>Solution 4 : Validation finale</h3>
+
+<p>La requête reçue par Stripe était désormais correcte :</p>
+
+<ul>
+    <li>Headers valides</li>
+    <li>Body conforme au format URL-encoded</li>
+    <li>Clé Stripe interprétée correctement</li>
+    <li>Content-Type correct</li>
+</ul>
+
+<p>Stripe a retourné :</p>
+
+<pre><code>HTTP/2 200
+object: checkout.session
+status: open
+url: https://checkout.stripe.com/c/pay/...</code></pre>
+
+<h2>🧪 Exemple concret</h2>
+
+<h3>Configuration de l'External API Request dans Xano</h3>
+
+<p><strong>URL :</strong></p>
+<pre><code>https://api.stripe.com/v1/checkout/sessions</code></pre>
+
+<p><strong>Method :</strong> POST</p>
+
+<p><strong>Headers :</strong></p>
+<pre><code>Key: Authorization
+Value: Bearer [sélectionner $env.STRIPE_SECRET_KEY]
+
+Key: Content-Type
+Value: application/x-www-form-urlencoded</code></pre>
+
+<p><strong>Body (URL-encoded) :</strong></p>
+<pre><code>line_items[0][price_data][currency]=eur
+line_items[0][price_data][unit_amount]=5000
+line_items[0][price_data][product_data][name]=Mon Produit
+line_items[0][quantity]=1
+mode=payment
+success_url=https://monsite.com/success?session_id={CHECKOUT_SESSION_ID}
+cancel_url=https://monsite.com/cancel</code></pre>
+
+<p><strong>Réponse attendue :</strong></p>
+<pre><code>{
+  "id": "cs_test_...",
+  "object": "checkout.session",
+  "url": "https://checkout.stripe.com/c/pay/cs_test_..."
+}</code></pre>
+
+<p>Cette URL peut être utilisée par ton front-end (WeWeb, Webflow, FlutterFlow, Next.js, etc.) pour envoyer l'utilisateur vers la page de paiement.</p>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>Dans Xano, les headers doivent absolument être en format key/value, pas en <code>text[]</code></li>
+    <li>Stripe Checkout requiert le format <code>application/x-www-form-urlencoded</code>, pas du JSON</li>
+    <li>Les clés d'API doivent être stockées en variables d'environnement (<code>$env</code>)</li>
+    <li>Lorsqu'un champ Xano est du mauvais type, recréer l'étape plutôt que de la réparer</li>
+    <li>Une fois correctement paramétré, Stripe Checkout fonctionne immédiatement et renvoie une session complète</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Pourquoi Stripe renvoie-t-il "Invalid API Key provided: {{sk_test_...}}" ?</p>
+
+<p><strong>Réponse attendue :</strong> Parce que les headers sont en format <code>text[]</code> au lieu de key/value, ce qui empêche Xano d'interpréter les variables. Les accolades <code>{{ }}</code> sont envoyées littéralement au lieu d'être remplacées par la valeur de la clé.</p>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://stripe.com/docs/api/checkout/sessions/create" target="_blank">Documentation Stripe - Créer une session Checkout</a></li>
+    <li><a href="https://docs.xano.com/working-with-data/external-api-requests" target="_blank">Documentation Xano - External API Requests</a></li>
+    <li><a href="https://docs.xano.com/xano-features/settings/environment-variables" target="_blank">Documentation Xano - Variables d'environnement</a></li>
+</ul>

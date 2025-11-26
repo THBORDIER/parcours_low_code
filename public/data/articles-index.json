@@ -399,6 +399,22 @@
     "path": "../articles/xano/integration-categories-dynamiques.html"
   },
   {
+    "title": "Intégrer Stripe Checkout avec Xano : résolution des erreurs courantes",
+    "category": "Xano",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Stripe Checkout",
+      "External API Request",
+      "Headers key/value",
+      "URL-encoded",
+      "Variables d'environnement",
+      "$env",
+      "Payment Session"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/integration-stripe-checkout.html"
+  },
+  {
     "title": "Introduction à Xano",
     "category": "",
     "level": "",
