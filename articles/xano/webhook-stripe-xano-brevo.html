@@ -1,0 +1,209 @@
+<h1>Webhook Stripe → Xano → Email Brevo : automatiser l'après-paiement</h1>
+
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Webhook, Stripe-Signature, checkout.session.completed, Verify Signature, input.raw, input.headers, whsec_, Brevo, API Request, Paiement test, Automatisation email</p>
+    <p>📅 <strong>Mise à jour:</strong> 26/11/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Stripe + Brevo</p>
+</div>
+
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour recevoir un webhook Stripe dans Xano : (1) créer un endpoint public, (2) récupérer <code>input.raw</code> et <code>input.headers</code> en mode expression, (3) utiliser l'action Stripe → Verify Signature avec la clé <code>whsec_xxx</code>, (4) tester avec un vrai paiement test car le CLI Stripe n'est pas adapté au low-code.
+</div>
+
+<h2>🎯 Objectif technique</h2>
+
+<p>Dans le cadre de ma formation de développeur low-code, j'ai dû réaliser une fonctionnalité intégrée à un parcours de paiement : lorsqu'un utilisateur finalise une session Stripe Checkout, un webhook doit être envoyé vers Xano, qui vérifie la signature, traite les données, et déclenche l'envoi d'un email via Brevo.</p>
+
+<p>L'objectif est simple : <strong>automatiser une action après un paiement sans écrire du code back-end complexe</strong>.</p>
+
+<p>Concrètement, le workflow complet :</p>
+
+<ol>
+    <li>Créer un webhook Stripe pour écouter l'événement <code>checkout.session.completed</code></li>
+    <li>Le connecter à un endpoint Xano</li>
+    <li>Vérifier la signature Stripe (pour rejeter les requêtes non authentiques)</li>
+    <li>Extraire les informations utiles du paiement (email, nom, montant…)</li>
+    <li>Appeler l'endpoint Brevo pour envoyer l'email de confirmation</li>
+</ol>
+
+<p>À ce stade, tout semblait limpide. La réalité ? Une expérience qui m'a appris énormément… mais pas sans douleur.</p>
+
+<h2>🔧 Mise en place du webhook dans Xano</h2>
+
+<p>J'ai créé un endpoint public dans Xano : <code>/BREVO/stripe-webhook</code></p>
+
+<h3>Étapes internes au workflow Xano :</h3>
+
+<ol>
+    <li>Récupérer le payload brut : <code>input.raw</code></li>
+    <li>Récupérer la signature dans les headers</li>
+    <li>Vérifier la signature avec l'action <strong>Stripe → Verify Signature</strong></li>
+    <li>Tester si l'événement est bien <code>checkout.session.completed</code></li>
+    <li>Extraire les données essentielles du JSON envoyé par Stripe</li>
+    <li>Appeler l'endpoint Brevo pour envoyer l'email</li>
+    <li>Retourner un status <code>200 OK</code></li>
+</ol>
+
+<p>Sur le papier, tout était clair. La réalité ? <strong>Compliance Stripe + workflow low-code = surprises.</strong></p>
+
+<h2>⚠️ La difficulté majeure : vérification de signature Stripe</h2>
+
+<p>Pour valider l'authenticité du webhook, Stripe envoie un header :</p>
+
+<pre><code>Stripe-Signature</code></pre>
+
+<p>Xano demande trois éléments pour vérifier cette signature :</p>
+
+<ul>
+    <li>Le payload brut (<code>input.raw</code>)</li>
+    <li>Le header <code>Stripe-Signature</code></li>
+    <li>La clé secrète webhook <code>whsec_xxx</code></li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention — Piège courant</strong><br>
+Xano n'affiche pas <code>input.headers</code> dans ses suggestions automatiques ! Pour l'utiliser, vous devez passer le champ en mode <strong>expression</strong> au lieu de "text", puis saisir manuellement <code>input.headers</code>.
+</div>
+
+<p>Ce détail, minuscule mais crucial, m'a fait perdre un temps fou.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans Xano, lorsqu'un champ ne propose pas la variable souhaitée en autocomplétion, cliquez sur l'icône <strong>fx</strong> pour passer en mode expression. Vous pourrez alors saisir directement <code>input.headers</code> ou <code>input.raw</code>.
+</div>
+
+<h2>🚫 Le problème des tests webhook Stripe</h2>
+
+<p>Je pensais utiliser le bouton "Envoyer des événements de test" dans l'interface Stripe. Sauf que…</p>
+
+<p>Dans l'interface réelle, le bouton apparaît… mais <strong>ne permet pas d'envoyer un webhook directement</strong>.</p>
+
+<p>À la place, Stripe affiche une pop-up qui dit :</p>
+
+<blockquote>« Téléchargez Stripe CLI pour envoyer des webhooks de test »</blockquote>
+
+<p>Et là, découverte décevante :</p>
+
+<ul>
+    <li>Le "shell Stripe" dans le navigateur n'est pas un vrai terminal</li>
+    <li><code>stripe listen</code> ne fonctionne pas</li>
+    <li><code>--forward-to</code> n'existe pas dans ce contexte</li>
+    <li><code>trigger</code> crée un événement mais ne l'envoie nulle part</li>
+    <li>Impossible de forwarder quoi que ce soit vers Xano</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Réalité pour les développeurs low-code</strong><br>
+Stripe n'offre plus d'envoi de webhook de test depuis l'UI. Pour un développeur low-code, devoir installer un CLI complet n'est pas vraiment cohérent avec la logique "no/low code".
+</div>
+
+<h2>✅ Solution finale : paiement test réel</h2>
+
+<p>Après une série d'essais infructueux, la seule méthode fiable pour déclencher un webhook Stripe dans un environnement low-code :</p>
+
+<p><strong>Faire un vrai paiement test.</strong></p>
+
+<ol>
+    <li>Créer une session checkout test (voir <a href="#" onclick="return false;">l'article sur Stripe Checkout</a>)</li>
+    <li>Utiliser la carte de test <code>4242 4242 4242 4242</code></li>
+    <li>Valider le paiement</li>
+</ol>
+
+<p>Dès qu'un paiement test est confirmé, Stripe envoie l'événement <code>checkout.session.completed</code> et là, Xano reçoit enfin :</p>
+
+<ul>
+    <li>Un vrai header <code>Stripe-Signature</code></li>
+    <li>Un vrai payload complet</li>
+    <li>Un événement valide</li>
+</ul>
+
+<h3>Exemple de données reçues :</h3>
+
+<pre><code>customer_details.name = "Jenny Rosen"
+customer_details.email = "stripe@example.com"
+amount_total = 3000
+payment_intent = "pi_3SXlS0QUnmjk2lid5Y4BQSEz"</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+En mode test Stripe, utilisez les données fictives : nom "Jenny Rosen", email quelconque, et la carte <code>4242 4242 4242 4242</code> avec n'importe quelle date future et CVC.
+</div>
+
+<h2>📧 Appeler l'endpoint Brevo depuis Xano</h2>
+
+<p>Je pensais que Xano permettrait d'appeler un endpoint interne via une fonction dédiée. En réalité :</p>
+
+<p><strong>Il faut appeler son propre endpoint comme une API externe.</strong></p>
+
+<p>Donc dans le workflow Xano :</p>
+
+<ol>
+    <li><strong>Add Function → API Request</strong></li>
+    <li>Méthode : <code>POST</code></li>
+    <li>URL : l'URL complète de votre endpoint Brevo Xano</li>
+    <li>Body JSON avec l'email, le nom, etc.</li>
+</ol>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Xano ne propose pas de "call interne" entre endpoints. Chaque endpoint est traité comme une API isolée. Pour chaîner des workflows, vous devez utiliser une <strong>API Request</strong> vers votre propre URL Xano. Cela fonctionne, mais ce n'est pas instinctif pour quelqu'un qui pense "low-code = automatisme".
+</div>
+
+<h2>💭 Mon ressenti global</h2>
+
+<p>Ce projet m'a clairement montré :</p>
+
+<ul>
+    <li>Ce que veut dire "comprendre un workflow end-to-end"</li>
+    <li>Les limites réelles d'outils low-code face aux exigences de sécurité comme les webhooks</li>
+    <li>Comment Stripe pousse vers ses CLI et outils développeurs</li>
+    <li>Que la documentation ne reflète pas toujours la réalité de l'interface</li>
+    <li>Qu'un test de webhook n'est pas trivial, même pour des solutions "sans code"</li>
+</ul>
+
+<p><strong>Sentiment final : Frustration + apprentissage profond = progression.</strong></p>
+
+<h2>🎓 Conclusion</h2>
+
+<p>Après cette journée intense :</p>
+
+<ul>
+    <li>Mon webhook Xano fonctionne</li>
+    <li>La vérification Stripe est correcte</li>
+    <li>Les données sont extraites proprement</li>
+    <li>Le paiement déclenche un email Brevo</li>
+    <li>J'ai une compréhension beaucoup plus avancée de la mécanique webhook → backend → automatisation</li>
+</ul>
+
+<p>Même si l'expérience n'a pas été simple, j'en sors avec une <strong>réelle compétence low-code avancée</strong>.</p>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>Pour accéder à <code>input.headers</code> dans Xano, passez en mode expression (fx)</li>
+    <li>La vérification de signature Stripe nécessite : payload brut + header Stripe-Signature + clé whsec_</li>
+    <li>Le "shell Stripe" dans le navigateur ne permet pas de tester les webhooks — utilisez un vrai paiement test</li>
+    <li>Pour appeler un autre endpoint Xano, utilisez une API Request externe (pas d'appel interne)</li>
+    <li>Carte de test Stripe : <code>4242 4242 4242 4242</code></li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question :</strong> Pourquoi ne peut-on pas tester un webhook Stripe directement depuis l'interface Stripe vers Xano ?</p>
+
+<p><strong>Réponse attendue :</strong> Stripe ne permet plus d'envoyer des webhooks de test depuis l'UI. Le bouton "Envoyer un événement test" redirige vers le CLI Stripe, qui nécessite une installation locale. La solution en low-code est de faire un vrai paiement test avec la carte <code>4242...</code>.</p>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://stripe.com/docs/webhooks" target="_blank">Documentation Stripe - Webhooks</a></li>
+    <li><a href="https://stripe.com/docs/webhooks/signatures" target="_blank">Documentation Stripe - Vérification des signatures</a></li>
+    <li><a href="https://docs.xano.com/working-with-data/external-api-requests" target="_blank">Documentation Xano - External API Requests</a></li>
+    <li><a href="https://developers.brevo.com/" target="_blank">Documentation Brevo API</a></li>
+    <li><a href="#" data-article="../articles/xano/integration-stripe-checkout.html">Article précédent : Intégrer Stripe Checkout avec Xano</a></li>
+</ul>

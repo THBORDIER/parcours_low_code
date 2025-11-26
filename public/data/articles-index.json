@@ -435,5 +435,25 @@
     ],
     "theme": "xano",
     "path": "../articles/xano/renouveler-cle-metadata-api.html"
+  },
+  {
+    "title": "Webhook Stripe → Xano → Email Brevo : automatiser l'après-paiement",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Webhook",
+      "Stripe-Signature",
+      "checkout.session.completed",
+      "Verify Signature",
+      "input.raw",
+      "input.headers",
+      "whsec_",
+      "Brevo",
+      "API Request",
+      "Paiement test",
+      "Automatisation email"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/webhook-stripe-xano-brevo.html"
   }
 ]
