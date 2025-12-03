@@ -369,6 +369,24 @@
     "path": "../articles/xano/filtrer-sessions-utilisateur-api-dynamique.html"
   },
   {
+    "title": "Flux complet : WeWeb, Xano, Stripe, Webhook et Brevo",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Flux paiement complet",
+      "WeWeb Xano Stripe Brevo",
+      "checkout.session.completed",
+      "reservation_id",
+      "product_data name",
+      "UPDATE reservation",
+      "Automatisation email",
+      "Webhook payload",
+      "status payée"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/flux-complet-weweb-xano-stripe-brevo.html"
+  },
+  {
     "title": "Intégration des Add-ons Xano pour enrichir les réponses API",
     "category": "Xano",
     "level": "Débutant",
