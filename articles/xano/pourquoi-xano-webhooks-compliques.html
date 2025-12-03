@@ -1,0 +1,227 @@
+<h1>Pourquoi Xano rend les webhooks si compliqués (et comment s'en sortir)</h1>
+
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Get All Raw Input, input.body vide, webhook payload, JSON parsing, Stripe webhook, Missing param, ERROR_CODE_NOT_FOUND, raw_input, checkout.session.completed, UPDATE BDD, Debugging Xano</p>
+    <p>📅 <strong>Mise à jour:</strong> 03/12/2024</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Stripe</p>
+</div>
+
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Dans Xano, <code>input.body</code> est souvent vide sur les webhooks entrants, même si le JSON est visible dans l'historique. La solution : utiliser le bloc <strong>"Get All Raw Input"</strong> (caché, mal documenté) puis assigner <code>body = raw_input</code>. Oui, c'est absurde. Oui, ça fonctionne.
+</div>
+
+<h2>🤬 Le contexte : 2 heures pour une opération qui devrait prendre 5 minutes</h2>
+
+<p>J'avais un webhook Stripe fonctionnel. Le payload arrivait bien dans Xano. Je le voyais dans l'historique des requêtes. Tout semblait parfait.</p>
+
+<p>Sauf que rien ne fonctionnait.</p>
+
+<ul>
+    <li>Mon <code>IF body.type == "checkout.session.completed"</code> ? Toujours faux.</li>
+    <li>Mon <code>body.data.object.metadata.reservation_id</code> ? Undefined.</li>
+    <li>Mon UPDATE en base ? Jamais exécuté.</li>
+</ul>
+
+<p>Le plus frustrant : <strong>aucune erreur explicite</strong>. Xano te laisse croire que tout va bien alors que rien ne passe.</p>
+
+<h2>🔍 Le problème réel : <code>input.body</code> est vide</h2>
+
+<p>Après des heures de debug, j'ai découvert le coupable :</p>
+
+<pre><code>input.body = {}</code></pre>
+
+<p>Le body du webhook est <strong>visible dans l'historique Xano</strong>, mais <strong>inaccessible en logique workflow</strong>.</p>
+
+<p>Pourquoi ? Parce que Xano ne mappe pas automatiquement le body des webhooks entrants. Le JSON est reçu, stocké pour l'historique, mais jamais parsé dans <code>input</code>.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Le piège visuel</strong><br>
+Tu vois le JSON complet dans l'onglet "Request History" de Xano. Tu penses logiquement pouvoir l'utiliser via <code>input.body</code>. C'est faux. Ce comportement n'est documenté nulle part de manière claire.
+</div>
+
+<h2>✅ La solution : "Get All Raw Input"</h2>
+
+<p>La solution existe, mais elle est cachée dans un bloc que personne n'utilise spontanément.</p>
+
+<h3>Étape 1 : Ajouter le bloc "Get All Raw Input"</h3>
+
+<p>Dans ton workflow Xano :</p>
+<ol>
+    <li>Cliquer sur <strong>+ Add Function</strong></li>
+    <li>Chercher <strong>"Get All Raw Input"</strong></li>
+    <li>L'ajouter en tout début de workflow</li>
+</ol>
+
+<p>Ce bloc récupère le payload brut de la requête et le stocke dans une variable (par défaut <code>raw_input</code>).</p>
+
+<h3>Étape 2 : Assigner le body</h3>
+
+<p>Créer une variable :</p>
+<pre><code>body = raw_input</code></pre>
+
+<p>Note importante : <code>json_parse</code> est généralement inutile. Xano renvoie déjà un objet, pas une string JSON.</p>
+
+<h3>Étape 3 : Utiliser les données normalement</h3>
+
+<p>Maintenant, tout fonctionne :</p>
+
+<pre><code>// Condition sur le type d'événement
+IF body.type == "checkout.session.completed"
+
+// Accès aux données
+body.data.object.metadata.reservation_id
+body.data.object.customer_details.email
+body.data.object.amount_total</code></pre>
+
+<h2>🗄️ UPDATE BDD : les pièges suivants</h2>
+
+<p>Une fois le body accessible, j'ai voulu mettre à jour ma réservation en base. Nouveaux problèmes.</p>
+
+<h3>Erreur 1 : <code>Missing param: field_value</code></h3>
+
+<p>Cette erreur apparaît quand le bloc "Edit Record" n'a pas ses paramètres correctement mappés.</p>
+
+<p><strong>Configuration correcte :</strong></p>
+<pre><code>Table : reservation
+field_name : id
+field_value : body.data.object.metadata.reservation_id</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+<code>field_name</code> = le nom de la colonne sur laquelle filtrer (ici <code>id</code>)<br>
+<code>field_value</code> = la valeur à chercher (ici l'ID de réservation depuis le webhook)
+</div>
+
+<h3>Erreur 2 : <code>ERROR_CODE_NOT_FOUND</code></h3>
+
+<p>L'ID existe pourtant en base ! Le problème : le type de données.</p>
+
+<p>Le <code>reservation_id</code> dans le webhook Stripe est une string. L'<code>id</code> en base est un integer.</p>
+
+<p><strong>Solution : cast en entier</strong></p>
+<pre><code>field_value : (body.data.object.metadata.reservation_id|to_int)</code></pre>
+
+<p>Après ce cast, l'UPDATE fonctionne enfin :</p>
+<pre><code>status : "valide"</code></pre>
+
+<h2>😤 Critique objective de l'ergonomie Xano</h2>
+
+<p>Après cette expérience, voici mon verdict honnête sur Xano et les webhooks :</p>
+
+<h3>Ce qui ne va pas</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Problème</th>
+            <th>Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Le body est visible mais inutilisable</td>
+            <td>Faux positif, perte de temps énorme</td>
+        </tr>
+        <tr>
+            <td>Aucun mapping automatique du payload</td>
+            <td>Comportement non intuitif</td>
+        </tr>
+        <tr>
+            <td>Obligation d'utiliser "Get All Raw Input"</td>
+            <td>Bloc caché, mal documenté</td>
+        </tr>
+        <tr>
+            <td>Aucune erreur quand <code>input.body</code> est vide</td>
+            <td>Debugging à l'aveugle</td>
+        </tr>
+        <tr>
+            <td>Erreurs génériques ("Missing param", "Not found")</td>
+            <td>Aucun contexte utile</td>
+        </tr>
+        <tr>
+            <td>L'UI laisse croire que tout fonctionne</td>
+            <td>Confiance mal placée</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Mon verdict</h3>
+
+<div class="callout callout-warning">
+⚠️ <strong>Conclusion</strong><br>
+Xano est fonctionnel, mais l'ergonomie des webhooks est objectivement mauvaise, opaque, et fait perdre des heures pour une logique qui devrait prendre 5 minutes. Le produit fonctionne, l'expérience développeur est catastrophique.
+</div>
+
+<h2>✅ Workflow final fonctionnel</h2>
+
+<p>Pour référence, voici le workflow complet qui fonctionne :</p>
+
+<pre><code>1. Get All Raw Input → raw_input
+2. Set Variable: body = raw_input
+3. IF body.type == "checkout.session.completed"
+   └─ 4. Edit Record (reservation)
+         - field_name: id
+         - field_value: (body.data.object.metadata.reservation_id|to_int)
+         - status: "valide"
+5. Return 200 OK</code></pre>
+
+<h2>📊 Récapitulatif des états</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Étape</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Paiement Stripe</td>
+            <td>✅ OK</td>
+        </tr>
+        <tr>
+            <td>Webhook Stripe → Xano</td>
+            <td>✅ OK</td>
+        </tr>
+        <tr>
+            <td>Lecture du JSON (via raw_input)</td>
+            <td>✅ OK</td>
+        </tr>
+        <tr>
+            <td>Détection checkout.session.completed</td>
+            <td>✅ OK</td>
+        </tr>
+        <tr>
+            <td>Récupération reservation_id</td>
+            <td>✅ OK</td>
+        </tr>
+        <tr>
+            <td>UPDATE BDD réservation</td>
+            <td>✅ OK</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li><code>input.body</code> est souvent vide sur les webhooks Xano — c'est "normal" (malheureusement)</li>
+    <li>Utilise <strong>"Get All Raw Input"</strong> pour récupérer le payload réel</li>
+    <li>Assigne <code>body = raw_input</code> (pas besoin de json_parse)</li>
+    <li>Cast les IDs en entier si nécessaire : <code>(value|to_int)</code></li>
+    <li>Les erreurs Xano sont génériques — debug en vérifiant chaque variable manuellement</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="#" data-article="../articles/xano/webhook-stripe-xano-brevo.html">Article : Webhook Stripe → Xano → Email Brevo (configuration technique)</a></li>
+    <li><a href="#" data-article="../articles/xano/flux-complet-weweb-xano-stripe-brevo.html">Article : Flux complet WeWeb → Xano → Stripe → Brevo</a></li>
+    <li><a href="#" data-article="../articles/xano/integration-stripe-checkout.html">Article : Intégrer Stripe Checkout avec Xano</a></li>
+    <li><a href="https://docs.xano.com/" target="_blank">Documentation officielle Xano</a></li>
+</ul>

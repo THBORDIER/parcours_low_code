@@ -441,6 +441,26 @@
     "path": "../articles/xano/introduction-xano.html"
   },
   {
+    "title": "Pourquoi Xano rend les webhooks si compliqués (et comment s'en sortir)",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Get All Raw Input",
+      "input.body vide",
+      "webhook payload",
+      "JSON parsing",
+      "Stripe webhook",
+      "Missing param",
+      "ERROR_CODE_NOT_FOUND",
+      "raw_input",
+      "checkout.session.completed",
+      "UPDATE BDD",
+      "Debugging Xano"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/pourquoi-xano-webhooks-compliques.html"
+  },
+  {
     "title": "Renouveler sa clé Metadata API Xano expirée",
     "category": "Xano",
     "level": "Débutant",
