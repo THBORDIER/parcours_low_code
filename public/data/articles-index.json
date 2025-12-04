@@ -150,6 +150,25 @@
     "path": "../articles/retrospectives/projet-3-xano.html"
   },
   {
+    "title": "Projet 4 : Tester son application avec un cahier de recette",
+    "category": "Rétrospectives",
+    "level": "Débutant",
+    "keywords": [
+      "Cahier de recette",
+      "Tests",
+      "Debug Xano",
+      "Correction de bugs",
+      "QA",
+      "User Stories",
+      "Sessions",
+      "Réservations",
+      "Run & Debug",
+      "Méthodologie"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet-4-cahier-recette.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",

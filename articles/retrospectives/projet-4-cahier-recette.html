@@ -1,0 +1,232 @@
+<h1>Projet 4 : Tester son application avec un cahier de recette</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Rétrospectives</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> Cahier de recette, Tests, Debug Xano, Correction de bugs, QA, User Stories, Sessions, Réservations, Run & Debug, Méthodologie</p>
+    <p>📅 <strong>Mise à jour:</strong> Novembre 2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> ~10h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Projet abordé avec confiance après avoir parcouru le Notion plusieurs fois. Validation rapide de la moitié des points en suivant méthodiquement les étapes. Découverte tardive de détails sur les workflows sessions/réservations, nécessitant de recréer des boutons et API. Mise en place du debug Xano - une habitude à garder. Projet bouclé en ~10h, dont plus de la moitié sur 2-3 API liées aux sessions/réservations.
+</div>
+
+<h2>📝 Résumé du projet</h2>
+
+<p>
+Le Projet 4 est centré sur le <strong>test de l'application</strong> via un cahier de recette. L'objectif n'est pas seulement de valider que tout fonctionne, mais surtout d'apprendre à <strong>repérer ce qui ne fonctionne pas et comprendre pourquoi</strong>.
+</p>
+
+<p>
+Ce projet demande de tester chaque User Story du cahier de recettes, d'identifier les bugs, d'analyser leur source (Front-End ou Back-End) et de les corriger méthodiquement.
+</p>
+
+<h2>🎯 Objectifs initiaux</h2>
+
+<p>Ce que le projet demandait :</p>
+
+<ul>
+    <li><strong>Identifier les bugs</strong> : repérer les symptômes, documenter les étapes pour reproduire le problème</li>
+    <li><strong>Analyser la source</strong> : déterminer si l'erreur vient de WeWeb (Front-End) ou Xano (Back-End)</li>
+    <li><strong>Corriger méthodiquement</strong> : un seul bug à la fois, avec captures avant/après</li>
+    <li><strong>Valider les corrections</strong> : rejouer les scénarios complets, tester les cas limites</li>
+</ul>
+
+<h2>🚀 Premières impressions</h2>
+
+<h3>📋 Notion déjà parcouru</h3>
+
+<p>
+Je rouvre le Notion que j'avais parcouru en diagonale à plusieurs reprises en début de formation. <strong>Je m'attendais à ce que ce soit rapide à valider</strong> puisque j'avais suivi toutes les étapes point par point lors des projets précédents.
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Confiance initiale</strong><br>
+Avoir déjà parcouru la documentation et suivi une méthode structurée donne un avantage certain. Le cahier de recette ne faisait que formaliser ce que j'avais déjà pratiqué.
+</div>
+
+<h3>✅ Validation rapide de la première moitié</h3>
+
+<p>
+Je valide rapidement la moitié des points, y compris des éléments concernant des projets futurs. <strong>C'est plutôt simple quand on est organisé</strong>, qu'on prend des notes correctes et qu'on avance méthodiquement.
+</p>
+
+<h2>😤 Difficultés rencontrées</h2>
+
+<h3>🔍 Découverte tardive des workflows sessions/réservations</h3>
+
+<p>
+Je découvre certains détails sur ce que l'application est censée faire. <strong>Je n'avais pas bien saisi tous les détails des workflows</strong>, notamment les notions de session et de réservation.
+</p>
+
+<p>
+Cette compréhension tardive m'oblige à revoir plusieurs éléments de l'application.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Bien comprendre les spécifications fonctionnelles AVANT de coder évite de perdre du temps en corrections. Les notions de "session" et "réservation" auraient dû être clarifiées plus tôt.
+</div>
+
+<h3>🔧 Recréation de boutons et API</h3>
+
+<p>
+Suite à ma meilleure compréhension des workflows, je dois <strong>recréer des boutons, des API</strong>, et revoir plusieurs d'entre elles suite à mes modifications. C'est un effet domino : une correction en entraîne une autre.
+</p>
+
+<h3>⏱️ 2-3 API particulièrement chronophages</h3>
+
+<p>
+<strong>Plus de la moitié de mon temps</strong> a été consacrée à deux ou trois API que je voulais absolument faire fonctionner. Ces API liées aux sessions et réservations ont nécessité beaucoup d'itérations et de debug.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Temps disproportionné</strong><br>
+Sur ~10h de projet, plus de 5h ont été passées sur seulement 2-3 API. Parfois, il faut savoir accepter qu'une fonctionnalité prend plus de temps que prévu.
+</div>
+
+<h2>💪 Solutions et apprentissages</h2>
+
+<h3>🐛 Mise en place du debug Xano</h3>
+
+<p>
+Je commence à utiliser le <strong>debug au sein de mes API Xano</strong>. C'est plutôt simple à mettre en place et ça permet de bien suivre ce qu'il se passe à chaque étape d'un workflow.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Bonne pratique à garder</strong><br>
+Le debug Xano (via "Run & Debug") est un outil précieux. Il permet de voir exactement ce que chaque étape renvoie et d'identifier rapidement où ça coince. C'est une habitude que je vais conserver pour tous mes projets futurs.
+</div>
+
+<h3>📊 Tableau d'analyse des bugs</h3>
+
+<p>Le projet m'a appris à catégoriser les bugs selon leur source. Voici un résumé des cas rencontrés :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Symptôme</th>
+            <th>Source probable</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Page vide dans WeWeb</td>
+            <td>WeWeb (Front-End)</td>
+            <td>Vérifier visibilité, conditions, liaisons</td>
+        </tr>
+        <tr>
+            <td>Bouton sans effet</td>
+            <td>WeWeb (workflow)</td>
+            <td>Vérifier workflow lié, étapes configurées</td>
+        </tr>
+        <tr>
+            <td>Erreur API (400, 401, 500)</td>
+            <td>Xano (Back-End)</td>
+            <td>Run & Debug, vérifier les logs</td>
+        </tr>
+        <tr>
+            <td>Donnée incorrecte</td>
+            <td>Xano (filtrage)</td>
+            <td>Vérifier filtres et transformations</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>✨ Points positifs</h2>
+
+<h3>⚡ Projet relativement rapide</h3>
+
+<p>
+Malgré les difficultés sur quelques API, <strong>le projet est bouclé en une dizaine d'heures</strong>. C'est un temps raisonnable pour un projet de test et correction.
+</p>
+
+<h3>🛠️ Debug Xano simple et efficace</h3>
+
+<p>
+La découverte du bouton "Run & Debug" dans Xano est un vrai plus. <strong>Simple à utiliser, il permet de voir directement ce que l'API renvoie</strong> sans passer par WeWeb. Très utile pour comprendre les erreurs 400, 401 ou 500.
+</p>
+
+<h3>📝 Méthodologie claire</h3>
+
+<p>
+Le projet confirme une vérité simple : <strong>être organisé, prendre des notes correctes et avancer méthodiquement</strong> sont les clés de la réussite. Pas de secret, juste de la rigueur.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Méthode de correction</strong><br>
+Un seul bug à la fois. Capture avant/après. Test dans un autre navigateur si besoin. Garder une copie avant modification. Ces réflexes évitent de créer plus de problèmes qu'on n'en résout.
+</div>
+
+<h2>😮‍💨 Points négatifs</h2>
+
+<h3>⏱️ Temps disproportionné sur quelques API</h3>
+
+<p>
+Passer plus de 50% du temps sur 2-3 API n'est pas idéal. <strong>J'aurais peut-être dû demander de l'aide plus tôt</strong> ou accepter de passer à autre chose temporairement.
+</p>
+
+<h3>📖 Compréhension tardive des workflows</h3>
+
+<p>
+Découvrir en phase de test que je n'avais pas bien compris certains workflows est frustrant. <strong>Une meilleure lecture des spécifications en amont</strong> aurait évité ces allers-retours.
+</p>
+
+<h2>🎓 Apprentissages clés</h2>
+
+<div class="summary">
+📌 <strong>Ce que j'ai retenu :</strong>
+<ul>
+    <li><strong>Organisation et notes</strong> : prendre des notes correctes et être organisé permet de valider rapidement les tests</li>
+    <li><strong>Debug Xano</strong> : le bouton "Run & Debug" est indispensable pour suivre ce qu'il se passe dans les API</li>
+    <li><strong>Un bug à la fois</strong> : ne pas modifier plusieurs éléments simultanément, tester entre chaque changement</li>
+    <li><strong>Tester = comprendre</strong> : tester ne consiste pas seulement à valider, mais à repérer ce qui ne fonctionne pas ET comprendre pourquoi</li>
+    <li><strong>Captures avant/après</strong> : documenter visuellement les bugs et leurs corrections</li>
+    <li><strong>Bien lire les specs</strong> : comprendre les workflows (sessions, réservations) avant de coder évite les corrections tardives</li>
+    <li><strong>Effet domino</strong> : une modification peut en entraîner d'autres, anticiper les dépendances</li>
+</ul>
+</div>
+
+<h2>📊 Bilan global</h2>
+
+<h3>✅ Validation du projet</h3>
+
+<p>
+Projet bouclé <strong>mi-novembre 2025</strong> en environ <strong>10 heures de travail</strong>. Plus de la moitié de ce temps a été consacrée à 2-3 API liées aux sessions et réservations.
+</p>
+
+<h3>🤔 Ressenti général</h3>
+
+<p>
+Un projet <strong>moins frustrant que les précédents</strong>. La méthodologie de test est claire, les outils (notamment le debug Xano) sont efficaces. La principale difficulté vient d'une compréhension incomplète des spécifications initiales, pas de l'outil en lui-même.
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Nuance importante</strong><br>
+Ce projet m'a fait réaliser que le temps "perdu" à bien comprendre les specs au début est du temps gagné en phase de test. La rigueur paie toujours.
+</div>
+
+<h2>➡️ Et après ?</h2>
+
+<p>
+Avec cette expérience de test et debug, je me sens plus confiant pour aborder les projets suivants. <strong>Les habitudes de debug Xano et la méthodologie de correction</strong> sont maintenant ancrées dans ma pratique.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Habitudes à garder</strong><br>
+Toujours utiliser "Run & Debug" dans Xano. Toujours corriger un bug à la fois. Toujours documenter les corrections. Ces réflexes feront gagner du temps sur tous les projets futurs.
+</div>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com" target="_blank">Documentation Xano (en anglais)</a></li>
+    <li><a href="https://www.weweb.io" target="_blank">WeWeb - Site officiel</a></li>
+    <li><a href="https://docs.weweb.io" target="_blank">Documentation WeWeb</a></li>
+</ul>
