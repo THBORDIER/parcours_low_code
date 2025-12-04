@@ -169,6 +169,25 @@
     "path": "../articles/retrospectives/projet-4-cahier-recette.html"
   },
   {
+    "title": "Projet 5 : API Stripe, Brevo et Webhooks",
+    "category": "Rétrospectives",
+    "level": "Intermédiaire",
+    "keywords": [
+      "API REST",
+      "Stripe Checkout",
+      "Brevo",
+      "Webhooks",
+      "Xano",
+      "Paiement",
+      "Email transactionnel",
+      "Get All Raw Input",
+      "Intégration externe",
+      "Sécurité API"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet-5-api-stripe-brevo.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",

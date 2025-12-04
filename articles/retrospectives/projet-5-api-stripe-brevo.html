@@ -1,0 +1,276 @@
+<h1>Projet 5 : API Stripe, Brevo et Webhooks</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Rétrospectives</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> API REST, Stripe Checkout, Brevo, Webhooks, Xano, Paiement, Email transactionnel, Get All Raw Input, Intégration externe, Sécurité API</p>
+    <p>📅 <strong>Mise à jour:</strong> Novembre 2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> ~6h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Stripe + Brevo</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Projet centré sur l'intégration d'APIs externes (Stripe pour le paiement, Brevo pour les emails). Le flux complet WeWeb → Xano → Stripe → webhook → Xano → Brevo semblait simple sur le papier. Réalité : 80% du temps passé à comprendre comment récupérer les données du webhook Stripe dans Xano (solution : "Get All Raw Input"). Une fois ce blocage résolu, l'envoi d'email Brevo bouclé en 10 minutes. Problème non résolu : validation de la clé Stripe qui renvoie toujours false.
+</div>
+
+<h2>📝 Résumé du projet</h2>
+
+<p>
+Le Projet 5 porte sur la <strong>mise en place d'APIs</strong> : créer une API REST interne, intégrer une API de paiement (Stripe) et une API d'emailing transactionnel (Brevo). L'objectif est de connecter tous ces services pour créer un flux complet de réservation avec paiement et confirmation par email.
+</p>
+
+<p>
+Le flux attendu : validation de session → appel Stripe → paiement → déclencheur webhook → appel API Xano → mise à jour du statut de réservation → email de confirmation via Brevo.
+</p>
+
+<h2>🎯 Objectifs initiaux</h2>
+
+<p>Ce que le projet demandait :</p>
+
+<ul>
+    <li><strong>Créer une API REST interne</strong> sur Xano pour gérer les réservations</li>
+    <li><strong>Intégrer Stripe Checkout</strong> pour le paiement sécurisé</li>
+    <li><strong>Configurer les webhooks Stripe</strong> pour recevoir les confirmations de paiement</li>
+    <li><strong>Intégrer Brevo</strong> pour l'envoi d'emails transactionnels</li>
+    <li><strong>Sécuriser les échanges</strong> avec authentification par tokens</li>
+</ul>
+
+<h2>🚀 Premières impressions</h2>
+
+<h3>📋 Prise de connaissance rapide</h3>
+
+<p>
+Je commence par parcourir l'intégralité du projet et lister mes questions. <strong>Pas grand-chose à signaler</strong>, le flux semble clair sur le papier. J'ai déjà un compte Stripe d'un projet précédent, ça devrait faciliter les choses.
+</p>
+
+<div class="callout callout-tip">
+💡 <strong>Avantage</strong><br>
+Avoir déjà un compte Stripe configuré évite la phase d'inscription et de paramétrage initial. Un gain de temps appréciable.
+</div>
+
+<h3>✅ Brevo : configuration rapide</h3>
+
+<p>
+Le projet demande de commencer par Brevo. Je crée le compte, configure ma première API, je teste : <strong>ça fonctionne</strong>. Rien de compliqué à ce stade, on verra l'intégration plus tard.
+</p>
+
+<h3>⚡ Stripe : mise en place fluide</h3>
+
+<p>
+J'actualise mes informations Stripe, je crée ce qu'il faut. <strong>La création de l'API Xano pour appeler le paiement Stripe se passe bien</strong>. La configuration côté WeWeb est claire, j'envoie les infos nécessaires sans problème.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>L'IA Xano utile</strong><br>
+L'IA de Xano fait le travail si on lui explique bien ce qu'on veut. Attention cependant : elle a tendance à vouloir tout supprimer dès qu'on lui demande quelque chose. À utiliser avec prudence.
+</div>
+
+<p>
+Après deux heures de projet, tout avance bien. Je fais une pause.
+</p>
+
+<h2>😤 Difficultés rencontrées</h2>
+
+<h3>🔥 Le retour Stripe → Xano : le mur</h3>
+
+<p>
+<strong>C'est là que tout se complique.</strong> Le retour de Stripe vers Xano via webhook est beaucoup plus complexe que prévu.
+</p>
+
+<p>
+J'arrive bien à appeler mon API depuis Stripe. Je vois l'input dans l'historique des requêtes Xano. <strong>Mais impossible de trouver comment récupérer ces informations</strong> pour les exploiter comme variables dans mon API.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Le blocage majeur</strong><br>
+J'y passe plusieurs heures. Ce problème représente <strong>80% du temps total du projet</strong>. La documentation Xano n'est pas claire sur ce point précis, et les forums ne donnent pas de réponse directe.
+</div>
+
+<h3>🔍 Le problème en détail</h3>
+
+<p>
+Quand Stripe envoie un webhook, les données arrivent dans un format "raw" (brut). Xano ne les interprète pas automatiquement comme des inputs classiques. Il faut aller les chercher différemment.
+</p>
+
+<pre><code>
+Flux attendu :
+Stripe webhook → Xano API → Récupérer les données → Traitement
+
+Réalité :
+Stripe webhook → Xano API → ??? → Les données sont là mais invisibles
+</code></pre>
+
+<h3>🔐 Validation de clé Stripe : problème non résolu</h3>
+
+<p>
+Je rencontre également un blocage sur le <strong>contrôle de la clé Stripe</strong> pour sécuriser le paiement. Malgré un paramétrage qui semble correct, le contrôle renvoie toujours <code>false</code>.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>À résoudre plus tard</strong><br>
+Ce problème sera traité dans le Projet 6 qui demande de finaliser cette sécurisation.
+</div>
+
+<h2>💪 Solutions et apprentissages</h2>
+
+<h3>🎯 La solution : Get All Raw Input</h3>
+
+<p>
+Après des heures de recherche, je trouve enfin la solution : <strong>Get All Raw Input</strong>. Cette fonction Xano permet de récupérer toutes les données brutes envoyées à l'API, y compris celles des webhooks.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>La clé du problème</strong><br>
+Dans Xano, utiliser "Get All Raw Input" au début de l'API webhook permet de capturer les données Stripe brutes. Ensuite, on peut les parser et les utiliser comme variables normales.
+</div>
+
+<h3>⚡ Brevo bouclé en 10 minutes</h3>
+
+<p>
+Une fois le problème webhook résolu, <strong>l'intégration Brevo prend 10 minutes</strong>. L'appel API pour envoyer l'email de confirmation est simple et direct.
+</p>
+
+<h3>📊 Répartition du temps</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Tâche</th>
+            <th>Temps estimé</th>
+            <th>Difficulté</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Configuration Brevo</td>
+            <td>30 min</td>
+            <td>Facile</td>
+        </tr>
+        <tr>
+            <td>Configuration Stripe</td>
+            <td>30 min</td>
+            <td>Facile</td>
+        </tr>
+        <tr>
+            <td>API Xano → Stripe</td>
+            <td>30 min</td>
+            <td>Moyen</td>
+        </tr>
+        <tr>
+            <td>Webhook Stripe → Xano</td>
+            <td>~4h</td>
+            <td>Difficile</td>
+        </tr>
+        <tr>
+            <td>Intégration Brevo finale</td>
+            <td>10 min</td>
+            <td>Facile</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>✨ Points positifs</h2>
+
+<h3>⚡ Rapidité sur les intégrations classiques</h3>
+
+<p>
+Les intégrations Stripe et Brevo "classiques" (hors webhook) sont <strong>simples et bien documentées</strong>. Quand on suit les étapes, ça fonctionne.
+</p>
+
+<h3>🤖 L'IA Xano aide (parfois)</h3>
+
+<p>
+Quand on lui explique clairement ce qu'on veut, <strong>l'IA de Xano peut générer du code fonctionnel</strong>. Utile pour les tâches répétitives ou les transformations de données.
+</p>
+
+<h3>📚 Apprentissage concret</h3>
+
+<p>
+Ce projet m'a fait comprendre concrètement <strong>comment les webhooks fonctionnent</strong> et pourquoi ils sont si importants dans une architecture moderne. La théorie prend tout son sens.
+</p>
+
+<h2>😮‍💨 Points négatifs</h2>
+
+<h3>😤 Xano, encore et toujours</h3>
+
+<p>
+<strong>Ça me refroidit encore plus sur l'utilisation de Xano et son manque de souplesse.</strong> Des concepts simples deviennent compliqués à cause d'une documentation lacunaire et d'une interface pas toujours intuitive.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Frustration récurrente</strong><br>
+Ce n'est pas la première fois que Xano me fait perdre du temps sur des choses qui devraient être simples. Le manque de documentation claire sur les cas d'usage avancés est un vrai problème.
+</div>
+
+<h3>📖 Documentation webhook insuffisante</h3>
+
+<p>
+Trouver comment récupérer les données d'un webhook dans Xano n'aurait pas dû prendre 4 heures. <strong>Un exemple clair dans la documentation officielle aurait suffi.</strong>
+</p>
+
+<h3>🔐 Sécurité non finalisée</h3>
+
+<p>
+Ne pas réussir à valider la clé Stripe est frustrant. C'est un élément de sécurité important qui reste en suspens jusqu'au Projet 6.
+</p>
+
+<h2>🎓 Apprentissages clés</h2>
+
+<div class="summary">
+📌 <strong>Ce que j'ai retenu :</strong>
+<ul>
+    <li><strong>Get All Raw Input</strong> : fonction essentielle pour récupérer les données brutes des webhooks dans Xano</li>
+    <li><strong>Webhooks ≠ API classiques</strong> : les données n'arrivent pas de la même façon, il faut adapter la récupération</li>
+    <li><strong>L'IA Xano avec prudence</strong> : utile mais elle peut supprimer du code existant si on ne fait pas attention</li>
+    <li><strong>Stripe bien documenté</strong> : l'intégration côté Stripe est claire, c'est côté Xano que ça coince</li>
+    <li><strong>Brevo simple</strong> : l'API d'emailing transactionnel est straightforward une fois configurée</li>
+    <li><strong>80/20 inversé</strong> : parfois 80% du temps est passé sur 20% du travail (le webhook)</li>
+    <li><strong>Persévérance</strong> : ne pas abandonner même quand la documentation fait défaut</li>
+</ul>
+</div>
+
+<h2>📊 Bilan global</h2>
+
+<h3>✅ Validation du projet</h3>
+
+<p>
+Projet bouclé <strong>fin novembre 2025</strong> en environ <strong>6 heures de travail</strong>. Plus des deux tiers de ce temps ont été consacrés à un seul problème : la récupération des données webhook.
+</p>
+
+<h3>🤔 Ressenti général</h3>
+
+<p>
+Un projet <strong>sympa sur le fond</strong> : comprendre comment connecter des services externes, gérer les paiements, envoyer des emails automatiques. C'est concret et utile.
+</p>
+
+<p>
+Mais <strong>la forme avec Xano reste frustrante</strong>. Le manque de souplesse et de documentation claire transforme des tâches simples en casse-tête. En script "classique", le flux complet aurait pris une fraction du temps.
+</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Point non résolu</strong><br>
+La validation de la clé Stripe reste à faire. Le contrôle renvoie systématiquement <code>false</code> malgré un paramétrage apparemment correct. À traiter dans le Projet 6.
+</div>
+
+<h2>➡️ Et après ?</h2>
+
+<p>
+Le Projet 6 permettra de <strong>finaliser la sécurisation Stripe</strong>. En attendant, j'ai acquis une compréhension solide du flux de paiement et de l'intégration de services externes.
+</p>
+
+<div class="callout callout-tip">
+✨ <strong>Conseil pour les suivants</strong><br>
+Si vous bloquez sur les webhooks Xano : cherchez "Get All Raw Input". C'est probablement la solution. Et n'hésitez pas à demander de l'aide avant d'y passer 4 heures.
+</div>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://stripe.com/docs" target="_blank">Documentation Stripe</a></li>
+    <li><a href="https://developers.brevo.com/" target="_blank">Documentation API Brevo</a></li>
+    <li><a href="https://docs.xano.com" target="_blank">Documentation Xano (en anglais)</a></li>
+    <li><a href="https://www.weweb.io" target="_blank">WeWeb - Site officiel</a></li>
+</ul>
