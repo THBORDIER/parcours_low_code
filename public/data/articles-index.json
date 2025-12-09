@@ -317,6 +317,26 @@
     "path": "../articles/xano/api-endpoints.html"
   },
   {
+    "title": "Authentification Xano : Session Cookie vs JWT (Bearer Token)",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Authentification",
+      "JWT",
+      "Bearer Token",
+      "Session Cookie",
+      "Xano Auth",
+      "WeWeb",
+      "HttpOnly",
+      "Include credentials",
+      "/login",
+      "/me",
+      "Authorization header"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/authentification-session-cookie-vs-jwt.html"
+  },
+  {
     "title": "Base de données Xano",
     "category": "",
     "level": "",

@@ -1,0 +1,212 @@
+<h1>Authentification Xano : Session Cookie vs JWT (Bearer Token)</h1>
+
+<p class="subtitle">Comprendre pourquoi le plugin Xano Auth de WeWeb fonctionne sans header Authorization, et la différence avec l'authentification JWT classique enseignée dans les cours.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Authentification, JWT, Bearer Token, Session Cookie, Xano Auth, WeWeb, HttpOnly, Include credentials, /login, /me, Authorization header</p>
+    <p>📅 <strong>Mise à jour:</strong> 09/12/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+WeWeb + Xano Auth utilise des <strong>cookies de session</strong> (HttpOnly), pas des Bearer Tokens. Le cours enseigne JWT classique, mais le plugin gère tout automatiquement via cookies. <strong>Pas besoin de header <code>Authorization: Bearer &lt;token&gt;</code></strong> avec cette configuration.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p>En suivant le cours OpenClassrooms sur l'authentification Xano, les instructions demandaient :</p>
+
+<ul>
+    <li>Sécuriser les endpoints <code>/login</code>, <code>/signup</code>, <code>/me</code></li>
+    <li>Stocker le token (<code>authToken</code>) dans une variable WeWeb</li>
+    <li>Envoyer un header <code>Authorization: Bearer &lt;token&gt;</code> dans chaque appel API</li>
+</ul>
+
+<p><strong>Le problème :</strong> Après avoir implémenté les endpoints côté Xano, les API privées fonctionnaient... <em>sans jamais envoyer de Bearer token</em>. Était-ce une erreur ? L'authentification était-elle cassée ?</p>
+
+<p><strong>La réponse :</strong> Non, tout fonctionnait correctement. Le plugin Xano Auth de WeWeb utilise un <strong>mode d'authentification différent</strong> de celui enseigné dans le cours.</p>
+
+<h2>🔍 Les deux modes d'authentification Xano</h2>
+
+<p>Xano supporte <strong>deux modes d'authentification</strong> distincts :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Cas d'utilisation</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>JWT / Bearer Token</strong></td>
+            <td>Auth stateless, token stocké côté frontend</td>
+            <td>Cours Xano classique, apps mobiles, multi-frontend</td>
+        </tr>
+        <tr>
+            <td><strong>Session Cookie</strong></td>
+            <td>Auth automatique via cookie HttpOnly</td>
+            <td>Plugin Xano Auth WeWeb</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Ces deux modes ne sont <strong>pas interchangeables</strong>. Le cours enseigne le mode JWT, mais WeWeb avec le plugin Xano Auth utilise le mode Session Cookie. Les instructions du cours ne s'appliquent donc pas directement.
+</div>
+
+<h2>🍪 Comment fonctionne le mode Session Cookie</h2>
+
+<p>C'est le mode utilisé par le <strong>plugin Xano Auth de WeWeb</strong>. Voici le flux :</p>
+
+<ol>
+    <li>L'utilisateur se connecte via le formulaire WeWeb</li>
+    <li>Le plugin appelle automatiquement <code>/auth/login</code></li>
+    <li>Xano renvoie un <strong>cookie HttpOnly</strong> au navigateur</li>
+    <li>WeWeb renvoie automatiquement ce cookie à chaque appel API (grâce à <code>Include credentials</code>)</li>
+    <li>Xano reconnaît l'utilisateur <strong>sans jamais voir de Bearer token</strong></li>
+    <li>La session persiste même après un refresh de page</li>
+</ol>
+
+<pre><code>┌─────────────┐     1. Login      ┌─────────────┐
+│             │ ────────────────► │             │
+│   WeWeb     │                   │    Xano     │
+│  (Browser)  │ ◄──────────────── │  (Backend)  │
+│             │   2. Cookie       │             │
+└─────────────┘      HttpOnly     └─────────────┘
+       │                                 ▲
+       │    3. Appel API + Cookie        │
+       │    (automatique)                │
+       └─────────────────────────────────┘
+</code></pre>
+
+<h3>Avantages du mode Session Cookie</h3>
+
+<ul>
+    <li><code>XANO_AUTH.user.*</code> disponible dans toute l'UI WeWeb</li>
+    <li>Pas de gestion manuelle du token</li>
+    <li>Plus sécurisé : le cookie HttpOnly n'est <strong>pas accessible en JavaScript</strong></li>
+    <li>Session persistante automatiquement</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans WeWeb, vous pouvez accéder aux données utilisateur via <code>XANO_AUTH.user.id</code>, <code>XANO_AUTH.user.email</code>, <code>XANO_AUTH.user.role_name</code>, etc. sans faire d'appel API supplémentaire.
+</div>
+
+<h2>🔐 Comment fonctionne le mode JWT/Bearer</h2>
+
+<p>C'est le mode <strong>enseigné dans les cours</strong> et utilisé pour les applications mobiles ou multi-frontend :</p>
+
+<ol>
+    <li>L'utilisateur se connecte</li>
+    <li><code>/login</code> renvoie un <code>authToken</code> (JWT)</li>
+    <li>Le frontend stocke ce token (localStorage, variable, etc.)</li>
+    <li>Chaque appel API inclut le header <code>Authorization: Bearer &lt;token&gt;</code></li>
+    <li>Le backend vérifie et décode le token à chaque requête</li>
+</ol>
+
+<pre><code>┌─────────────┐     1. Login      ┌─────────────┐
+│             │ ────────────────► │             │
+│  Frontend   │                   │    Xano     │
+│             │ ◄──────────────── │  (Backend)  │
+│             │   2. authToken    │             │
+└─────────────┘      (JWT)        └─────────────┘
+       │                                 ▲
+       │    3. Authorization: Bearer     │
+       │       &lt;token&gt;                   │
+       └─────────────────────────────────┘
+</code></pre>
+
+<h3>Cas d'utilisation du mode JWT/Bearer</h3>
+
+<ul>
+    <li>Applications mobiles (React Native, Flutter)</li>
+    <li>Architectures multi-frontend</li>
+    <li>Intégrations avec des services externes</li>
+    <li>APIs consommées par d'autres backends</li>
+</ul>
+
+<h2>⚠️ Pourquoi le cours ne correspond pas à ton environnement</h2>
+
+<p>La confusion vient du fait que :</p>
+
+<ul>
+    <li>Le cours OpenClassrooms enseigne l'<strong>approche universelle JWT</strong> (valable partout)</li>
+    <li>WeWeb + Xano Auth utilise une <strong>approche simplifiée par cookies</strong> (spécifique à ce combo)</li>
+    <li>Les instructions "stocker le token" et "ajouter Bearer" sont <strong>inutiles</strong> dans ce contexte</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Si tu utilises WeWeb sans le plugin Xano Auth (par exemple avec des REST APIs custom), tu devras alors implémenter le mode JWT/Bearer manuellement. Le plugin simplifie énormément le processus mais masque cette complexité.
+</div>
+
+<h3>Ce qui a été tenté (et pourquoi ça n'a pas marché)</h3>
+
+<ul>
+    <li><strong>Test 1 :</strong> Mettre <code>XANO_AUTH.user.accessToken</code> dans un header Authorization → WeWeb n'autorise pas l'accès direct au token du plugin</li>
+    <li><strong>Test 2 :</strong> Stocker le token dans une variable WeWeb → Possible, mais inutile car le cookie fait déjà le travail</li>
+    <li><strong>Test 3 :</strong> Appeler des endpoints privés sans Authorization → Ça fonctionne ! Le cookie de session gère tout</li>
+</ul>
+
+<h2>🧪 Ce qui a été implémenté côté Xano</h2>
+
+<p>Même si le Bearer token n'est pas nécessaire côté WeWeb, la configuration Xano reste importante pour sécuriser les endpoints.</p>
+
+<h3>Endpoint /auth/login</h3>
+
+<p>Function Stack :</p>
+
+<ol>
+    <li><strong>Get Record From user</strong> - Récupère l'utilisateur par email</li>
+    <li><strong>Précondition :</strong> si <code>user == null</code> → retour 401 "Invalid credentials"</li>
+    <li><strong>Validate Password</strong> - Vérifie le mot de passe hashé</li>
+    <li><strong>Précondition :</strong> si <code>pass_result == false</code> → retour 401 "Invalid credentials"</li>
+    <li><strong>Get Record From role</strong> - Récupère le rôle de l'utilisateur</li>
+    <li><strong>Create Authentication Token</strong> - Génère le token/session</li>
+</ol>
+
+<h3>Endpoint /auth/me</h3>
+
+<p>Function Stack :</p>
+
+<ol>
+    <li><strong>Get Record From user</strong> - Récupère l'utilisateur authentifié</li>
+    <li><strong>Get Record From role</strong> - Joint le rôle associé</li>
+    <li><strong>Retourne :</strong> id, firstname, lastname, email, role, role_name, photo, created_at</li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Les préconditions dans <code>/login</code> sont essentielles pour la sécurité. Elles empêchent de savoir si c'est l'email ou le mot de passe qui est incorrect (message générique "Invalid credentials").
+</div>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li><strong>WeWeb + Xano Auth</strong> = mode Session Cookie (automatique, via cookies HttpOnly)</li>
+    <li><strong>Cours OpenClassrooms</strong> = mode JWT/Bearer (manuel, via header Authorization)</li>
+    <li>Les deux modes sont <strong>valides</strong>, mais pas interchangeables</li>
+    <li>Avec le plugin Xano Auth, <strong>pas besoin</strong> d'envoyer <code>Authorization: Bearer &lt;token&gt;</code></li>
+    <li>Le cookie HttpOnly gère la session automatiquement et de façon plus sécurisée</li>
+    <li>Pour accéder aux données utilisateur dans WeWeb : <code>XANO_AUTH.user.*</code></li>
+</ul>
+</div>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/authentication" target="_blank">Documentation Xano - Authentication</a></li>
+    <li><a href="https://docs.weweb.io/plugins/xano-auth.html" target="_blank">Documentation WeWeb - Xano Auth Plugin</a></li>
+</ul>
