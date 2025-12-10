@@ -1,0 +1,228 @@
+<h1>Comprendre la réalité des middlewares dans Xano</h1>
+
+<p class="subtitle">Problématique, limites techniques et implémentation d'une sécurité par rôle</p>
+
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Middleware, Sécurité verticale, check_role, HTTP 403, Precondition, Return Response, Function Stack, Playground, $auth.id, Limitation Xano</p>
+    <p>📅 <strong>Mise à jour:</strong> 10/12/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 3h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Les middlewares Xano ne peuvent <strong>PAS</strong> bloquer l'exécution d'un endpoint, même en cas d'erreur. Pour une sécurité par rôle, il faut utiliser une fonction <code>check_role()</code> appelée en début de chaque endpoint critique, avec un <code>Return Response 403</code> direct.
+</div>
+
+<h2>🎯 Le besoin initial</h2>
+
+<p>La création d'une <strong>sécurité verticale</strong> (contrôle par rôle : client, réparateur, admin…) est un besoin courant dans les applications multi-utilisateurs.</p>
+
+<p>L'objectif initial était simple :</p>
+
+<ul>
+    <li>Interroger la table <code>users</code> pour récupérer le rôle de l'utilisateur authentifié</li>
+    <li>Vérifier si ce rôle correspond à celui attendu (ex : "repairer")</li>
+    <li>Bloquer immédiatement la requête en cas de mismatch</li>
+    <li>Retourner un HTTP 403 "Forbidden"</li>
+</ul>
+
+<p>Cette logique est classique, alignée sur ce que proposent tous les frameworks backend (Express, Laravel, Django…).</p>
+
+<h2>🧪 Première approche : utiliser un middleware Xano</h2>
+
+<p>Xano propose des <strong>middlewares pre/post</strong> censés se déclencher avant ou après l'exécution d'un endpoint. Sur le papier, cela semble l'outil idéal pour une sécurité verticale.</p>
+
+<p>Un middleware Xano dispose de :</p>
+
+<ul>
+    <li>Une entrée <code>vars</code></li>
+    <li>Une entrée <code>type</code> (pre/post)</li>
+    <li>Un pipeline de fonctions</li>
+    <li>La possibilité d'ajouter des conditions (Precondition)</li>
+    <li>La possibilité de renvoyer des erreurs</li>
+</ul>
+
+<p>L'idée était donc de créer un middleware "check_role" :</p>
+
+<ol>
+    <li>Récupération de l'utilisateur via <code>$auth.id</code></li>
+    <li>Vérification de son rôle dans la table users</li>
+    <li>Si rôle incorrect → renvoi d'une erreur 401/403</li>
+    <li>Sinon → laisser passer la requête</li>
+</ol>
+
+<h2>🛑 Le problème découvert</h2>
+
+<p>Après de nombreuses tentatives et des tests croisés avec plusieurs utilisateurs, le constat est devenu clair :</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention — Limitation critique</strong><br>
+Même si un middleware Xano renvoie une erreur, il <strong>n'interrompt pas</strong> la requête API. L'endpoint continue de s'exécuter normalement.
+</div>
+
+<p>Voici les comportements observés :</p>
+
+<ul>
+    <li>Une <strong>Precondition échouée</strong> stoppe uniquement l'exécution du middleware, pas celle de l'endpoint</li>
+    <li>Un bloc <strong>Return</strong> s'arrête dans le middleware, mais laisse passer l'API derrière</li>
+    <li>Xano <strong>n'exécute jamais</strong> de <code>HTTP Return Response</code> depuis un middleware</li>
+    <li>Aucune erreur middleware n'empêche l'API attachée de s'exécuter</li>
+</ul>
+
+<p><strong>Le résultat observable :</strong></p>
+
+<ul>
+    <li>Le middleware signale une erreur dans le debugger</li>
+    <li>Mais le endpoint continue normalement</li>
+    <li>La ressource est supprimée malgré l'échec du contrôle de rôle</li>
+</ul>
+
+<p>Autrement dit :</p>
+
+<pre><code>Un middleware Xano n'a aucune capacité à sécuriser une API.
+C'est une limitation technique structurelle de Xano.</code></pre>
+
+<h2>🔍 Les faux positifs du Playground</h2>
+
+<p>Autre source de confusion majeure : le <strong>Playground Xano</strong>.</p>
+
+<ul>
+    <li>Le Playground <strong>n'exécute pas</strong> les middlewares</li>
+    <li>Les variables <code>middleware.*</code> n'y existent pas</li>
+    <li>Toute tentative de lire une variable middleware renvoie une chaîne de texte brute</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Toujours tester les middlewares en <strong>Debug mode</strong> avec une vraie requête HTTP, jamais uniquement dans le Playground qui ne reflète pas le comportement réel.
+</div>
+
+<p>Ce comportement a donné l'impression que la logique n'était pas injectée, alors qu'en réalité le middleware fonctionnait… mais sans jamais bloquer l'API.</p>
+
+<h2>✅ Confirmation externe</h2>
+
+<p>Un test avec un collègue a confirmé le même comportement :</p>
+
+<ul>
+    <li>Middleware correctement configuré</li>
+    <li>Erreur visible dans le middleware</li>
+    <li>Le endpoint continue quand même</li>
+</ul>
+
+<p>La conclusion était irréfutable :</p>
+
+<pre><code>Les middlewares Xano ne peuvent pas être utilisés
+comme mécanisme de sécurité.</code></pre>
+
+<h2>🔄 La solution : fonction check_role()</h2>
+
+<p>Puisqu'un middleware ne peut :</p>
+
+<ul>
+    <li>ni bloquer la requête</li>
+    <li>ni renvoyer un HTTP 403 au client</li>
+    <li>ni empêcher la Function Stack d'un endpoint de s'exécuter</li>
+</ul>
+
+<p>Il a fallu adopter une approche alternative.</p>
+
+<h3>Stratégie retenue</h3>
+
+<p>Utiliser une <strong>fonction externe</strong> <code>check_role()</code> et appeler cette fonction au début de chaque endpoint critique.</p>
+
+<pre><code>DELETE /sessions/:id
+
+┌─────────────────────────────────────────┐
+│  1. call function check_role($auth.id)  │
+│                                         │
+│  2. if check_role() renvoie faux :      │
+│     → Return Response 403 "Forbidden"   │
+│                                         │
+│  3. sinon : continuer l'exécution       │
+│     → Delete record                     │
+└─────────────────────────────────────────┘</code></pre>
+
+<h3>Avantages de cette approche</h3>
+
+<ul>
+    <li>La fonction peut faire une vérification stricte</li>
+    <li>L'endpoint peut renvoyer des codes HTTP réels (403, 401…)</li>
+    <li>La sécurité est centralisée, testable et fiable</li>
+    <li>Aucun contournement possible</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Pour une sécurité multi-niveaux, créez des fonctions spécialisées : <code>check_role_admin()</code>, <code>check_role_repairer()</code>, <code>check_is_owner()</code>… Chaque fonction encapsule sa propre logique de vérification et peut être réutilisée sur plusieurs endpoints.
+</div>
+
+<p>Cette méthode est, en réalité, <strong>la seule manière robuste</strong> d'implémenter une sécurité verticale dans Xano.</p>
+
+<h2>📊 Comparatif : Middleware vs Fonction</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Critère</th>
+            <th>Middleware Xano</th>
+            <th>Fonction check_role()</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Peut bloquer l'endpoint</td>
+            <td>Non</td>
+            <td>Oui</td>
+        </tr>
+        <tr>
+            <td>Peut renvoyer HTTP 403</td>
+            <td>Non</td>
+            <td>Oui</td>
+        </tr>
+        <tr>
+            <td>Testable dans Playground</td>
+            <td>Non</td>
+            <td>Oui</td>
+        </tr>
+        <tr>
+            <td>Comportement prévisible</td>
+            <td>Non</td>
+            <td>Oui</td>
+        </tr>
+        <tr>
+            <td>Adapté à la sécurité</td>
+            <td>Non</td>
+            <td>Oui</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>🎓 Enseignements pour les développeurs Xano</h2>
+
+<ul>
+    <li>Les middlewares servent à <strong>transformer et enrichir</strong> les données, pas à filtrer des accès</li>
+    <li>La documentation peut prêter à confusion — elle parle d'erreurs middleware, mais jamais d'interruption d'API</li>
+    <li>Un test en Debug est <strong>indispensable</strong> pour comprendre le flow réel</li>
+    <li>La sécurité doit <strong>toujours</strong> être implémentée dans l'endpoint lui-même, jamais dans un middleware</li>
+</ul>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>Les middlewares Xano ne bloquent <strong>jamais</strong> l'exécution d'un endpoint</li>
+    <li>Pour la sécurité par rôle, utiliser une <strong>fonction dédiée</strong> (ex: <code>check_role()</code>)</li>
+    <li>Appeler cette fonction en <strong>début de stack</strong> de chaque endpoint sensible</li>
+    <li>Utiliser <code>Return Response 403</code> en cas d'échec de vérification</li>
+    <li>Toujours tester en <strong>Debug mode</strong>, pas dans le Playground</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="#" data-article="../articles/xano/authentification-session-cookie-vs-jwt.html">Authentification : Session Cookie vs JWT</a> — Pour comprendre les mécanismes d'authentification dans Xano</li>
+    <li><a href="https://docs.xano.com/building-backend/function-stack/middlewares" target="_blank">Documentation officielle Xano — Middlewares</a></li>
+</ul>

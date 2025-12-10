@@ -519,6 +519,25 @@
     "path": "../articles/xano/pourquoi-xano-webhooks-compliques.html"
   },
   {
+    "title": "Comprendre la réalité des middlewares dans Xano",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Middleware",
+      "Sécurité verticale",
+      "check_role",
+      "HTTP 403",
+      "Precondition",
+      "Return Response",
+      "Function Stack",
+      "Playground",
+      "$auth.id",
+      "Limitation Xano"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/realite-middlewares-xano.html"
+  },
+  {
     "title": "Renouveler sa clé Metadata API Xano expirée",
     "category": "Xano",
     "level": "Débutant",
