@@ -552,6 +552,23 @@
     "path": "../articles/xano/renouveler-cle-metadata-api.html"
   },
   {
+    "title": "Vérifier une signature Stripe dans Xano",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Stripe",
+      "Webhook",
+      "Signature",
+      "HMAC",
+      "SHA256",
+      "Sécurité",
+      "Verify Signature",
+      "Raw Body"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/verifier-signature-stripe.html"
+  },
+  {
     "title": "Webhook Stripe → Xano → Email Brevo : automatiser l'après-paiement",
     "category": "Xano",
     "level": "Avancé",

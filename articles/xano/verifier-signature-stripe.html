@@ -1,0 +1,225 @@
+<h1>Vérifier une signature Stripe dans Xano</h1>
+<p class="subtitle">Ce qui ne marchait pas, pourquoi, et comment bien faire</p>
+
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Stripe, Webhook, Signature, HMAC, SHA256, Sécurité, Verify Signature, Raw Body</p>
+    <p>📅 <strong>Mise à jour:</strong> 16/12/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h30</p>
+    <p>⚙️ <strong>Stack:</strong> Xano + Stripe</p>
+</div>
+
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+La fonction "Stripe: Verify Signature" de Xano échoue si le body est modifié (même légèrement). Il faut utiliser le raw body brut, reconstruire exactement le payload signé (<code>t.raw_body</code>), et comparer le HMAC SHA-256 avec la valeur <code>v1</code> du header. Aucune transformation (unset, json_encode, trim) n'est tolérée.
+</div>
+
+<h2>🔐 Le contexte</h2>
+
+<p>Stripe envoie des webhooks (notifications HTTP) à ton backend pour t'informer d'événements importants : paiement validé, session terminée, etc.</p>
+
+<p>Pour des raisons de sécurité, <strong>Stripe signe chaque webhook</strong>. Ton backend doit vérifier cette signature pour être sûr que la requête vient bien de Stripe et qu'elle n'a pas été modifiée.</p>
+
+<p>Xano propose une fonction "Stripe: Verify Signature", mais dans la pratique :</p>
+
+<ul>
+    <li>elle est fragile,</li>
+    <li>elle ne tolère aucune modification du message,</li>
+    <li>et elle n'explique pas clairement ce qui est attendu.</li>
+</ul>
+
+<p>Résultat : on se retrouve avec une fonction "low-code" qui ne fonctionne pas, sans message d'erreur exploitable.</p>
+
+<h2>📚 Les notions de base (en clair)</h2>
+
+<h3>1. Qu'est-ce qu'un header HTTP ?</h3>
+
+<p>Un header est une information "technique" envoyée avec une requête HTTP, mais séparée du contenu principal.</p>
+
+<p><strong>Exemples :</strong></p>
+<ul>
+    <li><code>Content-Type</code> : indique le type de contenu envoyé</li>
+    <li><code>User-Agent</code> : qui envoie la requête</li>
+    <li><code>Stripe-Signature</code> : signature cryptographique fournie par Stripe</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans un webhook Stripe, la signature est dans un <strong>header</strong>, pas dans le body.
+</div>
+
+<h3>2. Qu'est-ce que le body (ou payload) ?</h3>
+
+<p>Le body (ou payload) est le <strong>contenu principal</strong> de la requête.</p>
+
+<p>Dans un webhook Stripe, c'est un gros JSON qui décrit l'événement :</p>
+<ul>
+    <li>type d'événement</li>
+    <li>identifiant de paiement</li>
+    <li>montant</li>
+    <li>client, etc.</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Pour Stripe, ce body doit être utilisé <strong>exactement tel qu'il est reçu</strong>, caractère par caractère.
+</div>
+
+<h3>3. Qu'est-ce que la signature Stripe ?</h3>
+
+<p>Stripe calcule une signature cryptographique à partir de :</p>
+<ul>
+    <li>un timestamp (<code>t</code>)</li>
+    <li>le body brut</li>
+    <li>un secret partagé (le webhook secret)</li>
+</ul>
+
+<p>La formule logique est :</p>
+
+<pre><code>signature = HMAC_SHA256(
+  secret,
+  t + "." + raw_body
+)</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Ton backend doit refaire exactement le même calcul, puis comparer le résultat avec <code>v1</code> fourni dans le header <code>Stripe-Signature</code>.
+</div>
+
+<h2>❌ Pourquoi la première fonction ne fonctionnait PAS</h2>
+
+<p>La fonction qui échouait cumulait plusieurs erreurs classiques mais fatales.</p>
+
+<h3>1. Le body était modifié</h3>
+
+<ul>
+    <li>utilisation de <code>unset</code></li>
+    <li>utilisation de <code>json_encode</code></li>
+    <li>utilisation de <code>trim</code></li>
+</ul>
+
+<p>Même si le JSON "a l'air identique", un seul caractère modifié (espace, saut de ligne, échappement) rend la signature invalide.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Stripe ne signe pas un JSON "logique", mais une <strong>suite d'octets</strong>.
+</div>
+
+<h3>2. Le payload signé n'était pas conforme</h3>
+
+<p>Au lieu de signer :</p>
+<pre><code>t + "." + raw_body</code></pre>
+
+<p>La fonction signait une version transformée :</p>
+<ul>
+    <li>body encodé</li>
+    <li>point mal placé</li>
+    <li>concaténation ambiguë</li>
+</ul>
+
+<p>Le calcul cryptographique ne pouvait donc jamais correspondre.</p>
+
+<h3>3. Mélange de sources pour le body</h3>
+
+<p>La fonction utilisait à la fois :</p>
+<ul>
+    <li><code>util.get_raw_input</code></li>
+    <li>et un <code>raw_input</code> passé en paramètre</li>
+</ul>
+
+<p>Cela rend le comportement imprévisible et difficile à déboguer.</p>
+
+<h2>✅ Pourquoi la seconde fonction FONCTIONNE</h2>
+
+<p>La fonction qui fonctionne respecte strictement les règles Stripe.</p>
+
+<p><strong>Ce qu'elle fait correctement :</strong></p>
+
+<ol>
+    <li>Elle récupère le <strong>raw body brut</strong>
+        <ul>
+            <li>sans parsing</li>
+            <li>sans nettoyage</li>
+            <li>sans transformation</li>
+        </ul>
+    </li>
+    <li>Elle extrait correctement les éléments du header <code>Stripe-Signature</code>
+        <ul>
+            <li><code>t</code> (timestamp)</li>
+            <li><code>v1</code> (signature attendue)</li>
+        </ul>
+    </li>
+    <li>Elle reconstruit le payload exactement comme Stripe :
+        <pre><code>signed_payload = t + "." + raw_body</code></pre>
+    </li>
+    <li>Elle calcule le HMAC SHA-256 avec le bon secret</li>
+    <li>Elle compare le résultat avec <code>v1</code></li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Les deux valeurs sont identiques → la signature est valide
+</div>
+
+<h2>✔️ Checklist de vérification</h2>
+
+<p>Avant de dire "c'est bon", il faut vérifier :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Vérification</th>
+            <th>Statut attendu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Le body utilisé pour la signature est le raw body, pas un JSON reconstruit</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Aucune fonction ne modifie le body (unset, json_encode, trim, etc.)</td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Le payload signé est exactement <code>t.raw_body</code></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>La signature calculée est strictement identique à <code>v1</code></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td>Le résultat final est <code>true</code></td>
+            <td>✅</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Si une seule de ces conditions n'est pas respectée, la vérification échouera.
+</div>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>Xano est "low-code", mais la vérification de signature Stripe n'est pas tolérante</li>
+    <li>Le body doit être utilisé <strong>exactement tel qu'il est reçu</strong> (raw body)</li>
+    <li>Aucune transformation n'est acceptable : pas de <code>unset</code>, <code>json_encode</code>, <code>trim</code></li>
+    <li>Le payload signé doit être <code>t + "." + raw_body</code> exactement</li>
+    <li>La comparaison HMAC SHA-256 doit correspondre à <code>v1</code> du header</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://stripe.com/docs/webhooks/signatures" target="_blank">Documentation Stripe : Webhook Signatures</a></li>
+    <li><a href="#" data-article="../articles/xano/webhook-stripe-xano-brevo.html">Webhook Stripe → Xano → Email Brevo</a></li>
+    <li><a href="#" data-article="../articles/xano/pourquoi-xano-webhooks-compliques.html">Pourquoi Xano rend les webhooks si compliqués</a></li>
+    <li><a href="#" data-article="../articles/xano/flux-complet-weweb-xano-stripe-brevo.html">Flux complet : WeWeb → Xano → Stripe → Brevo</a></li>
+</ul>
