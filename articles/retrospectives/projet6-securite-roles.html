@@ -1,0 +1,232 @@
+<h1>Projet 6 : Initiez-vous à la sécurité et à la gestion des rôles sur votre application</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Rétrospectives</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Sécurité, Middlewares Xano, Stripe signature, Functions Xano, Rôles utilisateurs, WeWeb plugins, Authentification, Parsing, Validation webhook</p>
+    <p>📅 <strong>Mise à jour:</strong> 14/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 7h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Stripe</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Projet de 7h sur la sécurité et les rôles utilisateurs : middlewares Xano pour contrôler l'accès aux ressources, validation de signature Stripe (5h de galère avec le parsing), et découverte des functions Xano réutilisables. Les plugins WeWeb pré-configurés offrent une excellente base de sécurité.
+</div>
+
+<h2>🎯 Objectifs du projet</h2>
+<p>Ce projet vise à mettre en place une couche de sécurité solide sur l'application, en contrôlant l'accès aux ressources et en validant les webhooks Stripe de manière sécurisée.</p>
+
+<h2>📚 Glossaire des termes techniques</h2>
+
+<div class="callout callout-tip">
+<strong>🔐 Middleware</strong><br>
+Un middleware est un composant logiciel qui s'exécute <strong>avant</strong> le code principal d'une API. Dans Xano, il permet de vérifier des conditions (ex: l'utilisateur est-il authentifié ? possède-t-il la ressource ?) avant d'autoriser l'accès à l'endpoint.
+</div>
+
+<div class="callout callout-tip">
+<strong>🎭 Rôles utilisateurs</strong><br>
+Les rôles définissent les permissions d'un utilisateur dans l'application (admin, utilisateur standard, invité, etc.). Chaque rôle possède des droits d'accès spécifiques à certaines fonctionnalités ou ressources.
+</div>
+
+<div class="callout callout-tip">
+<strong>🔑 Validation de signature (Stripe)</strong><br>
+Mécanisme de sécurité qui garantit qu'une requête webhook provient réellement de Stripe et n'a pas été altérée. Stripe envoie une signature cryptographique que l'application doit vérifier avant de traiter les données.
+</div>
+
+<div class="callout callout-tip">
+<strong>🧩 Function (Xano)</strong><br>
+Une function dans Xano est un bloc de code réutilisable que vous pouvez appeler depuis plusieurs endpoints. Cela évite la duplication de code et facilite la maintenance (ex: une function "vérifier_proprietaire" utilisable partout).
+</div>
+
+<div class="callout callout-tip">
+<strong>🔄 Webhook</strong><br>
+Un webhook est une notification automatique envoyée par un service externe (comme Stripe) vers votre API lorsqu'un événement se produit (paiement réussi, abonnement annulé, etc.). Votre application doit recevoir et traiter ces notifications de manière sécurisée.
+</div>
+
+<div class="callout callout-tip">
+<strong>📝 Parsing</strong><br>
+Le parsing (ou analyse syntaxique) est l'action de découper et interpréter un bloc de texte pour en extraire des informations structurées. Par exemple : transformer une chaîne JSON en objet exploitable, ou extraire des valeurs spécifiques d'un texte brut.
+</div>
+
+<div class="callout callout-tip">
+<strong>🔗 Concaténation</strong><br>
+Action de fusionner plusieurs chaînes de caractères en une seule. Exemple : <code>"Bonjour" + " " + "monde"</code> donne <code>"Bonjour monde"</code>.
+</div>
+
+<div class="callout callout-tip">
+<strong>🔌 Plugin</strong><br>
+Module d'extension qui ajoute des fonctionnalités à une plateforme. Dans WeWeb, les plugins Xano pré-configurent automatiquement les appels API, l'authentification, et les mécanismes de sécurité.
+</div>
+
+<h2>✅ Ce qui a bien fonctionné</h2>
+
+<h3>1️⃣ Logique de sécurité intuitive</h3>
+<p>Globalement, le projet était <strong>très simple</strong> et logique pour moi. Les concepts de sécurité sont naturels :</p>
+
+<ul>
+    <li>✅ <strong>Contrôler le possesseur d'un enregistrement</strong> : vérifier que l'utilisateur connecté est bien propriétaire de la ressource qu'il tente de modifier</li>
+    <li>✅ <strong>S'assurer que c'est le bon compte</strong> avant de valider quoi que ce soit</li>
+    <li>✅ <strong>Principe de moindre privilège</strong> : ne donner accès qu'aux ressources strictement nécessaires</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+La sécurité est une question de <strong>bon sens</strong> : "Est-ce que cette personne devrait avoir accès à cette ressource ?" Si la réponse n'est pas un "oui" clair, alors c'est "non".
+</div>
+
+<h3>2️⃣ Middlewares : une approche puissante et réutilisable</h3>
+<p>La possibilité d'<strong>appliquer un middleware sur plusieurs API</strong> est extrêmement intéressante. Plutôt que de répéter le même code de vérification dans chaque endpoint, on crée un middleware une fois et on l'applique partout où c'est nécessaire.</p>
+
+<p><strong>📊 Exemple d'utilisation :</strong></p>
+<ul>
+    <li>Un middleware "vérifier_authentification" appliqué sur toutes les API privées</li>
+    <li>Un middleware "vérifier_proprietaire" appliqué sur les API de modification de profil</li>
+    <li>Un middleware "vérifier_role_admin" appliqué sur les API d'administration</li>
+</ul>
+
+<pre><code>// Schéma conceptuel
+Requête → Middleware (vérifications) → API principale (si autorisé)
+                ↓
+           Rejet (si non autorisé)
+</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Les middlewares peuvent être chaînés : une requête peut passer par plusieurs middlewares successifs (authentification → vérification de rôle → vérification de propriété) avant d'atteindre l'API principale.
+</div>
+
+<h3>3️⃣ Functions Xano : code réutilisable</h3>
+<p>J'ai également bien progressé sur les <strong>functions dans Xano</strong>, qui peuvent s'appliquer rapidement sans devoir refaire du code à chaque fois.</p>
+
+<p><strong>Avantages des functions :</strong></p>
+<ul>
+    <li>✅ <strong>Réutilisabilité</strong> : écrire une fois, utiliser partout</li>
+    <li>✅ <strong>Maintenabilité</strong> : une modification dans la function se propage automatiquement</li>
+    <li>✅ <strong>Lisibilité</strong> : le code principal reste clair et concis</li>
+</ul>
+
+<h3>4️⃣ Plugins WeWeb : sécurité intégrée</h3>
+<p>Les <strong>plugins Xano de WeWeb</strong> sont déjà tous pré-configurés pour assurer une grosse couche de sécurité, ce qui fait gagner beaucoup de temps également.</p>
+
+<p><strong>Sécurité automatique incluse :</strong></p>
+<ul>
+    <li>✅ Gestion automatique du token d'authentification</li>
+    <li>✅ Headers HTTP sécurisés configurés par défaut</li>
+    <li>✅ Refresh automatique des tokens expirés</li>
+    <li>✅ Protection contre les appels non autorisés</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Profitez de cette sécurité pré-configurée ! Ne réinventez pas la roue en créant des systèmes d'authentification custom quand les plugins font déjà le travail.
+</div>
+
+<h2>🛑 Difficultés rencontrées</h2>
+
+<h3>⏱️ Temps passé : 7h au total</h3>
+<ul>
+    <li>🕐 <strong>5h sur la validation de la clé Stripe</strong> (difficulté principale)</li>
+    <li>🕐 <strong>~1h sur la mise en marche des middlewares</strong></li>
+    <li>🕐 <strong>~1h sur le reste</strong> (concepts de sécurité, tests)</li>
+</ul>
+
+<h3>🔐 Validation de signature Stripe : un vrai casse-tête</h3>
+
+<p><strong>🛑 Problème principal :</strong><br>
+Ma principale difficulté résidait dans Stripe où je dois :</p>
+
+<ol>
+    <li><strong>Récupérer des informations</strong> dans un bloc de texte (payload brut du webhook)</li>
+    <li><strong>Parser</strong> ce texte pour en extraire les données nécessaires</li>
+    <li><strong>Concaténer</strong> plusieurs éléments dans un ordre précis</li>
+    <li><strong>Comparer</strong> le résultat à une clé de signature fournie par Stripe</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Problème technique</strong><br>
+La manipulation de ces données n'est <strong>pas possible nativement dans Xano</strong>. Les opérations de parsing complexe et de cryptographie ne sont pas directement accessibles via l'interface no-code.
+</div>
+
+<h3>📚 Documentation et templates obsolètes</h3>
+
+<p><strong>🛑 Problèmes rencontrés :</strong></p>
+<ul>
+    <li>❌ Les <strong>templates Xano proposés ne sont pas à jour</strong> avec les dernières versions de l'API Stripe</li>
+    <li>❌ La <strong>documentation Xano</strong> sur la validation de signature Stripe est incomplète</li>
+    <li>❌ Les exemples fournis ne fonctionnent pas directement</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Réalité du terrain</strong><br>
+Je n'aurais <strong>pas réussi à passer cette phase</strong> sans l'aide d'un autre élève et de mon mentor. La validation de signature Stripe nécessite une compréhension fine des mécanismes cryptographiques que la documentation Xano ne couvre pas suffisamment.
+</div>
+
+<h3>🔧 Solution finalement appliquée</h3>
+
+<p>Grâce à l'aide reçue, j'ai pu :</p>
+<ul>
+    <li>✅ Comprendre le mécanisme exact de validation de signature Stripe</li>
+    <li>✅ Utiliser les bonnes fonctions Xano (ou workarounds) pour le parsing</li>
+    <li>✅ Construire la chaîne de vérification dans le bon ordre</li>
+    <li>✅ Valider la signature avant de traiter les événements webhook</li>
+</ul>
+
+<pre><code>// Processus de validation (simplifié)
+1. Récupérer le payload brut (body) du webhook
+2. Récupérer le header "Stripe-Signature"
+3. Extraire timestamp et signature du header
+4. Reconstruire la chaîne signée : timestamp + "." + payload
+5. Calculer la signature attendue avec la clé secrète
+6. Comparer signature reçue vs signature calculée
+7. Si identique → webhook valide, sinon → rejeter
+</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+La validation de signature Stripe utilise l'algorithme HMAC-SHA256. Stripe signe le webhook avec votre clé secrète, et vous devez recalculer la signature de votre côté pour vérifier l'authenticité. Ce mécanisme empêche les attaques par rejeu et les webhooks falsifiés.
+</div>
+
+<h2>📊 Bilan de la session</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>✅ Les concepts de sécurité (middlewares, rôles, contrôle d'accès) sont <strong>logiques et intuitifs</strong></li>
+    <li>✅ Les <strong>middlewares Xano</strong> sont puissants et réutilisables sur plusieurs API</li>
+    <li>✅ Les <strong>functions Xano</strong> permettent d'éviter la duplication de code</li>
+    <li>✅ Les <strong>plugins WeWeb</strong> offrent une sécurité pré-configurée solide</li>
+    <li>⚠️ La <strong>validation de signature Stripe</strong> est complexe (5h de travail)</li>
+    <li>⚠️ La <strong>documentation et templates Xano</strong> ne sont pas à jour sur ce point</li>
+    <li>🤝 L'aide d'autres élèves et du mentor a été <strong>essentielle</strong> pour débloquer</li>
+</ul>
+</div>
+
+<h2>🎓 Enseignements clés</h2>
+
+<h3>1️⃣ La sécurité est une question de bon sens</h3>
+<p>Les principes de sécurité sont naturels : vérifier l'identité, contrôler les accès, valider les sources. Si vous comprenez <em>pourquoi</em> c'est nécessaire, le <em>comment</em> devient évident.</p>
+
+<h3>2️⃣ Réutilisabilité = gain de temps</h3>
+<p>Investir du temps dans des middlewares et functions bien conçus se rentabilise rapidement. Une heure de conception = des dizaines d'heures économisées sur le long terme.</p>
+
+<h3>3️⃣ Ne pas hésiter à demander de l'aide</h3>
+<p>Certaines problématiques techniques (comme la validation de signature Stripe) nécessitent une expertise spécifique. Bloquer 5h sur un problème est normal, mais demander de l'aide plus tôt aurait pu économiser du temps.</p>
+
+<h3>4️⃣ La documentation n'est pas toujours à jour</h3>
+<p>Dans l'écosystème no-code, les API tierces évoluent vite et les templates peuvent devenir obsolètes. Toujours croiser plusieurs sources d'information (documentation officielle de Stripe, forums, mentor).</p>
+
+<h2>🚀 Prochaines étapes</h2>
+<ul>
+    <li>Appliquer ces mécanismes de sécurité sur l'ensemble de l'application</li>
+    <li>Créer une library de functions Xano réutilisables</li>
+    <li>Tester les différents scénarios de sécurité (utilisateur non authentifié, accès non autorisé, etc.)</li>
+    <li>Documenter le processus de validation Stripe pour référence future</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Explorez d'autres mécanismes de sécurité : rate limiting (limitation du nombre de requêtes), IP whitelisting (liste blanche d'adresses IP autorisées), audit logs (journalisation des actions sensibles) pour renforcer encore la sécurité de votre application.
+</div>

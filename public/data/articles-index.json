@@ -206,6 +206,24 @@
     "path": "../articles/retrospectives/projet-5-api-stripe-brevo.html"
   },
   {
+    "title": "Projet 6 : Initiez-vous à la sécurité et à la gestion des rôles sur votre application",
+    "category": "Rétrospectives",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Sécurité",
+      "Middlewares Xano",
+      "Stripe signature",
+      "Functions Xano",
+      "Rôles utilisateurs",
+      "WeWeb plugins",
+      "Authentification",
+      "Parsing",
+      "Validation webhook"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet6-securite-roles.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",
