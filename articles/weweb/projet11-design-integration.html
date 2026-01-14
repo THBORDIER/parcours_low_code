@@ -1,0 +1,123 @@
+<h1>État d'avancement du projet (Design & Intégration WeWeb)</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Débutant</p>
+    <p>🔍 <strong>Mots-clés:</strong> Design System, Figma, Typographies, Composants WeWeb, Navbar, Footer, Gradient CSS, Intégration</p>
+    <p>📅 <strong>Mise à jour:</strong> 14/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Figma</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Mise en place des fondations design du Projet 11 dans WeWeb : typographies, couleurs, composants de navigation (Navbar/Footer), et début d'intégration de la page Login avec gestion d'un gradient CSS personnalisé.
+</div>
+
+<h2>🎯 Contexte du projet</h2>
+<p>Ce projet (Projet 11) nécessite l'intégration complète d'une maquette Figma dans WeWeb. Le travail a débuté par la structuration du socle visuel : design system, composants réutilisables, et premiers écrans fonctionnels.</p>
+
+<h2>🎨 Mise en place de la base design</h2>
+
+<h3>1️⃣ Typographies</h3>
+<ul>
+    <li><strong>Intégration et configuration</strong> des différentes polices du projet</li>
+    <li><strong>Déclinaison des styles typographiques</strong> (titres, textes, hiérarchie)</li>
+    <li><strong>Cohérence assurée</strong> entre Figma et WeWeb</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans WeWeb, pensez à nommer vos styles de texte de manière claire (ex: "Heading 1", "Body Text", "Caption") pour faciliter la réutilisation et la maintenance du design system.
+</div>
+
+<h3>2️⃣ Palette de couleurs</h3>
+<ul>
+    <li><strong>Reproduction fidèle</strong> de l'ensemble des couleurs du design system</li>
+    <li><strong>Centralisation</strong> pour une réutilisation cohérente sur l'ensemble du site</li>
+    <li><strong>Validation visuelle</strong> via échantillons et composants</li>
+</ul>
+
+<h2>🧩 Composants UI réutilisables</h2>
+<p>Un premier jeu de composants clés a été intégré afin d'assurer une base solide et scalable.</p>
+
+<h3>Navigation (Navbar)</h3>
+<ul>
+    <li>Création du composant <strong>Navbar</strong></li>
+    <li>Intégration du <strong>logo vectoriel</strong></li>
+    <li>Mise en place de la <strong>structure de navigation</strong></li>
+</ul>
+
+<h3>Pied de page (Footer)</h3>
+<ul>
+    <li>Création du composant <strong>Footer</strong></li>
+    <li>Gestion du <strong>branding et des mentions</strong></li>
+    <li><strong>Uniformisation des styles</strong></li>
+</ul>
+
+<h3>Vecteurs & icônes</h3>
+<ul>
+    <li><strong>Import et intégration</strong> des logos et éléments vectoriels depuis Figma</li>
+    <li>Préparation à une <strong>utilisation réutilisable</strong> dans WeWeb</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Pour importer des éléments vectoriels depuis Figma, exportez-les en SVG. Cela garantit une qualité optimale et une scalabilité parfaite dans WeWeb.
+</div>
+
+<h2>🔐 Développement de la page Login</h2>
+<p>Le travail s'est poursuivi avec le début de l'intégration de la page de connexion.</p>
+
+<h3>Structure de la page</h3>
+<ul>
+    <li>Mise en place du <strong>layout principal</strong></li>
+    <li>Préparation des <strong>sections pour les contenus futurs</strong></li>
+</ul>
+
+<h3>Gestion du gradient CSS</h3>
+<p>L'un des défis de cette page était d'implémenter un gradient CSS personnalisé, non gérable directement via l'interface WeWeb.</p>
+
+<ul>
+    <li><strong>Implémentation d'un gradient CSS personnalisé</strong></li>
+    <li><strong>Contournement des limites</strong> de l'éditeur WeWeb</li>
+    <li><strong>Validation d'un rendu</strong> conforme au design Figma</li>
+</ul>
+
+<pre><code>background-image: linear-gradient(270deg, #418177 0%, #355F58 100%) !important;
+background-color: transparent !important;</code></pre>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+L'utilisation de <code>!important</code> est nécessaire ici pour surcharger les styles par défaut de WeWeb. Utilisez cette technique avec parcimonie et uniquement lorsque c'est vraiment nécessaire.
+</div>
+
+<p>Ce gradient constitue la base visuelle de la page Login et servira de référence pour les sections similaires.</p>
+
+<h2>📊 Résultat à ce stade</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>✅ Un <strong>design system fonctionnel</strong> est en place dans WeWeb</li>
+    <li>✅ Les <strong>fondations graphiques</strong> (polices, couleurs, composants) sont prêtes</li>
+    <li>✅ Les <strong>composants structurants</strong> (navbar, footer) sont opérationnels</li>
+    <li>✅ La <strong>page Login</strong> est amorcée avec un rendu visuel maîtrisé</li>
+    <li>✅ Une méthodologie de contournement des limites WeWeb via CSS personnalisé est validée</li>
+</ul>
+</div>
+
+<h2>🚀 Prochaines étapes</h2>
+<ul>
+    <li>Finaliser l'intégration de la page Login (formulaire, validation)</li>
+    <li>Continuer l'intégration des pages principales</li>
+    <li>Connecter les composants aux données dynamiques</li>
+    <li>Tester la responsivité sur différents devices</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Pour structurer efficacement un design system dans WeWeb, pensez à créer des variables CSS globales pour vos couleurs et espacements. Cela facilitera grandement les ajustements futurs et la maintenance du projet.
+</div>

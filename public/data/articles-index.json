@@ -270,6 +270,23 @@
     "path": "../articles/weweb/mettre-a-jour-photo-profil-modal.html"
   },
   {
+    "title": "État d'avancement du projet (Design & Intégration WeWeb)",
+    "category": "WeWeb",
+    "level": "Débutant",
+    "keywords": [
+      "Design System",
+      "Figma",
+      "Typographies",
+      "Composants WeWeb",
+      "Navbar",
+      "Footer",
+      "Gradient CSS",
+      "Intégration"
+    ],
+    "theme": "weweb",
+    "path": "../articles/weweb/projet11-design-integration.html"
+  },
+  {
     "title": "Récupérer l'ID utilisateur avec Xano Auth : pas besoin de requête !",
     "category": "WeWeb",
     "level": "Débutant",
