@@ -244,6 +244,25 @@
     "path": "../articles/retrospectives/projet7-specification-fonctionnalites.html"
   },
   {
+    "title": "Projet 8 : Finalisez votre application en implémentant de nouvelles fonctionnalités",
+    "category": "Rétrospectives",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Implémentation",
+      "Triggers Xano",
+      "Cron jobs",
+      "Brevo",
+      "Notifications automatiques",
+      "Rebooking",
+      "Dashboard",
+      "Avis clients",
+      "Historique réservations",
+      "Quick wins"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet8-implementation-fonctionnalites.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",

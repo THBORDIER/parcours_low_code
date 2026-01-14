@@ -1,0 +1,379 @@
+<h1>Projet 8 : Finalisez votre application en implémentant de nouvelles fonctionnalités</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Rétrospectives</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Implémentation, Triggers Xano, Cron jobs, Brevo, Notifications automatiques, Rebooking, Dashboard, Avis clients, Historique réservations, Quick wins</p>
+    <p>📅 <strong>Mise à jour:</strong> 14/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 3h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Brevo</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Projet de 3h pour implémenter les 6 fonctionnalités priorisées au Projet 7 : notifications automatiques, rebooking en un clic, historique réservations, système d'avis, rappels automatiques, dashboard réparateur. Mise en place d'un trigger automatique Xano + Brevo testé avec succès 2 semaines après. Application non complètement fonctionnelle contournée avec des "astuces".
+</div>
+
+<h2>🎯 Contexte du projet</h2>
+<p>Le Projet 8 est la <strong>suite logique du Projet 7</strong> : après avoir spécifié et priorisé les fonctionnalités, il s'agit maintenant de les <strong>implémenter concrètement</strong> dans l'application.</p>
+
+<p>J'ai réalisé l'ensemble des améliorations retenues en <strong>3h au total</strong>. Ce projet a été effectué juste avant Noël, avec un test de validation des emails automatiques réalisé 2 semaines plus tard (après les fêtes).</p>
+
+<div class="callout callout-tip">
+✨ <strong>Constat important</strong><br>
+Je me rends compte que la suite logique des projets m'a donné un <strong>bon niveau sur la manipulation WeWeb et Xano</strong>. Les concepts sont maintenant bien ancrés et l'implémentation devient plus fluide.
+</div>
+
+<h2>⚠️ Contrainte de l'exercice</h2>
+
+<p>L'empilement des projets de manière désordonnée ainsi que leur révision permanente ne m'a pas permis de construire une <strong>application pleinement fonctionnelle</strong>.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Stratégie de contournement</strong><br>
+L'objectif étant de mettre en place les améliorations du précédent projet, cela ne posera pas de problème : je "tricherais" en ajoutant des boutons ou des méthodes pour <strong>contourner les problèmes</strong> de l'application sous-jacente. L'important est de démontrer la maîtrise des fonctionnalités ciblées.
+</div>
+
+<p>Cette approche pragmatique est réaliste : en entreprise, on développe souvent des nouvelles fonctionnalités sur des bases imparfaites, et il faut savoir composer avec l'existant.</p>
+
+<h2>📚 Glossaire des termes techniques</h2>
+
+<div class="callout callout-tip">
+<strong>🔔 Trigger (Déclencheur)</strong><br>
+Un trigger est un mécanisme automatique qui s'exécute en réponse à un événement spécifique. Dans Xano, un trigger peut être déclenché par une modification de base de données, un horaire (cron job), ou une action utilisateur.
+</div>
+
+<div class="callout callout-tip">
+<strong>⏰ Cron Job</strong><br>
+Tâche programmée qui s'exécute automatiquement à intervalles réguliers (ex: toutes les heures, tous les jours à 9h). Dans Xano, les cron jobs permettent d'automatiser des processus comme l'envoi de rappels ou la vérification de dates.
+</div>
+
+<div class="callout callout-tip">
+<strong>📧 Brevo (ex-Sendinblue)</strong><br>
+Plateforme d'email marketing et de notifications transactionnelles. Permet d'envoyer des emails automatiques (confirmations, rappels, notifications) via API. Offre des templates personnalisables et un tracking des emails.
+</div>
+
+<div class="callout callout-tip">
+<strong>🔄 Rebooking</strong><br>
+Action de réserver à nouveau avec le même prestataire. Indicateur clé de fidélisation : un client qui rebook est un client satisfait. Faciliter le rebooking augmente le taux de rétention.
+</div>
+
+<div class="callout callout-tip">
+<strong>📊 Dashboard</strong><br>
+Tableau de bord qui regroupe les indicateurs clés de performance (KPI) sous forme visuelle (graphiques, statistiques). Permet une vue d'ensemble rapide de l'activité (revenus, nombre de réservations, notes moyennes, etc.).
+</div>
+
+<div class="callout callout-tip">
+<strong>⭐ Système d'avis (Review System)</strong><br>
+Fonctionnalité permettant aux clients de laisser une note et un commentaire après une prestation. Renforce la confiance, aide les futurs clients à choisir, et donne du feedback aux prestataires.
+</div>
+
+<div class="callout callout-tip">
+<strong>🚀 Quick Win</strong><br>
+Fonctionnalité à fort impact et faible effort de développement. Permet de livrer rapidement de la valeur visible pour les utilisateurs. Stratégie efficace pour maintenir la motivation et démontrer des progrès.
+</div>
+
+<h2>🎯 Les 6 fonctionnalités implémentées</h2>
+
+<h3>1️⃣ Notification rapide lors d'une annulation (Réparateur)</h3>
+
+<p><strong>📋 Besoin utilisateur :</strong><br>
+"Ne pas être notifié rapidement lors d'une annulation"</p>
+
+<p><strong>🎯 Thématique :</strong> Communication & notification<br>
+<strong>👤 Utilisateur concerné :</strong> Réparateur<br>
+<strong>📊 Impact/Effort :</strong> Haut Impact / Faible Effort<br>
+<strong>🎲 Points :</strong> 2</p>
+
+<p><strong>💡 Justification :</strong><br>
+Une notification rapide améliore la satisfaction des réparateurs et la fiabilité perçue de la plateforme. Des réparateurs engagés et disponibles contribuent à une meilleure qualité de service et à la fidélisation des clients.</p>
+
+<p><strong>🔧 Implémentation technique :</strong></p>
+<ul>
+    <li>Webhook Xano déclenché lors d'une annulation de réservation</li>
+    <li>Appel API Brevo pour envoi d'email immédiat</li>
+    <li>Push notification (optionnel, si WeWeb + PWA)</li>
+    <li>Template email personnalisé avec détails de la réservation annulée</li>
+</ul>
+
+<p><strong>⚙️ Difficultés potentielles :</strong></p>
+<ul>
+    <li>Gestion du statut "annulée" dans la table reservations</li>
+    <li>Récupération des informations du réparateur (email, nom)</li>
+    <li>Configuration du template Brevo avec variables dynamiques</li>
+    <li>Test du workflow complet (annulation → email envoyé)</li>
+</ul>
+
+<h3>2️⃣ Historique des réservations (Client)</h3>
+
+<p><strong>📋 Besoin utilisateur :</strong><br>
+"Retrouver où et comment j'avais réservé auparavant"</p>
+
+<p><strong>🎯 Thématique :</strong> Rebooking & fidélisation<br>
+<strong>👤 Utilisateur concerné :</strong> Client<br>
+<strong>📊 Impact/Effort :</strong> Haut Impact / Faible Effort<br>
+<strong>🎲 Points :</strong> 2</p>
+
+<p><strong>💡 Justification :</strong><br>
+Après plusieurs mois, les utilisateurs ne se souviennent plus du parcours initial. Un accès clair à l'historique permet de réserver à nouveau plus facilement avec le même réparateur, ce qui soutient le rebooking.</p>
+
+<p><strong>🔧 Implémentation technique :</strong></p>
+<ul>
+    <li>Page "Mes réservations" dans WeWeb</li>
+    <li>API Xano : GET /reservations?user_id={authUserId}</li>
+    <li>Affichage en liste ou cards avec filtres (en cours, passées, annulées)</li>
+    <li>Détails de chaque réservation : date, réparateur, service, statut</li>
+</ul>
+
+<p><strong>⚙️ Difficultés potentielles :</strong></p>
+<ul>
+    <li>Jointure entre tables (reservations, reparateurs, services)</li>
+    <li>Tri par date décroissante</li>
+    <li>Design UX de la liste (responsive, lisible)</li>
+    <li>Gestion des états vides ("Aucune réservation")</li>
+</ul>
+
+<h3>3️⃣ Rebooking en un clic (Client)</h3>
+
+<p><strong>📋 Besoin utilisateur :</strong><br>
+"Pouvoir rebooker avec le même réparateur en un clic"</p>
+
+<p><strong>🎯 Thématique :</strong> Rebooking & fidélisation<br>
+<strong>👤 Utilisateur concerné :</strong> Client<br>
+<strong>📊 Impact/Effort :</strong> Haut Impact / Faible Effort<br>
+<strong>🎲 Points :</strong> 3</p>
+
+<p><strong>💡 Justification :</strong><br>
+Cette fonctionnalité supprime une friction majeure dans le parcours de réservation répétée. Elle facilite directement le rebooking et favorise la fidélisation des clients satisfaits.</p>
+
+<p><strong>🔧 Implémentation technique :</strong></p>
+<ul>
+    <li>Bouton "Réserver à nouveau" sur chaque réservation passée</li>
+    <li>Pré-remplissage du formulaire de réservation avec les données précédentes</li>
+    <li>Redirection vers la page de sélection de créneau</li>
+    <li>Workflow WeWeb pour copier les informations (réparateur, service, adresse)</li>
+</ul>
+
+<p><strong>⚙️ Difficultés potentielles :</strong></p>
+<ul>
+    <li>Gestion de la disponibilité du réparateur (s'il n'est plus actif)</li>
+    <li>Vérification que le service est toujours proposé</li>
+    <li>Pré-remplissage des variables WeWeb (binding complexe)</li>
+    <li>UX : afficher clairement que c'est un "rebooking" avec données pré-remplies</li>
+</ul>
+
+<h3>4️⃣ Système d'avis clients (Client)</h3>
+
+<p><strong>📋 Besoin utilisateur :</strong><br>
+"J'aimerais pouvoir laisser un avis après une session"</p>
+
+<p><strong>🎯 Thématique :</strong> Confiance et aide à la décision<br>
+<strong>👤 Utilisateur concerné :</strong> Client<br>
+<strong>📊 Impact/Effort :</strong> Haut Impact / Faible Effort<br>
+<strong>🎲 Points :</strong> 5</p>
+
+<p><strong>💡 Justification :</strong><br>
+Les avis renforcent la confiance et aident les clients à choisir ou rechoisir un réparateur. Cette transparence favorise la réassurance lors d'une nouvelle réservation et soutient indirectement le rebooking.</p>
+
+<p><strong>🔧 Implémentation technique :</strong></p>
+<ul>
+    <li>Table "avis" dans Xano (champs : reservation_id, client_id, reparateur_id, note, commentaire, date)</li>
+    <li>Formulaire modal dans WeWeb après une réservation terminée</li>
+    <li>API POST /avis pour créer un avis</li>
+    <li>API GET /avis?reparateur_id={id} pour afficher les avis sur le profil réparateur</li>
+    <li>Calcul de la note moyenne du réparateur</li>
+</ul>
+
+<p><strong>⚙️ Difficultés potentielles :</strong></p>
+<ul>
+    <li>Vérification qu'un client ne peut laisser qu'un seul avis par réservation</li>
+    <li>Gestion des avis modérés (profanité, spam)</li>
+    <li>Calcul de la moyenne avec aggregation Xano</li>
+    <li>UX : étoiles cliquables, validation du formulaire</li>
+    <li>Affichage élégant des avis (cards, pagination si nombreux)</li>
+</ul>
+
+<h3>5️⃣ Rappel automatique avant rendez-vous (Client)</h3>
+
+<p><strong>📋 Besoin utilisateur :</strong><br>
+"Je n'ai pas reçu de rappel avant mon rendez-vous"</p>
+
+<p><strong>🎯 Thématique :</strong> Communication & notification<br>
+<strong>👤 Utilisateur concerné :</strong> Client<br>
+<strong>📊 Impact/Effort :</strong> Haut Impact / Faible Effort<br>
+<strong>🎲 Points :</strong> 2</p>
+
+<p><strong>💡 Justification :</strong><br>
+Ce point a un impact direct sur la fiabilité du service en réduisant les rendez-vous oubliés. Une meilleure expérience limite la frustration et augmente la probabilité que le client réserve à nouveau sur la plateforme.</p>
+
+<p><strong>🔧 Implémentation technique :</strong></p>
+<ul>
+    <li><strong>Trigger automatique Xano (cron job)</strong> qui s'exécute toutes les heures</li>
+    <li>Vérification des réservations avec date_session = demain (ou J-1)</li>
+    <li>Envoi d'email via API Brevo pour chaque réservation à venir</li>
+    <li>Template email avec détails : date, heure, réparateur, adresse</li>
+    <li>Marquage de la réservation comme "rappel_envoyé" pour éviter les doublons</li>
+</ul>
+
+<p><strong>⚙️ Difficultés potentielles :</strong></p>
+<ul>
+    <li>Configuration du cron job Xano (fréquence, timezone)</li>
+    <li>Requête avec filtres sur dates (comparaison date_session et NOW() + 1 jour)</li>
+    <li>Gestion de la timezone (UTC vs locale)</li>
+    <li>Test du cron : attendre l'exécution réelle ou forcer manuellement</li>
+    <li>Gestion des erreurs d'envoi (email invalide, quota Brevo dépassé)</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Retour d'expérience</strong><br>
+Je me suis amusé avec ce trigger automatique de contrôle de date pour envoi de mail automatique par Brevo. J'ai fait tout ça juste avant Noël, laissé les fêtes et le jour de l'an passer, puis contrôlé seulement 2 semaines plus tard : <strong>tout est ok !</strong> Le mail automatique fonctionne parfaitement. 🎉
+</div>
+
+<h3>6️⃣ Dashboard réparateur avec statistiques de revenus (Réparateur)</h3>
+
+<p><strong>📋 Besoin utilisateur :</strong><br>
+"Dashboard réparateur avec statistiques de revenus"</p>
+
+<p><strong>🎯 Thématique :</strong> Expérience de réservation<br>
+<strong>👤 Utilisateur concerné :</strong> Réparateur<br>
+<strong>📊 Impact/Effort :</strong> Haut Impact / Faible Effort<br>
+<strong>🎲 Points :</strong> 2</p>
+
+<p><strong>💡 Justification :</strong><br>
+Cette fonctionnalité permet aux réparateurs de mieux comprendre et piloter leur activité grâce à des indicateurs clairs et visuels. En améliorant la visibilité sur les revenus et les performances, la plateforme renforce l'engagement et la fidélisation des réparateurs, ce qui contribue indirectement à une meilleure disponibilité de l'offre et à l'augmentation du rebooking côté clients.</p>
+
+<p><strong>🔧 Implémentation technique :</strong></p>
+<ul>
+    <li>Page "Mon dashboard" dans WeWeb (espace réparateur)</li>
+    <li>API Xano : GET /stats/reparateur?reparateur_id={authUserId}</li>
+    <li>Aggregation des données (SUM des montants, COUNT des réservations, AVG des notes)</li>
+    <li>Affichage avec composants visuels : graphiques (Chart.js ou équivalent), cards de KPI</li>
+    <li>Filtres par période (ce mois, dernier mois, cette année)</li>
+</ul>
+
+<p><strong>📊 KPI affichés :</strong></p>
+<ul>
+    <li>💰 Revenus totaux (mois en cours, mois précédent)</li>
+    <li>📅 Nombre de réservations (terminées, en cours, à venir)</li>
+    <li>⭐ Note moyenne des avis clients</li>
+    <li>📈 Évolution des revenus (graphique sur les 6 derniers mois)</li>
+    <li>🔝 Services les plus demandés</li>
+</ul>
+
+<p><strong>⚙️ Difficultés potentielles :</strong></p>
+<ul>
+    <li>Requêtes d'aggregation Xano (GROUP BY, SUM, AVG)</li>
+    <li>Filtres dynamiques par période (gestion des dates)</li>
+    <li>Intégration de bibliothèques de graphiques dans WeWeb</li>
+    <li>Design responsive du dashboard (nombreuses infos à afficher)</li>
+    <li>Performance si beaucoup de données (pagination, cache)</li>
+</ul>
+
+<h2>🛠️ Stratégie d'implémentation</h2>
+
+<h3>APIs créées</h3>
+<p>Je n'ai que <strong>très peu d'API à recréer</strong> pour mettre en place mes nouvelles fonctionnalités. Les APIs existantes (authentification, réservations basiques) sont réutilisées, et je crée uniquement :</p>
+
+<ul>
+    <li>POST /avis (création d'un avis)</li>
+    <li>GET /avis?reparateur_id={id} (récupération des avis)</li>
+    <li>GET /stats/reparateur (statistiques dashboard)</li>
+    <li>Trigger automatique pour rappels (cron job)</li>
+</ul>
+
+<h3>Contournements pragmatiques</h3>
+<p>Comme l'application n'est pas pleinement fonctionnelle, j'ai utilisé des <strong>astuces</strong> pour avancer :</p>
+
+<ul>
+    <li>Ajout de boutons "Simuler annulation" pour tester les notifications</li>
+    <li>Création manuelle de données de test dans Xano</li>
+    <li>Simplification de certains workflows (pas de gestion des conflits de créneaux)</li>
+    <li>Utilisation de données mockées pour le dashboard</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+En contexte pédagogique ou MVP, il est acceptable de "tricher" pour démontrer une fonctionnalité sans avoir un système complet. L'important est de comprendre le concept et de pouvoir le reproduire dans un contexte réel.
+</div>
+
+<h2>✅ Bilan technique</h2>
+
+<h3>Points forts du projet</h3>
+<ul>
+    <li>✅ <strong>Toutes les fonctionnalités livrées en 3h</strong> : bonne vélocité</li>
+    <li>✅ <strong>Trigger automatique fonctionnel</strong> : testé avec succès 2 semaines après</li>
+    <li>✅ <strong>Stack maîtrisée</strong> : WeWeb + Xano + Brevo bien en main</li>
+    <li>✅ <strong>Quick wins réussis</strong> : impact visible rapidement</li>
+    <li>✅ <strong>Approche pragmatique</strong> : contournements assumés et justifiés</li>
+</ul>
+
+<h3>Compétences acquises</h3>
+<ul>
+    <li>📧 <strong>Automatisation d'emails</strong> avec trigger Xano + Brevo</li>
+    <li>⏰ <strong>Cron jobs</strong> : configuration et test sur plusieurs semaines</li>
+    <li>📊 <strong>Dashboard avec aggregations</strong> : SUM, AVG, GROUP BY</li>
+    <li>⭐ <strong>Système d'avis</strong> : CRUD complet avec relations</li>
+    <li>🔄 <strong>Rebooking UX</strong> : pré-remplissage de formulaire</li>
+</ul>
+
+<h2>🎓 Importance pour ma formation</h2>
+
+<h3>Passage de la théorie à la pratique</h3>
+<p>Le Projet 7 m'a fait <strong>prioriser</strong>, le Projet 8 m'a fait <strong>livrer</strong>. C'est la boucle complète du cycle Agile :</p>
+
+<pre><code>Prioriser → Développer → Tester → Livrer → Mesurer
+</code></pre>
+
+<p>Cette continuité entre projets 7 et 8 reflète la réalité d'un sprint en entreprise.</p>
+
+<h3>Autonomie et débrouillardise</h3>
+<p>Face à une application imparfaite, j'ai dû :</p>
+<ul>
+    <li>Identifier les contournements possibles</li>
+    <li>Prendre des décisions pragmatiques</li>
+    <li>Assumer les "astuces" pour avancer</li>
+    <li>Tester dans des conditions réelles (2 semaines d'attente)</li>
+</ul>
+
+<p>C'est exactement ce qu'on attend d'un développeur en entreprise : <strong>livrer de la valeur malgré les contraintes</strong>.</p>
+
+<h3>Maîtrise de la stack</h3>
+<p>Je me rends compte que la <strong>suite logique des projets</strong> m'a donné un bon niveau sur la manipulation WeWeb et Xano. Les concepts ne sont plus théoriques : je les applique naturellement.</p>
+
+<div class="callout callout-advanced">
+🔬 <strong>Réflexion</strong><br>
+La répétition sur plusieurs projets (même désordonnés) crée une courbe d'apprentissage forte. Chaque projet renforce les acquis précédents et ajoute une couche de complexité progressive.
+</div>
+
+<h2>📊 Résultat final</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>✅ <strong>6 fonctionnalités livrées en 3h</strong> (toutes des quick wins)</li>
+    <li>✅ <strong>Trigger automatique Xano + Brevo</strong> testé avec succès sur 2 semaines</li>
+    <li>✅ <strong>Approche pragmatique</strong> : contourner les imperfections pour avancer</li>
+    <li>✅ <strong>Peu d'APIs à créer</strong> : réutilisation intelligente de l'existant</li>
+    <li>✅ <strong>Maîtrise de la stack</strong> WeWeb + Xano + Brevo confirmée</li>
+    <li>✅ <strong>Autonomie</strong> : résolution de problèmes et prise de décision</li>
+    <li>✅ Projet validé et prêt pour la suite</li>
+</ul>
+</div>
+
+<h2>🚀 Prochaines étapes</h2>
+
+<p>Avec ce projet validé, je vais passer à la suite de la formation. Les bases sont solides, les compétences sont acquises, et la confiance est là pour attaquer des projets plus complexes.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Conseil pour les futurs projets</strong><br>
+Garder cette approche pragmatique : <strong>livrer de la valeur rapidement</strong>, même si tout n'est pas parfait. La perfection est l'ennemi du "fait". Un MVP fonctionnel vaut mieux qu'une application complète qui n'existe pas.
+</div>
+
+<h2>📝 Conclusion</h2>
+
+<p>Le Projet 8 a été une excellente mise en pratique des concepts de priorisation du Projet 7. J'ai livré <strong>6 fonctionnalités à fort impact</strong> en un temps record, confirmé ma maîtrise de la stack, et testé avec succès un système d'automatisation sur plusieurs semaines.</p>
+
+<p>L'empilement des projets, même désordonné, a créé une <strong>progression solide</strong> : je ne suis plus en phase d'apprentissage, je suis en phase d'<strong>application autonome</strong>.</p>
+
+<p>Prêt pour la suite ! 🚀</p>
