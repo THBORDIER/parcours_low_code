@@ -224,6 +224,26 @@
     "path": "../articles/retrospectives/projet6-securite-roles.html"
   },
   {
+    "title": "Projet 7 : Spécifiez de nouvelles fonctionnalités pour faire évoluer votre application",
+    "category": "Rétrospectives",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Sprint",
+      "Backlog",
+      "User stories",
+      "Impact/Effort",
+      "Agile",
+      "Méthodologie",
+      "Product Owner",
+      "Priorisation",
+      "IA",
+      "Retours utilisateurs",
+      "Sprint planning"
+    ],
+    "theme": "retrospectives",
+    "path": "../articles/retrospectives/projet7-specification-fonctionnalites.html"
+  },
+  {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
     "category": "WeWeb",
     "level": "Intermédiaire",

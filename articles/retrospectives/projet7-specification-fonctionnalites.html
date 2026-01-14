@@ -1,0 +1,309 @@
+<h1>Projet 7 : Spécifiez de nouvelles fonctionnalités pour faire évoluer votre application</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Rétrospectives</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Sprint, Backlog, User stories, Impact/Effort, Agile, Méthodologie, Product Owner, Priorisation, IA, Retours utilisateurs, Sprint planning</p>
+    <p>📅 <strong>Mise à jour:</strong> 14/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h</p>
+    <p>⚙️ <strong>Stack:</strong> Méthodologie Agile + IA</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Projet de 2h sur la spécification et priorisation de fonctionnalités : tri des retours utilisateurs, notation impact/effort avec IA, création d'un sprint backlog. Excellente introduction à la méthodologie agile et à la posture de Product Owner. Met de l'organisation sur des pratiques que je faisais déjà intuitivement.
+</div>
+
+<h2>🎯 Contexte du projet</h2>
+<p>Le Projet 7 propose un document regroupant l'ensemble des <strong>"retours utilisateurs"</strong>, qu'ils viennent de clients ou de réparateurs. Ces retours sont censés favoriser le <strong>rebooking</strong> (réservation récurrente), donc en théorie améliorer la fidélisation dans l'application.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Problème identifié</strong><br>
+À l'analyse, la plupart des propositions <strong>ne sont pas du rebooking</strong>. Les retours couvrent des fonctionnalités diverses qui ne correspondent pas toujours à l'objectif initial annoncé.
+</div>
+
+<p>Mon rôle était de :</p>
+<ul>
+    <li>✅ Trier et analyser les retours utilisateurs</li>
+    <li>✅ Évaluer leur difficulté et temps de développement</li>
+    <li>✅ Prioriser selon un rapport impact/effort</li>
+    <li>✅ Créer un sprint backlog planifié</li>
+</ul>
+
+<h2>📚 Glossaire des termes techniques</h2>
+
+<div class="callout callout-tip">
+<strong>🎯 Product Owner (PO)</strong><br>
+Rôle clé en méthodologie Agile : responsable de définir les fonctionnalités du produit, prioriser le backlog selon la valeur business, et servir d'interface entre l'équipe de développement et les parties prenantes (clients, utilisateurs, direction).
+</div>
+
+<div class="callout callout-tip">
+<strong>📋 Backlog</strong><br>
+Liste ordonnée de toutes les fonctionnalités, améliorations, corrections de bugs et tâches techniques à réaliser sur le produit. Le backlog est vivant : il évolue constamment en fonction des retours utilisateurs et des priorités business.
+</div>
+
+<div class="callout callout-tip">
+<strong>🏃 Sprint</strong><br>
+Période de temps fixe (généralement 1 à 4 semaines) durant laquelle l'équipe s'engage à livrer un ensemble de fonctionnalités définies. À la fin du sprint, on obtient un produit potentiellement livrable avec les nouvelles fonctionnalités implémentées.
+</div>
+
+<div class="callout callout-tip">
+<strong>📝 Sprint Backlog</strong><br>
+Sous-ensemble du backlog général contenant uniquement les éléments sélectionnés pour être développés durant le sprint en cours. C'est l'engagement de l'équipe pour la période.
+</div>
+
+<div class="callout callout-tip">
+<strong>👤 User Story (Récit utilisateur)</strong><br>
+Description d'une fonctionnalité du point de vue de l'utilisateur final, généralement sous la forme : <em>"En tant que [rôle], je veux [action] afin de [bénéfice]"</em>. Exemple : "En tant que client, je veux enregistrer mes adresses favorites afin de gagner du temps lors de mes prochaines réservations."
+</div>
+
+<div class="callout callout-tip">
+<strong>⚖️ Impact/Effort (Matrice)</strong><br>
+Outil de priorisation qui croise deux dimensions : l'<strong>impact</strong> (valeur apportée à l'utilisateur/business) et l'<strong>effort</strong> (temps et ressources nécessaires au développement). Les fonctionnalités "fort impact, faible effort" sont prioritaires.
+</div>
+
+<div class="callout callout-tip">
+<strong>🎲 Points (Story Points)</strong><br>
+Unité de mesure abstraite utilisée pour estimer la complexité relative d'une user story. On ne compte pas en heures, mais en "difficulté perçue" (1, 2, 3, 5, 8, 13...). Cela permet de comparer la complexité des tâches entre elles sans s'engager sur un temps exact.
+</div>
+
+<div class="callout callout-tip">
+<strong>🔄 Rebooking</strong><br>
+Action d'un utilisateur qui revient utiliser le service après une première utilisation. Dans le contexte d'une application de réservation, c'est l'indicateur clé de fidélisation et de satisfaction client.
+</div>
+
+<div class="callout callout-tip">
+<strong>🧠 Méthodologie Agile</strong><br>
+Approche de gestion de projet qui privilégie la flexibilité, l'itération rapide, et l'adaptation continue aux besoins changeants plutôt que de suivre un plan rigide défini à l'avance. Les frameworks les plus connus sont Scrum et Kanban.
+</div>
+
+<div class="callout callout-tip">
+<strong>📊 Sprint Planning</strong><br>
+Réunion en début de sprint où l'équipe sélectionne les user stories du backlog à développer, estime leur complexité, et s'engage sur un objectif de sprint réaliste.
+</div>
+
+<h2>🛠️ Méthodologie appliquée</h2>
+
+<h3>1️⃣ Tri et classification des retours utilisateurs</h3>
+<p>Première étape : analyser l'ensemble des retours utilisateurs et les classer par catégorie.</p>
+
+<p><strong>📊 Constat :</strong> La plupart des propositions ne correspondent pas à l'objectif annoncé (rebooking). J'ai donc dû :</p>
+<ul>
+    <li>Identifier les vraies fonctionnalités de rebooking</li>
+    <li>Classer les autres propositions par thème (UX, sécurité, notifications, etc.)</li>
+    <li>Éliminer les doublons et les propositions hors scope</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Utilisez un outil IA pour accélérer le tri et la catégorisation des retours utilisateurs. L'IA peut rapidement identifier les thèmes récurrents et regrouper les demandes similaires.
+</div>
+
+<h3>2️⃣ Établissement des critères de notation</h3>
+<p>J'ai établi des critères de notation pour <strong>difficulté</strong> et <strong>temps de développement</strong> en me basant sur :</p>
+
+<ul>
+    <li>✅ <strong>Mes connaissances acquises</strong> durant les projets précédents</li>
+    <li>✅ <strong>Mon expérience pratique</strong> avec WeWeb et Xano</li>
+    <li>✅ <strong>Les obstacles rencontrés</strong> sur les projets 2 à 6</li>
+</ul>
+
+<p><strong>Échelle de difficulté :</strong></p>
+<pre><code>1 point  = Facile (modification CSS, ajout champ simple)
+2 points = Moyen (nouveau composant simple, workflow basique)
+3 points = Complexe (relations BDD, API externe simple)
+5 points = Très complexe (logique métier avancée, sécurité)
+8 points = Critique (refonte architecture, intégrations multiples)
+</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+La suite de Fibonacci (1, 2, 3, 5, 8, 13, 21) est souvent utilisée en Agile car elle reflète bien l'incertitude croissante : plus une tâche est complexe, plus l'estimation devient imprécise.
+</div>
+
+<h3>3️⃣ Notation impact/effort avec IA</h3>
+<p>J'ai utilisé une IA pour établir une <strong>notation d'impact et d'effort</strong> en fonction des informations fournies :</p>
+
+<ul>
+    <li>📈 <strong>Impact</strong> : Valeur pour l'utilisateur, alignement avec l'objectif business</li>
+    <li>⚙️ <strong>Effort</strong> : Complexité technique, temps de développement estimé</li>
+</ul>
+
+<p><strong>Matrice Impact/Effort :</strong></p>
+<pre><code>┌─────────────────────────────────────┐
+│ Fort Impact │ Fort Impact           │
+│ Faible Effort│ Fort Effort          │
+│ ⭐ PRIORITÉ 1 │ 🕐 Planifier         │
+├─────────────────────────────────────│
+│ Faible Impact│ Faible Impact        │
+│ Faible Effort│ Fort Effort          │
+│ 💡 Si temps  │ ❌ Éviter            │
+└─────────────────────────────────────┘
+</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Les "quick wins" (fort impact, faible effort) sont vos meilleurs alliés pour démontrer rapidement de la valeur et gagner la confiance des parties prenantes.
+</div>
+
+<h3>4️⃣ Création du sprint backlog</h3>
+<p>Le rapport impact/effort m'a permis de :</p>
+
+<ul>
+    <li>✅ Définir un <strong>nombre de points</strong> par fonctionnalité</li>
+    <li>✅ Programmer un <strong>sprint</strong> réaliste (vélocité estimée)</li>
+    <li>✅ Établir un <strong>sprint backlog</strong> priorisé</li>
+</ul>
+
+<p><strong>Exemple de sprint backlog :</strong></p>
+<pre><code>Sprint 1 (13 points estimés) :
+1. [5 pts] Enregistrer adresses favorites (fort impact, moyen effort)
+2. [3 pts] Notifications push réservations (fort impact, faible effort)
+3. [2 pts] Historique des réservations (moyen impact, faible effort)
+4. [3 pts] Amélioration UX formulaire (fort impact, faible effort)
+</code></pre>
+
+<h2>✨ Bonnes pratiques de priorisation</h2>
+
+<h3>1️⃣ Toujours partir de la valeur utilisateur</h3>
+<p>Ne priorisez pas une fonctionnalité parce qu'elle est "cool" techniquement, mais parce qu'elle résout un vrai problème utilisateur.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Une fonctionnalité demandée par un utilisateur ne signifie pas qu'elle a de la valeur pour TOUS les utilisateurs. Cherchez les patterns : plusieurs utilisateurs demandent-ils la même chose ?
+</div>
+
+<h3>2️⃣ Équilibrer quick wins et investissements long terme</h3>
+<p>Un sprint sain contient :</p>
+<ul>
+    <li>🚀 <strong>70% de quick wins</strong> : fonctionnalités à fort impact, livraison rapide</li>
+    <li>🏗️ <strong>20% d'investissements</strong> : refonte technique, dette technique</li>
+    <li>🔬 <strong>10% d'expérimentation</strong> : nouvelles idées à tester</li>
+</ul>
+
+<h3>3️⃣ Challenger les estimations avec l'équipe</h3>
+<p>L'estimation ne doit jamais être faite seul. En équipe :</p>
+<ul>
+    <li>Les développeurs apportent leur vision technique</li>
+    <li>Le PO apporte la vision business</li>
+    <li>Les designers identifient les contraintes UX</li>
+</ul>
+
+<h3>4️⃣ Accepter l'incertitude</h3>
+<p>Les estimations en story points ne sont pas des engagements contractuels, mais des <strong>ordres de grandeur</strong>. C'est normal de se tromper : l'important est d'ajuster au fur et à mesure.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Mesurez votre vélocité (points livrés par sprint) sur plusieurs sprints. Cela donne une base réaliste pour planifier les suivants.
+</div>
+
+<h2>🎓 Importance pour ma formation</h2>
+
+<h3>Compétence de Product Owner</h3>
+<p>Ce projet m'a fait <strong>endosser la casquette de Product Owner</strong>, un rôle clé dans le développement logiciel moderne. En tant que développeur Low-Code, je ne suis pas qu'un exécutant : je dois aussi :</p>
+
+<ul>
+    <li>📊 Analyser les besoins business</li>
+    <li>🎯 Prioriser les fonctionnalités</li>
+    <li>💬 Communiquer avec les parties prenantes</li>
+    <li>⚖️ Arbitrer entre valeur et complexité</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Dans les petites structures et les projets Low-Code, le développeur porte souvent plusieurs casquettes : développeur, PO, designer, testeur. Cette polyvalence est une force sur le marché du travail.
+</div>
+
+<h3>Méthodologie transférable</h3>
+<p>Les compétences acquises sur ce projet sont <strong>universelles</strong> :</p>
+
+<ul>
+    <li>✅ S'appliquent à tout type de projet (web, mobile, SaaS, e-commerce)</li>
+    <li>✅ Valorisées en entreprise (Agile est partout)</li>
+    <li>✅ Facilitent la communication avec les équipes tech</li>
+    <li>✅ Structurent ma réflexion de développeur</li>
+</ul>
+
+<h3>Mettre des mots sur mes pratiques intuitives</h3>
+<p>La tenue de ces documents (backlog, sprint planning, matrice impact/effort) est <strong>très intéressante</strong> : ça met des mots et de l'organisation sur ce que j'ai tendance à faire seul, de manière intuitive.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Réflexion personnelle</strong><br>
+Je priorisais déjà naturellement mes tâches, mais sans cadre formel. La méthodologie Agile donne une structure à cette réflexion et permet de la partager avec d'autres. C'est le passage de "je sais le faire" à "je sais l'expliquer et le transmettre".
+</div>
+
+<h3>Préparation au monde professionnel</h3>
+<p>En entreprise, on attend d'un développeur qu'il :</p>
+
+<ul>
+    <li>✅ Sache estimer la complexité de ses tâches</li>
+    <li>✅ Comprenne l'impact business de son travail</li>
+    <li>✅ Participe aux cérémonies Agile (planning, retro, daily)</li>
+    <li>✅ Communique clairement sur ses avancements</li>
+</ul>
+
+<p>Ce projet 7 m'a donné les bases pour <strong>parler le même langage</strong> que les équipes produit en entreprise.</p>
+
+<h2>📊 Bilan de la session</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>✅ Projet court (2h) mais <strong>très formateur</strong> sur la posture PO</li>
+    <li>✅ <strong>Tri et analyse</strong> des retours utilisateurs avec aide IA</li>
+    <li>✅ <strong>Critères de notation</strong> basés sur mes projets précédents</li>
+    <li>✅ <strong>Matrice impact/effort</strong> pour prioriser efficacement</li>
+    <li>✅ Création d'un <strong>sprint backlog</strong> structuré</li>
+    <li>✅ Met de l'<strong>organisation</strong> sur mes pratiques intuitives</li>
+    <li>✅ Compétences <strong>transférables</strong> à tous types de projets</li>
+    <li>✅ Projet <strong>validé</strong> avec succès</li>
+</ul>
+</div>
+
+<h2>🎯 Enseignements clés</h2>
+
+<h3>1️⃣ La méthodologie n'est pas une contrainte, c'est un outil</h3>
+<p>Les frameworks Agile ne sont pas de la bureaucratie : ils donnent une <strong>structure commune</strong> pour collaborer efficacement. Même en solo, ils aident à clarifier ses priorités.</p>
+
+<h3>2️⃣ L'IA est un accélérateur, pas un remplaçant</h3>
+<p>L'IA m'a aidé à trier et classer rapidement, mais c'est <strong>mon expérience</strong> (projets 2 à 6) qui m'a permis d'estimer la difficulté. L'humain reste au centre de la décision.</p>
+
+<h3>3️⃣ Prioriser = dire non</h3>
+<p>Prioriser, c'est choisir ce qu'on fait <strong>ET</strong> ce qu'on ne fait pas. Toutes les idées ne sont pas bonnes à prendre, même si elles viennent des utilisateurs.</p>
+
+<h3>4️⃣ La clarté du backlog facilite l'exécution</h3>
+<p>Un backlog bien structuré, c'est 50% du travail déjà fait. Quand on sait <strong>quoi</strong> faire et <strong>pourquoi</strong>, le <strong>comment</strong> devient plus simple.</p>
+
+<h2>🚀 Application future</h2>
+
+<p>Pour les prochains projets, je vais systématiquement :</p>
+
+<ul>
+    <li>📋 Créer un backlog avant de commencer à coder</li>
+    <li>⚖️ Évaluer le rapport impact/effort de chaque fonctionnalité</li>
+    <li>🎯 Définir un objectif de sprint clair</li>
+    <li>📊 Mesurer ma vélocité pour mieux planifier</li>
+    <li>🔄 Faire des points réguliers (même en solo) pour ajuster</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Explorez les outils de gestion de backlog : Jira, Trello, Linear, Notion. Chacun a ses forces, mais le principe reste le même : <strong>visualiser, prioriser, livrer</strong>.
+</div>
+
+<h2>📝 Conclusion</h2>
+
+<p>Ce projet 7 était une <strong>excellente transition</strong> entre la technique pure (projets 2 à 6) et la posture produit. J'ai appris à :</p>
+
+<ul>
+    <li>✅ Penser "valeur utilisateur" avant "complexité technique"</li>
+    <li>✅ Structurer ma réflexion avec des outils Agile</li>
+    <li>✅ Communiquer mes choix de priorisation</li>
+    <li>✅ Planifier de manière réaliste</li>
+</ul>
+
+<p>Une fois tous les documents remplis : <strong>projet validé !</strong></p>
+
+<p>Cette méthodologie m'accompagnera tout au long de ma carrière, bien au-delà du Low-Code.</p>
