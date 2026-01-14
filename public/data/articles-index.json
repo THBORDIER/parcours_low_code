@@ -104,6 +104,24 @@
     "path": "../articles/notes-diverses/outils-complementaires.html"
   },
   {
+    "title": "Synthèse d'avancement – P11",
+    "category": "Notes diverses",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Authentification WeWeb",
+      "Design System",
+      "Base de données Xano",
+      "Relations tables",
+      "object-fit",
+      "SVG inline",
+      "display block",
+      "Button submit",
+      "Xano workspace"
+    ],
+    "theme": "notes-diverses",
+    "path": "../articles/notes-diverses/projet11-synthese-avancement.html"
+  },
+  {
     "title": "Ressources utiles",
     "category": "",
     "level": "",

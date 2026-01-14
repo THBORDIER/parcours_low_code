@@ -1,0 +1,182 @@
+<h1>Synthèse d'avancement – P11</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Notes diverses</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Authentification WeWeb, Design System, Base de données Xano, Relations tables, object-fit, SVG inline, display block, Button submit, Xano workspace</p>
+    <p>📅 <strong>Mise à jour:</strong> 14/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 4h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano + Figma</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Session de 4h pour poser les fondations du Projet 11 : authentification WeWeb fonctionnelle, design system (15 couleurs, 10 styles typo), base de données Xano complète avec relations, composants transverses (Navbar/Footer), et connexion front-back opérationnelle. Quelques bugs CSS résolus rapidement.
+</div>
+
+<h2>🎯 Contexte et découverte</h2>
+<p>Lors de cette session, j'ai pris connaissance de l'ensemble du projet et de son périmètre fonctionnel. L'analyse de la maquette Figma et la duplication du backlog ont permis de préparer la suite du développement avec une vision claire des objectifs.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Avec l'enchaînement des projets précédents, j'ai désormais toutes les connaissances nécessaires pour avancer efficacement sans blocages majeurs.
+</div>
+
+<h2>🔐 Parcours d'authentification</h2>
+<p>J'ai conçu et implémenté le parcours d'authentification complet sur WeWeb, incluant :</p>
+<ul>
+    <li>Les écrans de connexion et d'inscription</li>
+    <li>Les workflows d'authentification</li>
+    <li>Les premiers tests de connexion utilisateur, <strong>validés avec succès</strong></li>
+</ul>
+
+<h2>🎨 Design System et composants transverses</h2>
+
+<h3>Composants de navigation</h3>
+<p>J'ai construit les composants transverses de l'application pour poser une base solide et réutilisable :</p>
+<ul>
+    <li><strong>Barre de navigation (Navbar)</strong> : structure, logo, menu</li>
+    <li><strong>Footer</strong> : mentions, branding, liens</li>
+</ul>
+
+<h3>Design system initial</h3>
+<p>Un design system complet a été mis en place dans la bibliothèque WeWeb :</p>
+
+<ul>
+    <li>✅ <strong>15 couleurs centralisées</strong> et prêtes à l'emploi</li>
+    <li>✅ <strong>10 styles typographiques réutilisables</strong></li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Centraliser les couleurs et typographies dès le début du projet permet de garantir la cohérence visuelle et facilite grandement les ajustements futurs.
+</div>
+
+<h2>🗄️ Base de données Xano</h2>
+
+<h3>Structure et relations</h3>
+<p>Sur le plan back-end, j'ai créé la base de données complète et défini l'ensemble des tables ainsi que leurs relations :</p>
+
+<ul>
+    <li>👤 <strong>Utilisateurs</strong></li>
+    <li>🏢 <strong>Entreprises</strong></li>
+    <li>📝 <strong>Devis</strong></li>
+    <li>👥 <strong>Clients</strong></li>
+    <li>📦 <strong>Produits</strong></li>
+    <li>🛒 <strong>Panier de devis</strong></li>
+</ul>
+
+<p>La structure a été validée visuellement et fonctionnellement. J'ai ensuite assuré la connexion entre Xano et WeWeb, permettant les premiers échanges de données entre le front-end et l'API.</p>
+
+<h3>Contrainte workspace</h3>
+<p>Pour des raisons liées au code promotionnel de la formation, j'ai dû utiliser le workspace Xano du projet "reparevou", le code ne permettant pas de bénéficier de deux workspaces distincts.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Contrainte contournée</strong><br>
+Cette contrainte a été contournée sans impact bloquant sur l'avancement. Le workspace partagé a été organisé de manière à isoler les tables et API de chaque projet.
+</div>
+
+<h2>🛠️ Problèmes rencontrés et solutions apportées</h2>
+
+<h3>1️⃣ Images qui ne s'adaptent pas au container sur WeWeb</h3>
+
+<p><strong>🛑 Problème :</strong><br>
+Les images conservaient leur taille d'origine et ne s'adaptaient pas au container, créant des incohérences visuelles.</p>
+
+<p><strong>🔍 Analyse / Solution :</strong></p>
+<ul>
+    <li>Définition explicite des dimensions (<code>width: 100%</code>, <code>height: 100%</code>)</li>
+    <li>Utilisation de <code>object-fit: cover</code> ou <code>contain</code> selon le besoin</li>
+    <li>Vérification que le container parent dispose d'une hauteur ou d'un ratio défini</li>
+</ul>
+
+<p>✅ <strong>Résultat :</strong> Problème résolu par une meilleure contrainte du container et des styles.</p>
+
+<pre><code>/* Exemple de solution appliquée */
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}</code></pre>
+
+<h3>2️⃣ Espace vide sous un SVG inline</h3>
+
+<p><strong>🛑 Problème :</strong><br>
+Un espace transparent important apparaissait sous un SVG inséré dans WeWeb.</p>
+
+<p><strong>🔍 Cause identifiée :</strong><br>
+Le SVG était rendu comme un élément <strong>inline</strong> aligné sur la baseline, ce qui réserve un espace pour les descendantes typographiques (comme les lettres "g", "p", "q").</p>
+
+<p><strong>💡 Solution appliquée :</strong><br>
+Ajout explicite de <code>display: block;</code> directement sur la balise <code>&lt;svg&gt;</code>.</p>
+
+<pre><code>svg {
+  display: block;
+}</code></pre>
+
+<p>✅ <strong>Résultat :</strong> Cette modification a supprimé définitivement l'espace vide.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Ce problème est très courant avec les SVG. Pensez systématiquement à ajouter <code>display: block</code> sur vos SVG pour éviter les espaces indésirables.
+</div>
+
+<h3>3️⃣ Définir un "bouton submit" avec un <code>&lt;div&gt;</code></h3>
+
+<p><strong>🛑 Problème :</strong><br>
+Besoin d'un élément visuellement libre (type <code>&lt;div&gt;</code>) mais avec un comportement de soumission de formulaire.</p>
+
+<p><strong>🔍 Analyse :</strong><br>
+Un <code>&lt;div&gt;</code> ne peut pas être <code>type="submit"</code> nativement.</p>
+
+<p><strong>💡 Solution retenue :</strong></p>
+<ul>
+    <li>Privilégier un <strong><code>&lt;button type="submit"&gt;</code></strong></li>
+    <li>Supprimer le style par défaut avec <code>all: unset</code> pour obtenir un rendu 100% personnalisable</li>
+</ul>
+
+<pre><code>&lt;button type="submit" style="all: unset; cursor: pointer;"&gt;
+  &lt;!-- Contenu personnalisé ici --&gt;
+&lt;/button&gt;</code></pre>
+
+<p><strong>✅ Cette approche garantit :</strong></p>
+<ul>
+    <li>Le submit natif du formulaire</li>
+    <li>L'accessibilité (élément sémantique)</li>
+    <li>La compatibilité totale avec WeWeb</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+L'option <code>&lt;div&gt;</code> + JavaScript a été identifiée mais volontairement écartée comme solution principale. Elle nécessite plus de code, nuit à l'accessibilité et complexifie inutilement la maintenance.
+</div>
+
+<h2>📊 Bilan de la session</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>✅ Authentification WeWeb fonctionnelle et validée</li>
+    <li>✅ Design system complet (15 couleurs, 10 styles typo)</li>
+    <li>✅ Base de données Xano structurée avec toutes les relations</li>
+    <li>✅ Composants transverses (Navbar, Footer) opérationnels</li>
+    <li>✅ Connexion Xano-WeWeb établie</li>
+    <li>✅ Quelques bugs CSS identifiés et corrigés rapidement</li>
+    <li>✅ Aucune difficulté majeure rencontrée</li>
+</ul>
+</div>
+
+<h2>🎓 Conclusion</h2>
+
+<p>Cette phase a permis de poser des <strong>fondations solides</strong>, tant sur le plan fonctionnel (authentification, base de données, connexions) que sur le plan technique et méthodologique.</p>
+
+<p>Les quelques points bloquants rencontrés ont été rapidement identifiés, analysés et corrigés, <strong>sans impact sur le planning</strong>.</p>
+
+<p>Avec l'enchaînement des projets précédents, j'ai désormais toutes les connaissances nécessaires pour avancer efficacement sur les prochaines étapes du développement.</p>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Les prochaines étapes incluront : l'intégration des pages principales (dashboard, gestion des devis, clients), la mise en place des workflows métier, et les tests utilisateurs sur l'ensemble du parcours.
+</div>
