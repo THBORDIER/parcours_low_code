@@ -1,0 +1,250 @@
+<h1>Journal de bord – Projet 10 : Authentification et calcul automatique des devis</h1>
+
+<p>Ce journal documente la mise en place de l'authentification complète avec récupération des données utilisateur, l'affichage d'un tableau de devis, et la création d'un système de calcul automatique des montants TTC.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Notes diverses</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> auth/me, Authentication, Custom Function, update_montant_devis, Relations, Query All Records, WeWeb Datagrid, formatDate, Calcul TTC, Panier</p>
+    <p>📅 <strong>Mise à jour:</strong> 16/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 2h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Résolution du problème d'authentification incomplète en configurant correctement l'endpoint <code>/auth/me</code>, mise en place d'un tableau de devis avec formatage des données, et création d'une fonction Xano pour calculer automatiquement les montants TTC à partir des paniers.
+</div>
+
+<h2>🛑 1. Problème initial : données utilisateur incomplètes après authentification</h2>
+
+<h3>Constat</h3>
+<p>Après une authentification réussie depuis WeWeb vers Xano :</p>
+<ul>
+    <li>✅ L'utilisateur était bien connecté</li>
+    <li>✅ Le token était valide</li>
+    <li>❌ Mais toutes les colonnes de la table <code>user</code> n'étaient pas disponibles dans l'état d'authentification WeWeb (<code>XANO AUTH</code>)</li>
+</ul>
+
+<p>Certaines données métier importantes n'étaient pas accessibles :</p>
+<ul>
+    <li><code>credit</code></li>
+    <li><code>entreprise</code></li>
+</ul>
+
+<p>Pourtant, ces données existaient bien en base de données Xano.</p>
+
+<h3>Analyse</h3>
+<p>Le problème ne venait ni :</p>
+<ul>
+    <li>❌ des tables Xano</li>
+    <li>❌ de la connexion WeWeb ↔ Xano</li>
+    <li>❌ de l'endpoint <code>/auth/login</code></li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Découverte importante</strong><br>
+WeWeb n'hydrate pas l'utilisateur connecté à partir du login, mais à partir de l'endpoint <code>GET /auth/me</code>.
+</div>
+
+<p>Or :</p>
+<ul>
+    <li>✅ L'endpoint <code>/auth/me</code> existait</li>
+    <li>❌ Mais son schéma de réponse ne contenait pas toutes les colonnes nécessaires</li>
+</ul>
+
+<h2>✅ Solution appliquée côté Xano</h2>
+
+<h3>Configuration de l'endpoint <code>GET /auth/me</code></h3>
+
+<p><strong>Étape 1 : Récupération de l'utilisateur</strong></p>
+<ul>
+    <li>Utilisation de <code>Get Record From user</code></li>
+</ul>
+
+<p><strong>Étape 2 : Enrichissement conditionnel</strong></p>
+<ul>
+    <li>Récupération du rôle (<code>role</code>)</li>
+    <li>Récupération de l'entreprise liée (<code>entreprise</code>)</li>
+    <li>Mise à jour de la variable <code>user</code> avec les relations</li>
+</ul>
+
+<p><strong>Étape 3 : Configuration de la réponse</strong></p>
+<ul>
+    <li>Response configurée sur : <code>As Self → var: user</code></li>
+</ul>
+
+<p><strong>Étape 4 : Ajout explicite des champs dans Output / Response</strong></p>
+<ul>
+    <li><code>credit</code></li>
+    <li><code>entreprise</code></li>
+    <li><code>_entreprise_by_user</code> (relation étendue)</li>
+</ul>
+
+<h3>Résultat</h3>
+<ul>
+    <li>✅ WeWeb récupère désormais un objet utilisateur complet</li>
+    <li>✅ L'état <code>XANO AUTH.user</code> contient toutes les données nécessaires</li>
+    <li>✅ Les données sont disponibles dans toute l'application sans requête supplémentaire</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Apprentissage clé</strong><br>
+Séparation claire des responsabilités :<br>
+• <code>/auth/login</code> = sécurité (validation, token)<br>
+• <code>/auth/me</code> = données utilisateur (hydratation complète)
+</div>
+
+<h2>📊 2. Mise en place du tableau des devis (WeWeb Datagrid)</h2>
+
+<h3>Objectif</h3>
+<p>Afficher une liste de devis avec :</p>
+<ul>
+    <li>Numéro de devis</li>
+    <li>Client</li>
+    <li>Date formatée</li>
+    <li>Montant TTC</li>
+    <li>Statut</li>
+</ul>
+
+<h3>Données sources</h3>
+<p><strong>Endpoint Xano :</strong></p>
+<pre><code>GET /p10_devis</code></pre>
+
+<p><strong>Tables impliquées :</strong></p>
+<ul>
+    <li><code>P10_devis</code></li>
+    <li><code>P10_client</code></li>
+    <li><code>P10_panierDevis</code></li>
+    <li><code>P10_produit</code></li>
+</ul>
+
+<h3>Problème : format des données dans le tableau</h3>
+
+<p><strong>Date</strong></p>
+<ul>
+    <li>Le champ <code>created_at</code> est stocké sous forme de timestamp</li>
+</ul>
+
+<p><strong>Solution (WeWeb – Datagrid, colonne Date) :</strong></p>
+<pre><code>formatDate(mapping.item.created_at, "D/MM/YYYY")</code></pre>
+
+<p><strong>Client</strong></p>
+<ul>
+    <li>Le nom du client provient d'une relation</li>
+</ul>
+
+<p><strong>Solution :</strong></p>
+<ul>
+    <li>Utilisation directe de : <code>mapping.nom</code></li>
+</ul>
+
+<h2>💰 3. Calcul du montant TTC d'un devis (logique métier)</h2>
+
+<h3>Problème</h3>
+<p>Le montant total d'un devis dépend :</p>
+<ul>
+    <li>Des lignes de panier (<code>P10_panierDevis</code>)</li>
+    <li>Des produits associés (<code>P10_produit</code>)</li>
+    <li>Des quantités</li>
+    <li>Du prix HT</li>
+    <li>De la TVA</li>
+</ul>
+
+<p>Il n'était pas stocké automatiquement dans la table <code>P10_devis</code>.</p>
+
+<h2>⚙️ 4. Création de la fonction <code>update_montant_devis</code></h2>
+
+<h3>Objectif</h3>
+<p>Calculer dynamiquement le montant TTC d'un devis à partir de son panier.</p>
+
+<h3>Description de la fonction (Xano – Custom Function)</h3>
+
+<p><strong>Nom :</strong> <code>update_montant_devis</code></p>
+
+<p><strong>Input :</strong></p>
+<ul>
+    <li><code>devis_id</code> (integer)</li>
+</ul>
+
+<p><strong>Logique interne :</strong></p>
+
+<p><strong>Étape 1 : Récupération de toutes les lignes du panier</strong></p>
+<pre><code>Query All Records From P10_panierDevis</code></pre>
+
+<p><strong>Étape 2 : Initialisation d'une variable</strong></p>
+<pre><code>montant = 0</code></pre>
+
+<p><strong>Étape 3 : Boucle sur chaque ligne du panier</strong></p>
+<ul>
+    <li>Récupération du produit lié (<code>P10_produit</code>)</li>
+    <li>Calcul ligne par ligne :</li>
+</ul>
+<pre><code>quantite * (tarif_HT + tarif_HT * (TVA / 100))</code></pre>
+<ul>
+    <li>Addition du résultat dans <code>montant</code></li>
+</ul>
+
+<p><strong>Étape 4 : Mise à jour du devis</strong></p>
+<pre><code>Edit Record in P10_devis
+→ montant = montant</code></pre>
+
+<p><strong>Valeur retournée :</strong></p>
+<pre><code>As Self → var: montant</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Bonne pratique</strong><br>
+Centralisation de la logique métier dans Xano via des Custom Functions. Cela garantit que le calcul est toujours cohérent, quel que soit le point d'entrée (API, webhook, etc.).
+</div>
+
+<h2>🔄 5. Intégration dans l'endpoint de récupération des devis</h2>
+
+<p><strong>Dans l'endpoint :</strong></p>
+<pre><code>GET /p10_devis</code></pre>
+
+<h3>Étapes</h3>
+<ol>
+    <li>Boucle sur chaque devis</li>
+    <li>Appel de la fonction <code>update_montant_devis</code> (synchrone)</li>
+    <li>Mise à jour du champ <code>montant</code></li>
+    <li>Retour de la liste des devis enrichis</li>
+</ol>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Le système de mise à jour automatique fonctionne également lors de l'évolution des paniers ou des changements de prix des articles. À chaque modification, la fonction recalcule le montant en temps réel.
+</div>
+
+<h2>📌 Résultat final</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li><strong>Authentification complète et fiable</strong> : L'endpoint <code>/auth/me</code> hydrate correctement l'utilisateur dans WeWeb avec toutes les données métier</li>
+    <li><strong>Tableau de devis opérationnel</strong> : Données formatées proprement côté WeWeb (dates, relations)</li>
+    <li><strong>Montant TTC calculé dynamiquement</strong> : Cohérent avec le panier grâce à une Custom Function Xano</li>
+    <li><strong>Logique métier centralisée</strong> : Utilisation des Custom Functions pour garantir la cohérence des calculs</li>
+</ul>
+</div>
+
+<h2>🧠 Méthodologie acquise</h2>
+
+<ul>
+    <li><strong>Compréhension du rôle réel de <code>/auth/me</code></strong> : Ce n'est pas le login qui hydrate l'utilisateur, mais bien cet endpoint</li>
+    <li><strong>Importance du schéma de réponse Xano</strong> : Toujours vérifier l'onglet Output / Response pour s'assurer que tous les champs nécessaires sont inclus</li>
+    <li><strong>Séparation claire</strong> :
+        <ul>
+            <li><code>login</code> = sécurité</li>
+            <li><code>me</code> = données utilisateur</li>
+        </ul>
+    </li>
+    <li><strong>Centralisation de la logique métier dans Xano</strong> : Les Custom Functions garantissent la cohérence des calculs</li>
+    <li><strong>Utilisation efficace des formules WeWeb</strong> : <code>formatDate()</code> pour l'affichage, <code>mapping</code> pour les relations</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce finale</strong><br>
+Lors de problèmes d'authentification où certaines données manquent, vérifier toujours l'endpoint <code>/auth/me</code> en premier. C'est lui qui définit ce qui sera disponible dans l'état <code>XANO AUTH</code> de WeWeb.
+</div>

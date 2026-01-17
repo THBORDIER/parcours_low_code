@@ -1,0 +1,280 @@
+<h1>Génération de devis dynamiques avec WeWeb et Xano</h1>
+
+<p class="subtitle">Dans cet article, je vais expliquer comment construire un système complet de génération de devis PDF dans WeWeb connecté à Xano, en maîtrisant le ciblage DOM et le format A4.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Notes diverses</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> PDF Generation, window.print(), querySelector, data-attributes, A4 format, WeWeb JavaScript, Devis dynamique, DOM targeting</p>
+    <p>📅 <strong>Mise à jour:</strong> 17/01/2025</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour générer un PDF propre depuis WeWeb : (1) utiliser des attributs <code>data-*</code> pour cibler le div, (2) ouvrir une fenêtre temporaire, (3) imposer un format A4 avec <code>@page</code>, (4) auto-scale le contenu si nécessaire. Solution validée sans plugin externe.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Contexte :</strong></p>
+<p>L'objectif était de construire un système complet de génération de devis dans une application no-code WeWeb, connecté à un backend Xano, permettant :</p>
+
+<ul>
+    <li>de récupérer dynamiquement les données métier (devis, client, produits)</li>
+    <li>d'effectuer les calculs (quantités, montants HT, TVA, total à payer)</li>
+    <li>d'afficher un devis fidèle à un format A4</li>
+    <li>puis de générer un PDF propre et imprimable à partir d'un div précis, et non de l'intégralité de la page</li>
+</ul>
+
+<p><strong>💡 Problématiques rencontrées :</strong></p>
+<ol>
+    <li><strong>window.print()</strong> imprimait toute la page (header, footer, navigation)</li>
+    <li>Dimensions A4 non respectées selon le navigateur</li>
+    <li>Impossibilité de cibler uniquement le composant devis dans WeWeb</li>
+    <li>Rendu visuel variable et non maîtrisé</li>
+</ol>
+
+<h2>🏗️ Architecture globale</h2>
+
+<h3>Front-end : WeWeb</h3>
+
+<ul>
+    <li>Construction visuelle du devis dans un composant <code>Div_PDF</code></li>
+    <li>Utilisation de répéteurs pour afficher dynamiquement les lignes de produits</li>
+    <li>Liaison directe aux données retournées par l'API Xano</li>
+    <li>Calculs réalisés côté front pour l'affichage (montants, totaux)</li>
+</ul>
+
+<h3>Back-end : Xano</h3>
+
+<p>Les données sont structurées autour de plusieurs tables :</p>
+
+<ul>
+    <li><strong>P10_devis</strong> : Informations principales du devis (numéro, objet, statut, montant, client lié)</li>
+    <li><strong>P10_client</strong> : Données légales et de contact du client (raison sociale, adresse, SIRET, téléphone)</li>
+    <li><strong>P10_panierDevis</strong> : Table pivot entre devis et produits, avec les quantités</li>
+    <li><strong>P10_produit</strong> : Catalogue produit (nom, description, prix HT, TVA)</li>
+</ul>
+
+<p>Un endpoint Xano permet de récupérer un devis complet à partir de son <code>id</code>, avec :</p>
+<ul>
+    <li>Mise à jour du montant si nécessaire</li>
+    <li>Récupération des relations (client + lignes de panier)</li>
+    <li>Retour d'un objet structuré côté front</li>
+</ul>
+
+<h2>🔍 Construction du devis côté WeWeb</h2>
+
+<h3>Assemblage des données</h3>
+
+<ul>
+    <li>Le devis principal est chargé via l'endpoint <code>GET /p10_devis/{id}</code></li>
+    <li>Les informations client sont affichées à partir de la relation <code>client_id</code></li>
+    <li>Les lignes de devis sont affichées via un répéteur basé sur <code>P10_panierDevis</code></li>
+</ul>
+
+<p>Chaque ligne récupère :</p>
+<ul>
+    <li>le produit lié</li>
+    <li>la quantité</li>
+    <li>le prix unitaire</li>
+    <li>le total de ligne calculé dynamiquement</li>
+</ul>
+
+<h3>Calculs effectués</h3>
+
+<pre><code>Total HT par ligne = quantité × tarif_HT
+Total HT global = somme des lignes
+TVA calculée selon le produit
+Net à payer affiché dans le bloc de synthèse</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Ces calculs sont faits côté front pour garantir réactivité, cohérence visuelle et facilité de mise en page.
+</div>
+
+<h2>🧪 Solution : Génération du PDF maîtrisée</h2>
+
+<h3>Étape 1️⃣ : Cibler le div précis dans WeWeb</h3>
+
+<p><strong>❌ Erreur initiale :</strong></p>
+<ul>
+    <li>Tentative d'utilisation de <code>id="data-pdf"</code></li>
+    <li>Sélecteur JS recherchant <code>[data-pdf="devis"]</code></li>
+    <li>➡️ Le div n'était jamais trouvé (<code>querySelector</code> retournait <code>null</code>)</li>
+</ul>
+
+<p><strong>✅ Solution adoptée :</strong></p>
+
+<p>Utilisation d'un attribut HTML personnalisé dans le composant <code>Div_PDF</code> :</p>
+
+<pre><code>HTML Attributes:
+  data-pdf = devis</code></pre>
+
+<p>Puis en JavaScript :</p>
+
+<pre><code>document.querySelector('[data-pdf="devis"]')</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Bonne pratique</strong><br>
+Cette approche est stable, non modifiée par WeWeb, et conforme aux standards HTML (<code>data-*</code>).
+</div>
+
+<h3>Étape 2️⃣ : Imposer un format A4</h3>
+
+<p><strong>Problème :</strong> Même après avoir ciblé le div, le contenu apparaissait trop large, le rendu ne correspondait pas au visuel WeWeb, certaines colonnes débordaient.</p>
+
+<p><strong>Cause technique :</strong></p>
+<ul>
+    <li><code>window.print()</code> dépend du viewport et du CSS courant</li>
+    <li>Absence de contraintes explicites en mm</li>
+    <li>Styles globaux WeWeb non appliqués dans une nouvelle fenêtre</li>
+</ul>
+
+<h3>Étape 3️⃣ : Script final validé</h3>
+
+<p>La solution retenue repose sur :</p>
+<ul>
+    <li>L'ouverture d'une fenêtre temporaire</li>
+    <li>L'injection uniquement du HTML du devis</li>
+    <li>L'imposition stricte d'un format A4</li>
+    <li>Un auto-scale si le contenu dépasse la largeur utile</li>
+</ul>
+
+<pre><code>const selector = '[data-pdf="devis"]';
+const div = document.querySelector(selector);
+
+if (!div) {
+  console.error("Div PDF introuvable");
+  return;
+}
+
+const printWindow = window.open("", "_blank");
+if (!printWindow) {
+  console.error("Popup bloquée");
+  return;
+}
+
+printWindow.document.open();
+printWindow.document.write(`
+  &lt;html&gt;
+    &lt;head&gt;
+      &lt;title&gt;Devis&lt;/title&gt;
+      &lt;meta charset="utf-8" /&gt;
+      &lt;style&gt;
+        @page { size: A4; margin: 10mm; }
+
+        html, body {
+          margin: 0;
+          padding: 0;
+          background: #fff;
+          font-family: Arial, Helvetica, sans-serif;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .page {
+          width: 190mm;
+          margin: 0 auto;
+        }
+
+        * { box-sizing: border-box; }
+        img { max-width: 100%; height: auto; }
+
+        .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+      &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      &lt;div class="page" id="pageRoot"&gt;
+        ${div.outerHTML}
+      &lt;/div&gt;
+
+      &lt;script&gt;
+        (function () {
+          function mmToPx(mm) {
+            return mm * (96 / 25.4);
+          }
+
+          function fitToPage() {
+            const page = document.getElementById("pageRoot");
+            if (!page) return;
+
+            const target = mmToPx(190);
+            const contentWidth = page.scrollWidth;
+
+            if (contentWidth &gt; target) {
+              const scale = target / contentWidth;
+              page.style.transformOrigin = "top left";
+              page.style.transform = "scale(" + scale + ")";
+              page.style.width = (190 / scale) + "mm";
+            }
+          }
+
+          window.onload = function () {
+            fitToPage();
+            setTimeout(function () {
+              window.print();
+              window.close();
+            }, 300);
+          };
+        })();
+      &lt;/script&gt;
+    &lt;/body&gt;
+  &lt;/html&gt;
+`);
+printWindow.document.close();
+printWindow.focus();</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+La fonction <code>fitToPage()</code> calcule automatiquement le ratio de scale nécessaire pour que le contenu tienne dans les 190mm de largeur utile A4. Cela garantit un rendu optimal même si le contenu WeWeb évolue.
+</div>
+
+<h2>🧭 Résultat final</h2>
+
+<p><strong>✅ Avantages de cette solution :</strong></p>
+
+<ul>
+    <li>Génération d'un PDF uniquement à partir du devis</li>
+    <li>Dimensions A4 respectées</li>
+    <li>Mise en page stable</li>
+    <li>Compatible WeWeb / navigateur</li>
+    <li>Aucun plugin externe requis</li>
+    <li>Solution maintenable et évolutive</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Assurez-vous que les bloqueurs de popups sont désactivés pour l'application, sinon <code>window.open()</code> échouera silencieusement.
+</div>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Utiliser des attributs <code>data-*</code> pour cibler précisément un composant WeWeb</li>
+  <li>Imposer un format A4 avec <code>@page { size: A4; margin: 10mm; }</code></li>
+  <li>Auto-scale le contenu si nécessaire avec <code>transform: scale()</code></li>
+  <li><code>window.print()</code> peut être maîtrisé sans plugin externe</li>
+  <li>Une approche hybride no-code + JavaScript reste souvent la plus robuste</li>
+</ul>
+</div>
+
+<h2>🎓 Quiz rapide</h2>
+
+<p><strong>🧠 Question :</strong> Pourquoi utiliser <code>data-pdf="devis"</code> plutôt qu'un <code>id="devis"</code> dans WeWeb ?</p>
+
+<p><strong>✅ Réponse attendue :</strong> Les attributs <code>data-*</code> sont des attributs HTML personnalisés standard qui ne sont pas modifiés par WeWeb lors du rendu. Un <code>id</code> classique pourrait être renommé ou altéré par le builder no-code, ce qui rendrait le <code>querySelector</code> instable.</p>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://developer.mozilla.org/fr/docs/Web/CSS/@page" target="_blank">Documentation MDN : @page CSS</a></li>
+    <li><a href="https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/data-*" target="_blank">Documentation MDN : Attributs data-*</a></li>
+    <li><a href="https://docs.weweb.io/" target="_blank">Documentation WeWeb</a></li>
+    <li><a href="https://docs.xano.com/" target="_blank">Documentation Xano</a></li>
+</ul>

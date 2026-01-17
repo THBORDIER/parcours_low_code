@@ -113,7 +113,7 @@ Each theme page includes a vanilla JavaScript script that:
 
 **IMPORTANT: Before publishing any article, Claude must ask for:**
 - 📅 Date of publication/update (format: DD/MM/YYYY)
-- ⏱️ Time spent on the article
+- ⏱️ Time spent on development/implementation (not article writing)
 
 Each article should follow this pedagogical structure:
 
@@ -129,7 +129,7 @@ Visual block at the beginning with icons:
 - 🎯 Niveau: Débutant / Intermédiaire / Avancé
 - 🔍 Mots-clés: Relevant keywords
 - 📅 Mise à jour: Date (format: DD/MM/YYYY)
-- ⏱️ Temps passé: Time spent on article
+- ⏱️ Temps passé: Time spent on development/implementation (journal entries document development work)
 - ⚙️ Stack utilisée: WeWeb + Xano (or other)
 
 **CRITICAL: Keywords Best Practices**

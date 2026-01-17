@@ -104,6 +104,42 @@
     "path": "../articles/notes-diverses/outils-complementaires.html"
   },
   {
+    "title": "Journal de bord – Projet 10 : Authentification et calcul automatique des devis",
+    "category": "Notes diverses",
+    "level": "Intermédiaire",
+    "keywords": [
+      "auth/me",
+      "Authentication",
+      "Custom Function",
+      "update_montant_devis",
+      "Relations",
+      "Query All Records",
+      "WeWeb Datagrid",
+      "formatDate",
+      "Calcul TTC",
+      "Panier"
+    ],
+    "theme": "notes-diverses",
+    "path": "../articles/notes-diverses/projet-10-authentification-devis.html"
+  },
+  {
+    "title": "Génération de devis dynamiques avec WeWeb et Xano",
+    "category": "Notes diverses",
+    "level": "Intermédiaire",
+    "keywords": [
+      "PDF Generation",
+      "window.print()",
+      "querySelector",
+      "data-attributes",
+      "A4 format",
+      "WeWeb JavaScript",
+      "Devis dynamique",
+      "DOM targeting"
+    ],
+    "theme": "notes-diverses",
+    "path": "../articles/notes-diverses/projet-10-generation-devis-pdf.html"
+  },
+  {
     "title": "Synthèse d'avancement – P10",
     "category": "Notes diverses",
     "level": "Intermédiaire",
