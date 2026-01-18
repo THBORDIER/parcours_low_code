@@ -1,0 +1,277 @@
+<h1>Construire une logique métier robuste avec WeWeb et Xano</h1>
+
+<p class="subtitle">Retour d'expérience sur la gestion d'état, les workflows et les pièges du no-code dans le cadre du Projet 10 : développement d'une application de gestion de devis.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Bonnes pratiques</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Gestion d'état, Workflows WeWeb, Collections, Types de données, find(), On click, On change, On blur, Truthy/Falsy, Affichage conditionnel</p>
+    <p>📅 <strong>Mise à jour:</strong> 18/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Le no-code ne supprime pas la complexité, il la déplace vers la compréhension des flux et des données. Dans le Projet 10, les vrais défis n'étaient pas techniques mais conceptuels : maîtriser les types de données, gérer correctement les états UI, et construire des workflows robustes. Cet article partage les apprentissages clés d'un projet réel de gestion de devis avec WeWeb et Xano.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Contexte du projet :</strong> Développement d'une application de gestion de devis avec fonctionnalités de panier (ajout/suppression de produits, calcul automatique des totaux).</p>
+
+<p><strong>💡 Enjeu initial :</strong> Au-delà de l'interface utilisateur, le véritable défi s'est rapidement révélé être la gestion correcte des données, des états et des workflows dans un environnement no-code qui impose ses propres contraintes.</p>
+
+<p>Les problèmes récurrents rencontrés incluaient :</p>
+<ul>
+    <li>Mauvaise ligne mise à jour ou supprimée dans le panier</li>
+    <li>Erreurs de type "requires a scalar value" ou "text/integer filter requires…"</li>
+    <li>Composants affichés alors qu'aucune valeur n'est sélectionnée</li>
+    <li>Appels API déclenchés trop fréquemment</li>
+    <li>États incohérents entre le front-end et le back-end</li>
+</ul>
+
+<h2>🔍 Explication : Les 6 piliers d'une logique métier robuste</h2>
+
+<p>Ce projet a mis en lumière 6 domaines de compétence essentiels pour construire une application fiable en no-code :</p>
+
+<h3>1️⃣ Gestion d'un panier : bien plus qu'un simple CRUD</h3>
+
+<p>La gestion d'un panier de produits nécessite de maîtriser plusieurs concepts :</p>
+
+<ul>
+    <li><strong>Ajout d'un produit au devis</strong></li>
+    <li><strong>Incrémentation / décrémentation de la quantité</strong></li>
+    <li><strong>Suppression automatique</strong> de la ligne lorsque la quantité atteint zéro</li>
+    <li><strong>Mise à jour correcte du devis</strong> après chaque action</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Piège fréquent</strong><br>
+Confusion entre <code>produit_id</code> (identifiant du produit) et <code>p10_panierdevis_id</code> (identifiant de la relation produit ↔ devis). Cette confusion entraîne la mise à jour ou suppression de la mauvaise ligne.
+</div>
+
+<p><strong>🔑 Solution :</strong> Utilisation systématique de <code>find()</code> avec un critère strict au lieu de s'appuyer sur des index (<code>[0]</code>). Séparer clairement l'ID du produit de l'ID de la ligne panier.</p>
+
+<h3>2️⃣ Comprendre les données retournées par WeWeb et Xano</h3>
+
+<p>Un thème central du projet a été la compréhension des types de données réellement manipulés.</p>
+
+<div class="callout callout-tip">
+✨ <strong>Règle d'or</strong><br>
+Dans WeWeb et Xano :<br>
+• Une <strong>collection</strong> n'est jamais une valeur scalaire<br>
+• Une <strong>requête SQL</strong> retourne souvent une liste, même avec une seule ligne<br>
+• Un <strong>champ typé</strong> (integer, text) n'accepte jamais un objet
+</div>
+
+<p><strong>Distinctions fondamentales à maîtriser :</strong></p>
+<ul>
+    <li>Objet vs Liste vs Valeur scalaire</li>
+    <li>ID métier vs ID technique</li>
+    <li>État UI vs État back-end</li>
+    <li>Collection vs Résultat de requête</li>
+</ul>
+
+<h3>3️⃣ Gestion fine des événements côté front (WeWeb)</h3>
+
+<p>La gestion des interactions utilisateur nécessite une compréhension précise des événements disponibles.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Événement</th>
+            <th>Quand l'utiliser</th>
+            <th>Cas d'usage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>On change</code></td>
+            <td>À chaque modification de valeur</td>
+            <td>Validation en temps réel, mais attention au spam d'API</td>
+        </tr>
+        <tr>
+            <td><code>On blur</code></td>
+            <td>Lorsque l'utilisateur quitte le champ</td>
+            <td>Mise à jour API après saisie stabilisée (recommandé)</td>
+        </tr>
+        <tr>
+            <td><code>On click</code></td>
+            <td>Action utilisateur explicite</td>
+            <td>Boutons d'action, soumission de formulaire</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Utiliser <code>On change</code> pour mettre à jour une API à chaque frappe peut générer des dizaines d'appels inutiles. Préférer <code>On blur</code> ou implémenter un debounce.
+</div>
+
+<h3>4️⃣ Affichage conditionnel et états UI</h3>
+
+<p>Les composants WeWeb (Selects, Inputs) ne renvoient pas toujours <code>null</code> lorsqu'ils sont vides. Ils peuvent renvoyer :</p>
+<ul>
+    <li><code>null</code></li>
+    <li><code>undefined</code></li>
+    <li><code>""</code> (chaîne vide)</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Solution robuste</strong><br>
+Utiliser des tests de vérité (<strong>truthy / falsy</strong>) au lieu de comparaisons strictes avec <code>null</code>.<br><br>
+<strong>Exemple :</strong> <code>if (selectedValue)</code> au lieu de <code>if (selectedValue !== null)</code>
+</div>
+
+<h3>5️⃣ Construction de workflows complexes et lisibles</h3>
+
+<p>Un workflow robuste nécessite :</p>
+<ul>
+    <li>✅ Tests conditionnels imbriqués clairs</li>
+    <li>✅ Branches true / false explicites</li>
+    <li>✅ Séquences dépendantes bien ordonnées</li>
+    <li>✅ Rafraîchissement des collections au bon moment</li>
+    <li>✅ Refus des "raccourcis" qui masquent la logique</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Un workflow maintenable doit pouvoir être lu et compris par un autre développeur sans documentation supplémentaire. Privilégiez la clarté à la concision.
+</div>
+
+<h3>6️⃣ Maîtrise des types : le vrai fil conducteur</h3>
+
+<p>Avec le recul, le problème principal du projet n'était ni WeWeb ni Xano, mais la <strong>gestion des types et des structures de données</strong>.</p>
+
+<p><strong>Distinctions fondamentales :</strong></p>
+<ul>
+    <li>Valeur vs Structure</li>
+    <li>ID métier vs ID technique</li>
+    <li>Liste vs Objet</li>
+    <li>État UI vs État back-end</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce de débogage</strong><br>
+Chaque bug rencontré était un symptôme d'une mauvaise hypothèse sur la forme réelle des données. Avant de corriger, toujours vérifier la structure exacte retournée par la requête ou la collection.
+</div>
+
+<h2>🧪 Solution : Procédure pour éviter les pièges</h2>
+
+<h3>Étape 1️⃣ : Identifier la nature des données</h3>
+<p>Avant toute manipulation, vérifier :</p>
+<ul>
+    <li>Est-ce une valeur scalaire (string, number) ou une structure (objet, liste) ?</li>
+    <li>Est-ce un résultat de requête Xano ou une variable WeWeb ?</li>
+    <li>Quels sont les identifiants disponibles (ID technique, ID métier) ?</li>
+</ul>
+
+<h3>Étape 2️⃣ : Choisir le bon événement</h3>
+<pre><code>// ❌ Mauvais : spam d'API
+On change → API call
+
+// ✅ Bon : mise à jour stabilisée
+On blur → API call
+
+// ✅ Encore mieux : action explicite
+On click (bouton "Enregistrer") → API call
+</code></pre>
+
+<h3>Étape 3️⃣ : Utiliser find() au lieu d'index</h3>
+<pre><code>// ❌ Mauvais : fragile et imprécis
+panierDevis[0]
+
+// ✅ Bon : ciblé et robuste
+panierDevis.find(item => item.p10_panierdevis_id === currentLineId)
+</code></pre>
+
+<h3>Étape 4️⃣ : Gérer les valeurs vides avec truthy/falsy</h3>
+<pre><code>// ❌ Mauvais : ne couvre pas tous les cas
+if (selectedValue !== null)
+
+// ✅ Bon : couvre null, undefined, ""
+if (selectedValue)
+</code></pre>
+
+<h3>Étape 5️⃣ : Documenter les workflows complexes</h3>
+<p>Ajouter des commentaires explicites dans les workflows WeWeb pour expliquer la logique métier, pas seulement les étapes techniques.</p>
+
+<h2>🧰 Exemple concret : Gestion du panier de devis</h2>
+
+<h3>Cas d'usage : Incrémenter la quantité d'un produit</h3>
+
+<p><strong>Workflow WeWeb :</strong></p>
+
+<div class="figure">
+<pre><code>1. On click (bouton "+")
+2. Récupérer l'ID de la ligne panier (p10_panierdevis_id)
+3. Rechercher la ligne avec find() :
+   currentLine = panierDevis.find(item => item.p10_panierdevis_id === lineId)
+4. Incrémenter la quantité :
+   newQuantity = currentLine.quantite + 1
+5. Appel API Xano : updatePanierDevisLine(lineId, newQuantity)
+6. Rafraîchir la collection panierDevis
+7. Recalculer le total du devis
+</code></pre>
+</div>
+
+<div class="callout callout-warning">
+⚠️ <strong>Point de vigilance</strong><br>
+Ne jamais utiliser <code>produit_id</code> pour identifier la ligne à modifier. Utiliser <code>p10_panierdevis_id</code> (ID de la relation).
+</div>
+
+<h3>Cas d'usage : Suppression automatique si quantité = 0</h3>
+
+<p><strong>Workflow WeWeb :</strong></p>
+
+<div class="figure">
+<pre><code>1. On click (bouton "-")
+2. Récupérer la quantité actuelle
+3. Condition :
+   IF quantite > 1
+     → Décrémenter (quantite - 1)
+     → API : updatePanierDevisLine()
+   ELSE
+     → API : deletePanierDevisLine()
+4. Rafraîchir la collection panierDevis
+5. Recalculer le total du devis
+</code></pre>
+</div>
+
+<h2>📌 Résumé final</h2>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li><strong>Le no-code ne supprime pas la complexité</strong>, il la déplace vers la compréhension des flux et des données</li>
+    <li><strong>Maîtriser les types de données</strong> est la compétence fondamentale pour éviter 80% des bugs</li>
+    <li><strong>Utiliser find() au lieu d'index</strong> pour cibler précisément les éléments de collection</li>
+    <li><strong>Choisir le bon événement</strong> (On change vs On blur vs On click) pour optimiser les appels API</li>
+    <li><strong>Gérer les valeurs vides avec truthy/falsy</strong> pour un code plus robuste</li>
+    <li><strong>Construire des workflows lisibles</strong> en privilégiant la clarté à la concision</li>
+    <li><strong>Séparer les identifiants métier et techniques</strong> (produit_id vs p10_panierdevis_id)</li>
+</ul>
+</div>
+
+<h2>🧠 Quiz rapide</h2>
+
+<p><strong>Question 1 :</strong> Quel événement WeWeb devez-vous utiliser pour mettre à jour une API après que l'utilisateur a fini de saisir un texte dans un input ?</p>
+<p>✅ <strong>Réponse :</strong> <code>On blur</code> (plutôt que <code>On change</code> qui déclencherait l'API à chaque frappe)</p>
+
+<p><strong>Question 2 :</strong> Comment cibler précisément une ligne spécifique dans une collection WeWeb ?</p>
+<p>✅ <strong>Réponse :</strong> Utiliser <code>find()</code> avec un critère strict (ex: <code>item.id === currentId</code>) plutôt qu'un index comme <code>[0]</code></p>
+
+<p><strong>Question 3 :</strong> Comment gérer proprement les valeurs vides (null, undefined, "") dans une condition d'affichage ?</p>
+<p>✅ <strong>Réponse :</strong> Utiliser un test truthy/falsy simple : <code>if (value)</code> plutôt que <code>if (value !== null)</code></p>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.weweb.io/" target="_blank">Documentation officielle WeWeb</a></li>
+    <li><a href="https://docs.xano.com/" target="_blank">Documentation officielle Xano</a></li>
+    <li>📖 Article connexe : <em>Comprendre les Collections dans WeWeb</em> (à venir)</li>
+    <li>📖 Article connexe : <em>Gérer les événements dans WeWeb : On change, On blur, On click</em> (à venir)</li>
+</ul>

@@ -64,6 +64,25 @@
     "path": "../articles/bonnes-pratiques/conventions-nommage.html"
   },
   {
+    "title": "Construire une logique métier robuste avec WeWeb et Xano",
+    "category": "Bonnes pratiques",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Gestion d'état",
+      "Workflows WeWeb",
+      "Collections",
+      "Types de données",
+      "find()",
+      "On click",
+      "On change",
+      "On blur",
+      "Truthy/Falsy",
+      "Affichage conditionnel"
+    ],
+    "theme": "bonnes-pratiques",
+    "path": "../articles/bonnes-pratiques/logique-metier-robuste-weweb-xano.html"
+  },
+  {
     "title": "Optimisation et performance",
     "category": "",
     "level": "",
@@ -625,6 +644,24 @@
     "keywords": [],
     "theme": "xano",
     "path": "../articles/xano/introduction-xano.html"
+  },
+  {
+    "title": "Génération d'un numéro de devis incrémental avec WeWeb et Xano",
+    "category": "Xano",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Numéro incrémental",
+      "Direct Database Query",
+      "COALESCE",
+      "INTEGER filter",
+      "Scalar value",
+      "Response type single",
+      "Timestamp PostgreSQL",
+      "to_timestamp",
+      "date_trunc"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/numero-devis-incremental.html"
   },
   {
     "title": "Pourquoi Xano rend les webhooks si compliqués (et comment s'en sortir)",

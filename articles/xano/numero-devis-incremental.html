@@ -1,0 +1,309 @@
+<h1>Génération d'un numéro de devis incrémental avec WeWeb et Xano</h1>
+
+<p class="subtitle">Retour d'expérience détaillé sur la génération automatique de numéros de devis : format lisible, incrémentation annuelle, et maîtrise du typage Xano.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Numéro incrémental, Direct Database Query, COALESCE, INTEGER filter, Scalar value, Response type single, Timestamp PostgreSQL, to_timestamp, date_trunc</p>
+    <p>📅 <strong>Mise à jour:</strong> 18/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 30 min</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+La génération d'un numéro de devis incrémental (format DV-2026-001) avec Xano nécessite de bien comprendre la différence entre <strong>valeurs scalaires</strong>, <strong>objets</strong> et <strong>listes</strong>. L'erreur la plus fréquente : passer un step entier (<code>x1</code>) au lieu d'une propriété précise (<code>x1[0].next_num</code>) dans un champ typé INTEGER ou TEXT.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p>Dans le cadre du Projet 10 de ma formation, j'ai développé une fonctionnalité complète de création de devis avec WeWeb (front-end no-code) et Xano (back-end).</p>
+
+<p><strong>L'un des points les plus sensibles</strong> du projet a été la génération automatique d'un numéro de devis, avec les contraintes suivantes :</p>
+
+<ul>
+    <li><strong>Format lisible</strong> : <code>DV-ANNEE-XXX</code> (exemple : DV-2026-001)</li>
+    <li><strong>Incrémentation automatique</strong> : XXX augmente de 1 à chaque devis</li>
+    <li><strong>Remise à zéro chaque année</strong></li>
+    <li><strong>Compatibilité avec Xano</strong> : PostgreSQL, champs typés strictement</li>
+    <li><strong>Intégration fluide avec WeWeb</strong></li>
+</ul>
+
+<p>💡 <strong>Exemple utilisateur :</strong> Un utilisateur crée un devis le 15 janvier 2026. Le système doit automatiquement générer le numéro <code>DV-2026-001</code>. Le lendemain, un nouveau devis doit obtenir <code>DV-2026-002</code>, et ainsi de suite.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Ce qui semblait simple au départ s'est révélé être un excellent cas d'école sur les différences entre <strong>données scalaires</strong>, <strong>objets</strong>, <strong>listes</strong>, et sur la gestion correcte des requêtes SQL dans Xano.
+</div>
+
+<h2>🏗️ Architecture choisie</h2>
+
+<h3>Séparation des responsabilités</h3>
+
+<p><strong>Xano</strong> est la source de vérité :</p>
+<ul>
+    <li>Calcul du prochain numéro</li>
+    <li>Insertion du devis</li>
+</ul>
+
+<p><strong>WeWeb</strong> se contente :</p>
+<ul>
+    <li>D'appeler l'endpoint</li>
+    <li>D'afficher le résultat formaté</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Cette séparation est essentielle pour éviter les <strong>doublons</strong>, les <strong>conflits multi-utilisateurs</strong> et les <strong>incohérences métier</strong>. Ne jamais générer des identifiants métier côté front-end.
+</div>
+
+<h3>Choix des champs côté base de données</h3>
+
+<p>Dans la table <code>P10_devis</code>, les champs clés sont :</p>
+
+<ul>
+    <li><code>numero_devis</code> → <strong>INTEGER</strong><br>
+        Contient uniquement la partie incrémentale (1, 2, 3, etc.)</li>
+    <li><code>reference</code> → <strong>TEXT</strong><br>
+        Contient le format lisible (DV-2026-001)</li>
+    <li><code>created_at</code> → <strong>BIGINT</strong><br>
+        Timestamp en millisecondes (format Xano)</li>
+</ul>
+
+<p><strong>Ce choix est volontaire :</strong></p>
+<ul>
+    <li>Le champ <strong>numérique</strong> sert aux <strong>calculs</strong></li>
+    <li>Le champ <strong>texte</strong> sert à l'<strong>affichage</strong> et à la <strong>lisibilité métier</strong></li>
+</ul>
+
+<h2>🔍 Premier écueil : filtrer par année avec created_at</h2>
+
+<h3>Erreur initiale</h3>
+
+<p>Tentative de comparaison directe entre <code>created_at</code> et <code>now()</code> → PostgreSQL rejetait la requête.</p>
+
+<h3>Cause réelle</h3>
+
+<ul>
+    <li><code>created_at</code> est un <strong>BIGINT</strong> (millisecondes)</li>
+    <li><code>now()</code> retourne un <strong>timestamp PostgreSQL</strong></li>
+    <li>Comparaison invalide sans conversion</li>
+</ul>
+
+<h3>Résolution</h3>
+
+<p>Conversion explicite du timestamp millisecondes vers un timestamp PostgreSQL :</p>
+
+<pre><code>to_timestamp(created_at / 1000.0)</code></pre>
+
+<p>Filtrage annuel correct :</p>
+
+<pre><code>WHERE to_timestamp(created_at / 1000.0) >= date_trunc('year', now())
+  AND to_timestamp(created_at / 1000.0) <  date_trunc('year', now()) + INTERVAL '1 year'</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+<code>date_trunc('year', now())</code> renvoie le <strong>1er janvier de l'année en cours à 00:00:00</strong>, ce qui permet de filtrer uniquement les enregistrements de l'année courante.
+</div>
+
+<h2>🧪 Requête SQL correcte pour obtenir le prochain numéro</h2>
+
+<h3>Objectif</h3>
+
+<ul>
+    <li>Récupérer le dernier numéro de devis de l'année</li>
+    <li>Y ajouter +1</li>
+    <li><strong>Sans insérer quoi que ce soit</strong> à ce stade</li>
+</ul>
+
+<h3>Requête SQL finale</h3>
+
+<pre><code>SELECT
+  COALESCE(MAX(numero_devis), 0) + 1 AS next_num
+FROM x1_15
+WHERE to_timestamp(created_at / 1000.0) >= date_trunc('year', now())
+  AND to_timestamp(created_at / 1000.0) <  date_trunc('year', now()) + INTERVAL '1 year';</code></pre>
+
+<p><strong>Cette requête :</strong></p>
+<ul>
+    <li>Fonctionne même s'il n'existe <strong>aucun devis</strong> (grâce à <code>COALESCE</code>)</li>
+    <li>Renvoie toujours un <strong>entier valide</strong></li>
+    <li>Filtre uniquement les devis de l'<strong>année courante</strong></li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+<code>COALESCE(MAX(numero_devis), 0)</code> renvoie 0 si aucun devis n'existe. Cela garantit que le premier numéro de l'année sera toujours <strong>1</strong> (0 + 1).
+</div>
+
+<h2>🛑 Deuxième écueil majeur : objets vs valeurs scalaires dans Xano</h2>
+
+<h3>Symptôme</h3>
+
+<p>Erreur récurrente :</p>
+
+<pre><code>Integer filter requires a scalar value
+Text filter requires an integer, float, string or boolean value</code></pre>
+
+<h3>Cause réelle</h3>
+
+<p>Dans Xano :</p>
+<ul>
+    <li>Une <strong>Direct Database Query</strong> retourne <strong>toujours une LISTE</strong></li>
+    <li>Même si la requête SQL renvoie <strong>une seule ligne</strong></li>
+</ul>
+
+<p><strong>Exemple réel :</strong></p>
+
+<pre><code>[
+  {
+    "next_num": 12
+  }
+]</code></pre>
+
+<h3>Erreur classique</h3>
+
+<p>Passer <code>x1</code> ou <code>x1[0]</code> dans un champ <code>integer</code> ou <code>text</code>.</p>
+
+<p>Xano attend :</p>
+<ul>
+    <li>Un <strong>scalaire</strong> (nombre, texte, booléen)</li>
+    <li>Pas un <strong>objet</strong></li>
+    <li>Pas une <strong>liste</strong></li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+<strong>Règle fondamentale :</strong> Dans Xano, on n'injecte <strong>jamais un step entier</strong> dans un champ typé. On injecte <strong>toujours une propriété précise</strong>.
+</div>
+
+<h3>Exemple correct</h3>
+
+<p>Pour <code>numero_devis</code> (INTEGER) :</p>
+<pre><code>x2[0].next_num</code></pre>
+
+<p>Pour <code>reference</code> (TEXT) :</p>
+<pre><code>x1[0].next_devis_label</code></pre>
+
+<h2>⚡ Optimisation : une seule requête SQL</h2>
+
+<p>Pour éviter <strong>deux requêtes séparées</strong>, une seule requête peut renvoyer :</p>
+<ul>
+    <li>Le prochain numéro (<code>next_num</code>)</li>
+    <li>Le texte formaté (<code>next_devis_label</code>)</li>
+</ul>
+
+<pre><code>SELECT
+  COALESCE(MAX(numero_devis), 0) + 1 AS next_num,
+  'DV-' ||
+  EXTRACT(YEAR FROM now())::int ||
+  '-' ||
+  LPAD((COALESCE(MAX(numero_devis), 0) + 1)::text, 3, '0')
+  AS next_devis_label
+FROM x1_15
+WHERE to_timestamp(created_at / 1000.0) >= date_trunc('year', now())
+  AND to_timestamp(created_at / 1000.0) <  date_trunc('year', now()) + INTERVAL '1 year';</code></pre>
+
+<h3>Mapping Xano</h3>
+
+<ul>
+    <li><code>numero_devis</code> → <code>x1[0].next_num</code></li>
+    <li><code>reference</code> → <code>x1[0].next_devis_label</code></li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+<code>LPAD(..., 3, '0')</code> garantit un formatage sur <strong>3 chiffres</strong> : 001, 002, ..., 999.
+</div>
+
+<h2>🔧 Importance du Response type = single</h2>
+
+<p>Un point critique souvent ignoré :</p>
+
+<p>Si le <strong>Response type</strong> n'est pas cohérent avec le résultat SQL, Xano peut <strong>encapsuler ou mal interpréter</strong> la réponse.</p>
+
+<p><strong>Le passage du Response type à <code>single</code> a permis :</strong></p>
+<ul>
+    <li>Une lecture plus claire</li>
+    <li>Un mapping plus fiable</li>
+    <li>La disparition de certains effets de bord</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Si votre requête SQL renvoie une seule ligne, configurez le <strong>Response type</strong> à <code>single</code>. Si elle renvoie plusieurs lignes, utilisez <code>list</code>.
+</div>
+
+<h2>🧰 Exemple concret : workflow complet</h2>
+
+<h3>Étape 1️⃣ : Endpoint Xano <code>POST /devis/create</code></h3>
+
+<ol>
+    <li><strong>Direct Database Query</strong> : récupérer <code>next_num</code> et <code>next_devis_label</code></li>
+    <li><strong>Add Database Record</strong> :
+        <ul>
+            <li><code>numero_devis</code> → <code>x1[0].next_num</code></li>
+            <li><code>reference</code> → <code>x1[0].next_devis_label</code></li>
+            <li>Autres champs métier (client, montant, etc.)</li>
+        </ul>
+    </li>
+    <li><strong>Return</strong> : le devis créé</li>
+</ol>
+
+<h3>Étape 2️⃣ : WeWeb</h3>
+
+<ol>
+    <li>L'utilisateur clique sur "Créer un devis"</li>
+    <li>WeWeb appelle l'endpoint <code>POST /devis/create</code> avec les données du formulaire</li>
+    <li>Xano génère le numéro et insère le devis</li>
+    <li>WeWeb affiche le numéro généré : <code>DV-2026-042</code></li>
+</ol>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>Séparer les responsabilités</strong> : Xano génère les identifiants, WeWeb affiche</li>
+  <li><strong>Comprendre le typage Xano</strong> : Direct Database Query renvoie toujours une liste</li>
+  <li><strong>Injecter des scalaires</strong> : <code>x1[0].propriété</code>, jamais <code>x1</code> ou <code>x1[0]</code></li>
+  <li><strong>Utiliser COALESCE</strong> : pour gérer le cas "aucun devis existant"</li>
+  <li><strong>Convertir les timestamps</strong> : <code>to_timestamp(created_at / 1000.0)</code></li>
+  <li><strong>Configurer Response type</strong> : <code>single</code> si une seule ligne, <code>list</code> sinon</li>
+</ul>
+</div>
+
+<h2>🎓 Quick Quiz</h2>
+
+<p>🧠 <strong>Question :</strong> Quelle est l'erreur dans ce mapping Xano ?</p>
+
+<pre><code>numero_devis (INTEGER) → x1[0]</code></pre>
+
+<details>
+<summary>✅ <strong>Voir la réponse</strong></summary>
+<p><strong>Réponse :</strong> On injecte un <strong>objet</strong> (<code>x1[0]</code>) au lieu d'un <strong>scalaire</strong>. La correction : <code>x1[0].next_num</code></p>
+</details>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://docs.xano.com/working-with-your-database/database-requests" target="_blank">Xano Documentation : Database Requests</a></li>
+    <li><a href="https://www.postgresql.org/docs/current/functions-datetime.html" target="_blank">PostgreSQL : Date/Time Functions</a></li>
+    <li><a href="https://docs.xano.com/building-apis/the-function-stack" target="_blank">Xano Function Stack : Response Types</a></li>
+</ul>
+
+<h2>💡 Bilan personnel</h2>
+
+<p>Ce problème, bien que frustrant au départ, a été <strong>extrêmement formateur</strong>.</p>
+
+<p><strong>Il m'a permis de :</strong></p>
+<ul>
+    <li>Maîtriser les <strong>requêtes SQL custom</strong> dans Xano</li>
+    <li>Comprendre les <strong>contraintes de typage strict</strong></li>
+    <li>Construire une logique <strong>robuste et maintenable</strong></li>
+    <li>Éviter des <strong>erreurs critiques en production</strong></li>
+</ul>
+
+<p>C'est exactement le type de difficulté qui transforme un projet no-code en <strong>véritable expérience d'ingénierie logicielle</strong>.</p>
