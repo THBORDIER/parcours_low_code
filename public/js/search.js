@@ -26,10 +26,19 @@ class ArticleSearch {
         this.activeFilters = {
             themes: [],
             categories: [],
-            levels: []
+            levels: [],
+            tags: []
         };
         this.currentSort = 'relevance';
         this.selectedResultIndex = -1;
+
+        // Pagination
+        this.resultsPerPage = 50;
+        this.currentPage = 1;
+        this.allResults = [];
+
+        // Search in content
+        this.searchInContent = true;
 
         // LocalStorage keys
         this.FAVORITES_KEY = 'parcours_low_code_favorites';
@@ -143,6 +152,29 @@ class ArticleSearch {
 
         // Initialize filter/sort controls if on index page
         this.initFilterControls();
+
+        // Handle tag clicks in result cards (event delegation)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tag-chip') && e.target.dataset.tag) {
+                e.preventDefault();
+                const tag = e.target.dataset.tag;
+
+                // Find the tag chip in the filter section
+                const filterChip = document.querySelector(`#tag-filters .chip[data-tag="${tag}"]`);
+                if (filterChip) {
+                    this.toggleFilter('tags', tag, filterChip);
+                } else {
+                    // Fallback: toggle directly
+                    const index = this.activeFilters.tags.indexOf(tag);
+                    if (index > -1) {
+                        this.activeFilters.tags.splice(index, 1);
+                    } else {
+                        this.activeFilters.tags.push(tag);
+                    }
+                    this.performSearch(this.searchInput.value);
+                }
+            }
+        });
     }
 
     /**
@@ -161,6 +193,12 @@ class ArticleSearch {
         // Create controls container
         const controlsHTML = `
             <div class="search-controls" id="search-controls" style="display: none;">
+                <div class="search-options">
+                    <label class="search-toggle">
+                        <input type="checkbox" id="search-in-content" checked>
+                        <span>Rechercher dans le contenu</span>
+                    </label>
+                </div>
                 <div class="search-filters">
                     <div class="filter-group">
                         <label>Thèmes</label>
@@ -169,6 +207,10 @@ class ArticleSearch {
                     <div class="filter-group">
                         <label>Niveaux</label>
                         <div class="filter-chips" id="level-filters"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Tags</label>
+                        <div class="filter-chips" id="tag-filters"></div>
                     </div>
                 </div>
                 <div class="sort-controls">
@@ -200,6 +242,15 @@ class ArticleSearch {
                 this.performSearch(this.searchInput.value);
             });
         }
+
+        // Search in content toggle
+        const searchInContentToggle = document.getElementById('search-in-content');
+        if (searchInContentToggle) {
+            searchInContentToggle.addEventListener('change', (e) => {
+                this.searchInContent = e.target.checked;
+                this.performSearch(this.searchInput.value);
+            });
+        }
     }
 
     /**
@@ -208,6 +259,15 @@ class ArticleSearch {
     populateFilters() {
         const themes = [...new Set(this.articles.map(a => a.theme))].sort();
         const levels = [...new Set(this.articles.map(a => a.level).filter(l => l))].sort();
+
+        // Extract all unique tags
+        const allTags = new Set();
+        this.articles.forEach(article => {
+            if (article.tags && Array.isArray(article.tags)) {
+                article.tags.forEach(tag => allTags.add(tag));
+            }
+        });
+        const tags = [...allTags].sort();
 
         // Theme filters
         const themeContainer = document.getElementById('theme-filters');
@@ -232,6 +292,19 @@ class ArticleSearch {
                 chip.dataset.level = level;
                 chip.addEventListener('click', () => this.toggleFilter('levels', level, chip));
                 levelContainer.appendChild(chip);
+            });
+        }
+
+        // Tag filters
+        const tagContainer = document.getElementById('tag-filters');
+        if (tagContainer) {
+            tags.forEach(tag => {
+                const chip = document.createElement('div');
+                chip.className = 'chip tag-chip';
+                chip.textContent = tag;
+                chip.dataset.tag = tag;
+                chip.addEventListener('click', () => this.toggleFilter('tags', tag, chip));
+                tagContainer.appendChild(chip);
             });
         }
     }
@@ -321,13 +394,22 @@ class ArticleSearch {
 
         // Keywords
         if (article.keywords && article.keywords.length > 0) {
-            return article.keywords.some(keyword =>
+            const keywordMatch = article.keywords.some(keyword =>
                 this.normalizeString(keyword).includes(normalizedQuery)
             );
+            if (keywordMatch) return true;
         }
 
-        // Excerpt
-        if (article.excerpt && this.normalizeString(article.excerpt).includes(normalizedQuery)) {
+        // Tags
+        if (article.tags && article.tags.length > 0) {
+            const tagMatch = article.tags.some(tag =>
+                this.normalizeString(tag).includes(normalizedQuery)
+            );
+            if (tagMatch) return true;
+        }
+
+        // Excerpt (only if searchInContent is true)
+        if (this.searchInContent && article.excerpt && this.normalizeString(article.excerpt).includes(normalizedQuery)) {
             return true;
         }
 
@@ -348,6 +430,14 @@ class ArticleSearch {
         if (this.activeFilters.levels.length > 0 &&
             !this.activeFilters.levels.includes(article.level)) {
             return false;
+        }
+
+        // Tag filter
+        if (this.activeFilters.tags.length > 0) {
+            const hasMatchingTag = this.activeFilters.tags.some(tag =>
+                article.tags && article.tags.includes(tag)
+            );
+            if (!hasMatchingTag) return false;
         }
 
         return true;
@@ -496,18 +586,64 @@ class ArticleSearch {
             return;
         }
 
-        resultsContainer.innerHTML = `
-            <div class="results-header">
-                <h2>Résultats de recherche : "${this.highlightHTML(query, query)}"</h2>
-                <p>${results.length} article(s) trouvé(s)</p>
-            </div>
-            <div class="results-grid" id="results-grid">
-                ${results.map((article, index) => this.createResultCard(article, query, index)).join('')}
-            </div>
-        `;
+        // Store all results for pagination
+        this.allResults = results;
+        this.currentPage = 1;
+
+        // Display first page
+        this.displayPagedResults(query);
 
         // Reset selected index
         this.selectedResultIndex = -1;
+    }
+
+    /**
+     * Display paginated results
+     */
+    displayPagedResults(query) {
+        const resultsContainer = document.getElementById('search-results-container');
+        if (!resultsContainer) return;
+
+        const startIndex = 0;
+        const endIndex = this.currentPage * this.resultsPerPage;
+        const displayedResults = this.allResults.slice(startIndex, endIndex);
+        const hasMore = endIndex < this.allResults.length;
+
+        resultsContainer.innerHTML = `
+            <div class="results-header">
+                <h2>Résultats de recherche : "${this.highlightHTML(query, query)}"</h2>
+                <p>${this.allResults.length} article(s) trouvé(s) ${displayedResults.length < this.allResults.length ? `— Affichage de ${displayedResults.length}` : ''}</p>
+            </div>
+            <div class="results-grid" id="results-grid">
+                ${displayedResults.map((article, index) => this.createResultCard(article, query, index)).join('')}
+            </div>
+            ${hasMore ? `
+                <div class="load-more-container">
+                    <button class="load-more-btn" id="load-more-btn">
+                        Afficher plus (${Math.min(this.resultsPerPage, this.allResults.length - endIndex)} articles restants)
+                    </button>
+                </div>
+            ` : ''}
+        `;
+
+        // Attach load more handler
+        if (hasMore) {
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    this.currentPage++;
+                    this.displayPagedResults(query);
+                    // Smooth scroll to newly loaded content
+                    setTimeout(() => {
+                        const grid = document.getElementById('results-grid');
+                        const newCards = grid.querySelectorAll('.result-card');
+                        if (newCards[displayedResults.length]) {
+                            newCards[displayedResults.length].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
+                });
+            }
+        }
     }
 
     /**
@@ -522,6 +658,16 @@ class ArticleSearch {
 
         const highlightedTitle = this.highlightHTML(article.title, query);
         const favoriteIcon = this.isFavorite(article.path) ? '⭐' : '☆';
+
+        // Create clickable tags
+        const tagsHTML = article.tags && article.tags.length > 0 ? `
+            <div class="result-tags">
+                ${article.tags.slice(0, 6).map(tag => {
+                    const isActive = this.activeFilters.tags.includes(tag);
+                    return `<span class="tag-chip ${isActive ? 'active' : ''}" data-tag="${tag}">${tag}</span>`;
+                }).join('')}
+            </div>
+        ` : '';
 
         return `
             <div class="result-card" data-index="${index}" tabindex="0">
@@ -540,9 +686,10 @@ class ArticleSearch {
                     ${levelBadge}
                 </div>
                 ${article.excerpt ? `
-                    <p class="result-excerpt">${article.excerpt}</p>
+                    <p class="result-excerpt">${this.searchInContent ? this.highlightHTML(article.excerpt, query) : article.excerpt}</p>
                 ` : ''}
-                ${article.keywords.length > 0 ? `
+                ${tagsHTML}
+                ${article.keywords && article.keywords.length > 0 ? `
                     <div class="result-keywords">
                         🔍 ${article.keywords.slice(0, 5).map(k => this.highlightHTML(k, query)).join(', ')}
                     </div>
@@ -636,10 +783,14 @@ class ArticleSearch {
         }
 
         // Reset filters
-        this.activeFilters = { themes: [], categories: [], levels: [] };
+        this.activeFilters = { themes: [], categories: [], levels: [], tags: [] };
         document.querySelectorAll('.chip.active').forEach(chip => {
             chip.classList.remove('active');
         });
+
+        // Reset pagination
+        this.currentPage = 1;
+        this.allResults = [];
 
         const articlesList = document.getElementById('articles-menu');
         if (articlesList) {
