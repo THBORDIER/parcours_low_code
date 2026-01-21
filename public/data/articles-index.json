@@ -940,6 +940,40 @@
     ]
   },
   {
+    "title": "L'erreur \"Not numeric\" de Xano : quand l'outil empêche le debug",
+    "category": "Xano",
+    "level": "Avancé",
+    "keywords": [
+      "Not numeric",
+      "db.edit",
+      "Inputs",
+      "table-driven",
+      "debugging",
+      "error handling",
+      "cast",
+      "integer",
+      "runtime errors",
+      "Xano limitations",
+      "implicit binding",
+      "type coercion"
+    ],
+    "theme": "xano",
+    "path": "../articles/xano/erreur-not-numeric-xano-debug-impossible.html",
+    "date": "21/01/2026",
+    "timeSpent": "~1h de debug sans solution",
+    "excerpt": "L'erreur Exception: Not numeric de Xano peut survenir lors d'un db.edit même avec des données valides, à cause d'Inputs table-driven évalués implicitement. Si un champ integer dans...",
+    "tags": [
+      "xano",
+      "not numeric",
+      "db.edit",
+      "inputs",
+      "api",
+      "debug",
+      "query",
+      "endpoint"
+    ]
+  },
+  {
     "title": "Filtrer par date avec des jointures : résoudre le problème de recouvrement de périodes dans Xano",
     "category": "Xano",
     "level": "Intermédiaire",

@@ -1,0 +1,425 @@
+<h1>L'erreur "Not numeric" de Xano : quand l'outil empêche le debug</h1>
+
+<p class="subtitle">Retour d'expérience sur 1 heure de debug face à une erreur Xano sans message exploitable, causée par des Inputs table-driven évalués implicitement. Diagnostic technique d'une limitation structurelle de l'outil.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> Xano</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Not numeric, db.edit, Inputs, table-driven, debugging, error handling, cast, integer, runtime errors, Xano limitations, implicit binding, type coercion</p>
+    <p>📅 <strong>Mise à jour:</strong> 21/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> ~1h de debug sans solution</p>
+    <p>⚙️ <strong>Stack utilisée:</strong> Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+L'erreur <code>Exception: Not numeric</code> de Xano peut survenir lors d'un <code>db.edit</code> même avec des données valides, à cause d'<strong>Inputs table-driven évalués implicitement</strong>. Si un champ integer dans les Inputs est vide, mal typé ou mal bindé, Xano échoue sans indiquer quel champ pose problème. Cette limitation structurelle rend le debug quasiment impossible et peut bloquer un endpoint fonctionnel. Solutions : supprimer les Inputs table-driven, recréer l'endpoint avec variables intermédiaires, ou contourner db.edit.
+</div>
+
+<h2>🤔 Problème initial</h2>
+
+<p><strong>🛑 Contexte :</strong></p>
+<p>Je développe une API sur Xano pour remplir automatiquement les informations client via l'API Sirene de l'INSEE. Voici le flux :</p>
+
+<ol>
+    <li>L'utilisateur entre un SIRET</li>
+    <li>J'appelle une fonction <code>P10_SIREN</code> qui interroge l'API INSEE</li>
+    <li>La fonction retourne un objet <code>$infosiren</code> avec tous les champs (nom, adresse, ville, etc.)</li>
+    <li>Je veux utiliser <code>db.edit</code> pour mettre à jour un enregistrement dans la table <code>P10_client</code></li>
+</ol>
+
+<p><strong>💥 Erreur systématique :</strong></p>
+
+<pre><code>Exception: Not numeric.</code></pre>
+
+<p>Cette erreur survient <strong>systématiquement</strong> dès que j'essaie de faire un <code>db.edit</code>, peu importe :</p>
+<ul>
+    <li>✅ <code>$infosiren</code> est valide (confirmé par debug/outputs)</li>
+    <li>✅ Les champs non-ND sont accessibles</li>
+    <li>✅ Le payload est correct</li>
+    <li>✅ La fonction INSEE fonctionne parfaitement</li>
+</ul>
+
+<h2>🔍 Ce qui a été vérifié (tests exhaustifs)</h2>
+
+<p>J'ai passé environ <strong>1 heure</strong> à tester toutes les hypothèses possibles :</p>
+
+<h3>✔️ Vérification de $infosiren</h3>
+
+<ul>
+    <li>✅ Objet non vide</li>
+    <li>✅ Tous les champs accessibles (<code>$infosiren.SIRET</code>, <code>$infosiren.ville</code>, etc.)</li>
+    <li>✅ Pas de JSON mal formé</li>
+    <li>✅ Pas de wrapper inexploitable</li>
+    <li>✅ Valeurs visibles dans les outputs de debug</li>
+</ul>
+
+<h3>✔️ Tests de mapping db.edit</h3>
+
+<p>J'ai testé <strong>toutes les variations possibles</strong> de <code>db.edit</code> :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Test</th>
+            <th>Configuration</th>
+            <th>Résultat</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Édition par <code>id</code></td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Édition par <code>devis_id</code></td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Édition par <code>SIRET</code> (champ text)</td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Suppression complète de <code>devis_id</code></td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Suppression de tous les champs numériques dans <code>data</code></td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Envoi explicite de <code>devis_id: 1</code></td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Cast avec <code>to_int</code></td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>Sans cast</td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>Avec concat adresse</td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>Sans concat adresse</td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>Inputs partiels (3 champs)</td>
+            <td>❌ Not numeric</td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td>Inputs complets (tous les champs)</td>
+            <td>❌ Not numeric</td>
+        </tr>
+    </tbody>
+</table>
+
+<p><strong>👉 Résultat identique à chaque fois : <code>Not numeric</code></strong></p>
+
+<h3>✔️ Vérification du payload</h3>
+
+<p>J'ai vérifié manuellement que le payload envoyé était correct :</p>
+
+<pre><code>{
+  "SIRET": "12345678901234",
+  "nomEntreprise": "DEMO SARL",
+  "ville": "LYON",
+  "codepostal": "69001",
+  "Nvoie": "42",
+  "typevoie": "RUE",
+  "nomvoie": "DE LA REPUBLIQUE"
+}</code></pre>
+
+<p>Aucun champ numérique problématique. Tout est valide.</p>
+
+<h2>🎯 Cause réelle identifiée</h2>
+
+<p>Après 1 heure de debug, voici la cause réelle :</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Le problème ne vient PAS du code XanoScript, ni de $infosiren</strong><br>
+Il vient de l'<strong>UI Inputs de Xano</strong> couplée à <code>db.edit</code>.
+</div>
+
+<h3>Ce qui se passe réellement dans Xano</h3>
+
+<ol>
+    <li>Vous utilisez les <strong>Inputs générés automatiquement</strong> à partir de la table <code>P10_client</code></li>
+    <li>Dans ces Inputs, il existe au moins un champ de type <code>integer</code> (par exemple : <code>devis_id</code>, <code>id</code>, etc.)</li>
+    <li>Ce champ est <strong>évalué par Xano au runtime</strong>, même si :
+        <ul>
+            <li>Il n'est pas utilisé dans <code>data</code></li>
+            <li>Il est absent du body de la requête</li>
+            <li>Vous ne le voulez pas</li>
+        </ul>
+    </li>
+    <li>Si ce champ integer est :
+        <ul>
+            <li>Vide (<code>""</code>)</li>
+            <li>Mal typé</li>
+            <li>Mal bindé</li>
+            <li>Ou simplement interprété comme <code>""</code> au runtime</li>
+        </ul>
+    </li>
+    <li>👉 <strong>Xano tente de le caster en integer → <code>Not numeric</code></strong></li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Point critique</strong><br>
+L'erreur est levée <strong>avant</strong> que vous puissiez contrôler le flux. Xano :
+<ul>
+    <li>❌ Ne donne <strong>aucun nom de champ fautif</strong></li>
+    <li>❌ Ne donne <strong>aucune trace exploitable</strong></li>
+    <li>❌ Empêche tout <strong>debug rationnel</strong></li>
+</ul>
+</div>
+
+<h2>🚧 Pourquoi vous êtes bloqué</h2>
+
+<p>Malgré :</p>
+<ul>
+    <li>✅ La suppression de <code>devis_id</code> dans <code>data</code></li>
+    <li>✅ Le passage par <code>SIRET</code> (champ text) pour identifier l'enregistrement</li>
+    <li>✅ Un payload valide</li>
+    <li>✅ Des variables visibles et correctes</li>
+</ul>
+
+<p><strong>👉 Xano continue d'évaluer silencieusement les Inputs table-driven, et échoue sans vous dire pourquoi.</strong></p>
+
+<p>Vous êtes donc bloqué <strong>non pas par votre code</strong>, mais par :</p>
+<ul>
+    <li>❌ Le moteur interne de Xano</li>
+    <li>❌ Son binding implicite</li>
+    <li>❌ Son absence totale de diagnostics exploitables</li>
+</ul>
+
+<p>Vous passez 1 heure à tourner en rond sans pouvoir isoler le champ fautif, parce que <strong>l'outil ne vous laisse pas le contrôler</strong>.</p>
+
+<h2>❌ Limitations structurelles de Xano</h2>
+
+<p>Ce problème met en évidence des limitations graves de Xano :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Limitation</th>
+            <th>Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>❌ Inputs implicites impossibles à neutraliser</td>
+            <td>Xano évalue des champs que vous ne voulez pas utiliser</td>
+        </tr>
+        <tr>
+            <td>❌ Cast automatique non contrôlable</td>
+            <td>Impossible de désactiver la coercition de type</td>
+        </tr>
+        <tr>
+            <td>❌ Erreurs génériques inutiles</td>
+            <td><code>Not numeric</code> sans indication du champ</td>
+        </tr>
+        <tr>
+            <td>❌ Aucune indication du champ fautif</td>
+            <td>Debug par élimination aveugle</td>
+        </tr>
+        <tr>
+            <td>❌ db.edit non déterministe en debug</td>
+            <td>Impossible de comprendre pourquoi ça échoue</td>
+        </tr>
+        <tr>
+            <td>❌ Couplage dangereux UI ↔ runtime</td>
+            <td>L'UI génère du code implicite non maîtrisable</td>
+        </tr>
+        <tr>
+            <td>❌ Impossible d'isoler une erreur</td>
+            <td>Il faut supprimer la moitié de l'endpoint pour tester</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>En clair</strong><br>
+Xano empêche le debug fin, ce qui est <strong>rédhibitoire</strong> dès qu'on sort d'un CRUD trivial.
+</div>
+
+<h2>✅ Solutions de contournement</h2>
+
+<p>Si vous êtes confronté à ce problème, voici les solutions possibles :</p>
+
+<h3>Solution 1 : Supprimer les Inputs table-driven</h3>
+
+<ol>
+    <li>Au lieu d'utiliser les Inputs générés automatiquement à partir de la table</li>
+    <li>Créez des <strong>Inputs manuels</strong> avec uniquement les champs dont vous avez besoin</li>
+    <li>Définissez explicitement le type de chaque input (text, integer, etc.)</li>
+    <li>Ne créez pas d'input pour les champs que vous ne voulez pas gérer</li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Si vous n'avez besoin que de 3 champs (nomEntreprise, ville, codepostal), ne créez que ces 3 Inputs. Xano n'essaiera pas de caster des champs qui n'existent pas.
+</div>
+
+<h3>Solution 2 : Endpoint minimaliste avec variables intermédiaires</h3>
+
+<p>Créez un nouvel endpoint from scratch :</p>
+
+<pre><code>// Input manuel (pas table-driven)
+input {
+  text SIRET
+}
+
+// Appeler la fonction
+var $infosiren {
+  value = function.P10_SIREN($input.SIRET)
+}
+
+// Variables intermédiaires pour chaque champ
+var $nom { value = $infosiren.nomEntreprise }
+var $ville { value = $infosiren.ville }
+var $cp { value = $infosiren.codepostal }
+
+// db.edit avec query explicite
+db.edit {
+  table = "P10_client"
+  query {
+    SIRET = $input.SIRET
+  }
+  data {
+    nomEntreprise = $nom
+    ville = $ville
+    codepostal = $cp
+  }
+}</code></pre>
+
+<p>Cette approche évite les Inputs implicites et donne un contrôle total sur les types.</p>
+
+<h3>Solution 3 : Utiliser db.query + db.update séparément</h3>
+
+<p>Au lieu de <code>db.edit</code> (qui combine query + update), séparez les opérations :</p>
+
+<pre><code>// 1. Trouver l'enregistrement
+var $client {
+  value = db.query {
+    table = "P10_client"
+    filter {
+      SIRET = $input.SIRET
+    }
+  }|first
+}
+
+// 2. Mettre à jour explicitement
+db.update {
+  table = "P10_client"
+  id = $client.id
+  data {
+    nomEntreprise = $infosiren.nomEntreprise
+    ville = $infosiren.ville
+    codepostal = $infosiren.codepostal
+  }
+}</code></pre>
+
+<h3>Solution 4 : Contourner db.edit avec un addon Query</h3>
+
+<p>Si vous êtes vraiment bloqué, utilisez un <strong>addon Query</strong> avec du SQL brut :</p>
+
+<pre><code>addon.query {
+  sql = `UPDATE P10_client
+         SET nomEntreprise = :nom, ville = :ville, codepostal = :cp
+         WHERE SIRET = :siret`
+  params {
+    nom = $infosiren.nomEntreprise
+    ville = $infosiren.ville
+    cp = $infosiren.codepostal
+    siret = $input.SIRET
+  }
+}</code></pre>
+
+<p>Cette approche bypasse complètement le système d'Inputs et de casting de Xano.</p>
+
+<h2>🧪 Exemple de diagnostic</h2>
+
+<p>Pour identifier quel Input pose problème, procédez par élimination :</p>
+
+<ol>
+    <li>Dupliquez votre endpoint</li>
+    <li>Supprimez <strong>tous les Inputs</strong> sauf un</li>
+    <li>Testez</li>
+    <li>Si ça marche, ce n'est pas cet Input → ajoutez-en un autre</li>
+    <li>Si ça échoue avec <code>Not numeric</code> → c'est cet Input qui pose problème</li>
+    <li>Vérifiez son type, sa valeur par défaut, son binding</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Cette méthode est fastidieuse et peut prendre 30-60 minutes. C'est exactement le problème : Xano devrait vous dire <strong>quel champ</strong> pose problème, au lieu de vous forcer à débugger à l'aveugle.
+</div>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><code>Exception: Not numeric</code> est souvent causé par des <strong>Inputs table-driven évalués implicitement</strong></li>
+  <li>Xano évalue tous les Inputs, même ceux non utilisés dans <code>data</code></li>
+  <li>Si un champ integer est vide ou mal typé, Xano échoue sans indiquer lequel</li>
+  <li>L'erreur survient <strong>avant</strong> votre code → impossible à débugger proprement</li>
+  <li>Solutions : supprimer les Inputs table-driven, créer des Inputs manuels, ou contourner db.edit</li>
+  <li>Cette limitation est <strong>structurelle</strong> : Xano couple trop fortement l'UI et le runtime</li>
+  <li>Pour du debug fin ou des flux complexes, cette limitation est rédhibitoire</li>
+</ul>
+</div>
+
+<h2>💭 Réflexion sur les limites du low-code</h2>
+
+<p>Ce problème illustre une limite fondamentale des plateformes low-code comme Xano :</p>
+
+<blockquote>
+<strong>"Quand l'outil marche, tout va vite. Quand l'outil bloque, vous êtes mains nouées."</strong>
+</blockquote>
+
+<p>En code traditionnel (Node.js, Python, PHP), une erreur <code>TypeError: Expected number, got string</code> vous donne :</p>
+<ul>
+    <li>✅ Le nom de la variable fautive</li>
+    <li>✅ Le numéro de ligne</li>
+    <li>✅ La stack trace complète</li>
+    <li>✅ La possibilité de logger, breakpoint, inspecter</li>
+</ul>
+
+<p>Avec Xano :</p>
+<ul>
+    <li>❌ Erreur générique</li>
+    <li>❌ Aucune trace</li>
+    <li>❌ Impossible de logger finement</li>
+    <li>❌ Debug par élimination aveugle</li>
+</ul>
+
+<p><strong>👉 Cette asymétrie de contrôle est le prix du low-code.</strong></p>
+
+<p>Sur des CRUD simples, Xano est imbattable en rapidité. Mais dès qu'on sort du cadre (API externe, logique complexe, debug fin), les limitations deviennent bloquantes.</p>
+
+<h2>🔗 Articles connexes</h2>
+
+<ul>
+    <li><a href="../bonnes-pratiques/logique-metier-robuste-weweb-xano.html">Construire une logique métier robuste avec WeWeb et Xano</a> – Bonnes pratiques pour contourner les limites</li>
+    <li><a href="realite-middlewares-xano.html">Comprendre la réalité des middlewares dans Xano</a> – Autre limitation structurelle</li>
+    <li><a href="../api/integration-api-sirene-insee.html">Intégrer l'API Sirene de l'INSEE avec Xano</a> – Contexte de ce problème</li>
+</ul>
