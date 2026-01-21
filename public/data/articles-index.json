@@ -19,6 +19,39 @@
     ]
   },
   {
+    "title": "Intégrer l'API Sirene de l'INSEE avec Xano",
+    "category": "API & Backend",
+    "level": "Intermédiaire",
+    "keywords": [
+      "API Sirene",
+      "INSEE",
+      "SIRET",
+      "SIREN",
+      "Authentication",
+      "API Key",
+      "Headers",
+      "Xano Function",
+      "Data mapping",
+      "Non-diffusion",
+      "Deprecated endpoints",
+      "Ternary operators"
+    ],
+    "theme": "api",
+    "path": "../articles/api/integration-api-sirene-insee.html",
+    "date": "21/01/2026",
+    "timeSpent": "3h (dont 20min sur l'API, 2h40 à contourner les limitations Xano...)",
+    "excerpt": "L'API Sirene de l'INSEE permet de récupérer automatiquement les infos d'une entreprise (raison sociale, adresse, forme juridique) via son SIRET. L'intégration est simple (clé API d...",
+    "tags": [
+      "api",
+      "api sirene",
+      "insee",
+      "siret",
+      "api & backend",
+      "xano",
+      "endpoint"
+    ]
+  },
+  {
     "title": "Intégration WeWeb-Xano",
     "category": "",
     "level": "",

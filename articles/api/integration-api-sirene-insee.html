@@ -1,0 +1,353 @@
+<h1>Intégrer l'API Sirene de l'INSEE avec Xano</h1>
+
+<p class="subtitle">Comment récupérer automatiquement les informations d'une entreprise française via son SIRET, en gérant les URLs dépréciées, l'authentification par clé API, et surtout les limitations frustrantes de Xano.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> API & Backend</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> API Sirene, INSEE, SIRET, SIREN, Authentication, API Key, Headers, Xano Function, Data mapping, Non-diffusion, Deprecated endpoints, Ternary operators</p>
+    <p>📅 <strong>Mise à jour:</strong> 21/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 3h (dont 20min sur l'API, 2h40 à contourner les limitations Xano...)</p>
+    <p>⚙️ <strong>Stack utilisée:</strong> Xano + API Sirene INSEE</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+L'API Sirene de l'INSEE permet de récupérer automatiquement les infos d'une entreprise (raison sociale, adresse, forme juridique) via son SIRET. L'intégration est simple (clé API dans le header), mais la documentation est obsolète (migration octobre 2024) et Xano interdit les structures de contrôle classiques (switch/if) → il faut utiliser des ternaires imbriqués. Certaines données peuvent être masquées ([ND]) si l'entreprise a demandé la non-diffusion.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Besoin métier :</strong></p>
+<p>Dans une application de génération de devis (Projet 10), je veux simplifier la saisie des informations client. Au lieu de demander manuellement le nom, l'adresse, la forme juridique, etc., je veux que l'utilisateur entre juste son <strong>numéro SIRET</strong> et que tout se remplisse automatiquement.</p>
+
+<p><strong>💡 Exemple utilisateur :</strong></p>
+<ul>
+    <li>L'utilisateur tape "12345678901234" dans le champ SIRET</li>
+    <li>L'application interroge l'API INSEE</li>
+    <li>Les champs "Raison sociale", "Adresse", "Code postal", "Ville", "Forme juridique" se remplissent automatiquement</li>
+    <li>Gain de temps et réduction des erreurs de saisie</li>
+</ul>
+
+<h2>🔍 Explication simplifiée</h2>
+
+<h3>Qu'est-ce que l'API Sirene ?</h3>
+
+<p>L'<strong>API Sirene</strong> est un service public gratuit fourni par l'INSEE qui permet d'accéder aux données du <strong>répertoire SIRENE</strong> (base de données de toutes les entreprises françaises).</p>
+
+<p><strong>📊 Données disponibles :</strong></p>
+<ul>
+    <li>✅ SIRET (14 chiffres) et SIREN (9 chiffres)</li>
+    <li>✅ Raison sociale (nom de l'entreprise)</li>
+    <li>✅ Forme juridique (SARL, SAS, SASU, Auto-entrepreneur, etc.)</li>
+    <li>✅ Adresse complète (n°, type de voie, nom de voie, code postal, ville)</li>
+    <li>❌ Téléphone, email → pas disponibles dans l'API</li>
+</ul>
+
+<p><strong>🧠 Analogie :</strong> C'est comme un annuaire téléphonique, mais pour les entreprises. Tu donnes le numéro (SIRET), il te retourne la fiche complète.</p>
+
+<h3>Pourquoi c'est compliqué ?</h3>
+
+<p>Trois obstacles principaux :</p>
+<ol>
+    <li><strong>Documentation obsolète</strong> : l'INSEE a migré son portail en octobre 2024. Beaucoup de tutoriels en ligne pointent vers des URLs dépréciées.</li>
+    <li><strong>Non-diffusion des données</strong> : certaines entreprises (surtout les auto-entrepreneurs) demandent à masquer leurs données personnelles → l'API retourne <code>[ND]</code> au lieu des valeurs réelles.</li>
+    <li><strong>Limitations de Xano</strong> : impossible d'utiliser <code>switch</code> ou <code>if</code> dans les expressions → il faut ruser avec des ternaires imbriqués.</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Si vous cherchez "API Sirene INSEE" sur Google, vous tomberez sur des tutoriels avec des URLs obsolètes (<code>https://api.insee.fr/token</code>, <code>https://api.insee.fr/entreprises/sirene/V3.11/...</code>). Ces endpoints ne fonctionnent plus depuis octobre 2024. L'URL correcte est : <code>https://api.insee.fr/api-sirene/3.11/siret/{siret}</code>
+</div>
+
+<h2>🧪 Solution : Créer une fonction Xano</h2>
+
+<h3>Étape 1️⃣ : Créer un compte sur le portail INSEE</h3>
+
+<ol>
+    <li>Aller sur <strong>https://portail-api.insee.fr</strong></li>
+    <li>Créer un compte (gratuit)</li>
+    <li>Créer une application (ex: "DevisPro")</li>
+    <li>Souscrire à l'API <strong>Sirene</strong></li>
+    <li>Récupérer votre <strong>clé API d'intégration</strong> (format UUID)</li>
+</ol>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+La clé API s'appelle officiellement "Clé d'intégration" (Consumer Key for integration). Ne confondez pas avec la "Clé de production" qui est pour les applications en production. Pour vos tests, utilisez la clé d'intégration.
+</div>
+
+<h3>Étape 2️⃣ : Créer la fonction Xano</h3>
+
+<p>Dans Xano, créez une nouvelle <strong>Function</strong> (pas un API endpoint) :</p>
+
+<ul>
+    <li><strong>Nom :</strong> <code>P10_SIREN</code></li>
+    <li><strong>Input :</strong> <code>SIRET</code> (type text)</li>
+    <li><strong>Output :</strong> un objet avec les infos de l'entreprise</li>
+</ul>
+
+<h3>Étape 3️⃣ : Ajouter une précondition (validation)</h3>
+
+<p>Avant d'appeler l'API, on vérifie que le SIRET a bien 14 chiffres :</p>
+
+<pre><code>precondition (($input.SIRET|strlen) == 14) {
+  error_type = "inputerror"
+  error = "Le numéro SIRET doit comporter exactement 14 chiffres."
+}</code></pre>
+
+<h3>Étape 4️⃣ : Appeler l'API Sirene</h3>
+
+<p>Ajoutez un bloc <strong>API Request</strong> :</p>
+
+<pre><code>api.request {
+  url = `"https://api.insee.fr/api-sirene/3.11/siret/"| concat:$input.SIRET`
+  method = "GET"
+  headers = []
+    |push:"accept: application/json"
+    |push:"X-INSEE-Api-Key-Integration: a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890"
+} as $api1</code></pre>
+
+<div class="callout callout-warning">
+⚠️ <strong>Remplacez la clé API</strong><br>
+Remplacez <code>a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890</code> par votre vraie clé obtenue sur le portail INSEE. Ne partagez jamais votre clé publiquement.
+</div>
+
+<h3>Étape 5️⃣ : Traduire le code forme juridique</h3>
+
+<p>L'API retourne un <strong>code numérique</strong> pour la forme juridique (ex: <code>5710</code> = SAS, <code>1000</code> = Entrepreneur individuel). On veut le convertir en libellé lisible.</p>
+
+<p><strong>❌ Ce qui ne marche PAS dans Xano :</strong></p>
+
+<pre><code>// ❌ Switch → pas supporté dans les expressions
+switch ($codeJuridique) {
+  case "1000": return "Entrepreneur individuel"
+  case "5499": return "SARL"
+  ...
+}
+
+// ❌ If/else → pas supporté dans les expressions
+if ($codeJuridique == "1000") {
+  return "Entrepreneur individuel"
+} else if ($codeJuridique == "5499") {
+  return "SARL"
+}</code></pre>
+
+<p><strong>✅ Solution : ternaires imbriqués</strong></p>
+
+<pre><code>var $codeJuridique {
+  value = $api1.response.result.etablissement.uniteLegale.categorieJuridiqueUniteLegale
+}
+
+var $formeJuridiqueLabel {
+  value = $codeJuridique == "1000" ? "Entrepreneur individuel" :
+          ($codeJuridique == "5499" ? "SARL" :
+          ($codeJuridique == "5710" ? "SAS" :
+          ($codeJuridique == "5720" ? "SASU" :
+          ($codeJuridique == "6540" ? "SCI" :
+          ($codeJuridique == "5498" ? "EURL" :
+          ($codeJuridique == "5599" ? "SA" :
+          ($codeJuridique == "9220" ? "Association" :
+          $codeJuridique)))))))
+}</code></pre>
+
+<div class="callout callout-warning">
+⚠️ <strong>Frustration : les limitations de Xano</strong><br>
+Xano ne supporte ni <code>switch</code>, ni <code>if</code>, ni même un système de lookup par objet (<code>{code: label}</code>). Vous êtes obligé d'imbriquer des ternaires, ce qui rend le code illisible et difficile à maintenir. C'est l'un des points les plus frustrants du low-code : vous êtes "mains nouées" aux outils proposés, sans possibilité d'écrire du code propre.
+</div>
+
+<h3>Étape 6️⃣ : Construire la réponse</h3>
+
+<p>Retournez un objet structuré avec tous les champs nécessaires :</p>
+
+<pre><code>response = {
+  SIRET              : $api1.response.result.etablissement.siret
+  SIREN              : $api1.response.result.etablissement.siren
+  nomEntreprise      : $api1.response.result.etablissement.uniteLegale.denominationUniteLegale
+  formeJuridique     : $codeJuridique
+  formeJuridiqueLabel: $formeJuridiqueLabel
+  Nvoie              : $api1.response.result.etablissement.adresseEtablissement.numeroVoieEtablissement
+  typevoie           : $api1.response.result.etablissement.adresseEtablissement.typeVoieEtablissement
+  nomvoie            : $api1.response.result.etablissement.adresseEtablissement.libelleVoieEtablissement
+  codepostal         : $api1.response.result.etablissement.adresseEtablissement.codePostalEtablissement
+  ville              : $api1.response.result.etablissement.adresseEtablissement.libelleCommuneEtablissement
+}</code></pre>
+
+<h2>🧰 Code complet de la fonction Xano</h2>
+
+<pre><code>function P10_SIREN {
+  input {
+    text SIRET
+  }
+
+  stack {
+    precondition (($input.SIRET|strlen) == 14) {
+      error_type = "inputerror"
+      error = "Le numéro SIRET doit comporter exactement 14 chiffres."
+    }
+
+    api.request {
+      url = `"https://api.insee.fr/api-sirene/3.11/siret/"| concat:$input.SIRET`
+      method = "GET"
+      headers = []
+        |push:"accept: application/json"
+        |push:"X-INSEE-Api-Key-Integration: a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890"
+    } as $api1
+
+    var $codeJuridique {
+      value = $api1.response.result.etablissement.uniteLegale.categorieJuridiqueUniteLegale
+    }
+
+    var $formeJuridiqueLabel {
+      value = $codeJuridique == "1000" ? "Entrepreneur individuel" :
+              ($codeJuridique == "5499" ? "SARL" :
+              ($codeJuridique == "5710" ? "SAS" :
+              ($codeJuridique == "5720" ? "SASU" :
+              ($codeJuridique == "6540" ? "SCI" :
+              ($codeJuridique == "5498" ? "EURL" :
+              ($codeJuridique == "5599" ? "SA" :
+              ($codeJuridique == "9220" ? "Association" :
+              $codeJuridique)))))))
+    }
+  }
+
+  response = {
+    SIRET              : $api1.response.result.etablissement.siret
+    SIREN              : $api1.response.result.etablissement.siren
+    nomEntreprise      : $api1.response.result.etablissement.uniteLegale.denominationUniteLegale
+    formeJuridique     : $codeJuridique
+    formeJuridiqueLabel: $formeJuridiqueLabel
+    Nvoie              : $api1.response.result.etablissement.adresseEtablissement.numeroVoieEtablissement
+    typevoie           : $api1.response.result.etablissement.adresseEtablissement.typeVoieEtablissement
+    nomvoie            : $api1.response.result.etablissement.adresseEtablissement.libelleVoieEtablissement
+    codepostal         : $api1.response.result.etablissement.adresseEtablissement.codePostalEtablissement
+    ville              : $api1.response.result.etablissement.adresseEtablissement.libelleCommuneEtablissement
+  }
+}</code></pre>
+
+<h2>🧭 Exemple de réponse</h2>
+
+<p>Lorsque vous testez la fonction avec le SIRET <code>12345678901234</code>, vous obtenez :</p>
+
+<pre><code>{
+  "infosiren": {
+    "SIRET": "12345678901234",
+    "SIREN": "123456789",
+    "nomEntreprise": "DEMO SARL",
+    "formeJuridique": "5499",
+    "formeJuridiqueLabel": "SARL",
+    "Nvoie": "42",
+    "typevoie": "RUE",
+    "nomvoie": "DE LA REPUBLIQUE",
+    "codepostal": "69001",
+    "ville": "LYON"
+  }
+}</code></pre>
+
+<h2>⚠️ Cas particulier : la non-diffusion [ND]</h2>
+
+<p>Certaines entreprises (notamment les <strong>entrepreneurs individuels</strong>) peuvent demander à l'INSEE de ne pas diffuser leurs données personnelles. Dans ce cas, l'API retourne <code>[ND]</code> (Non Diffusé) pour les champs sensibles.</p>
+
+<p><strong>Exemple de réponse avec non-diffusion :</strong></p>
+
+<pre><code>{
+  "infosiren": {
+    "SIRET": "12345678901234",
+    "SIREN": "123456789",
+    "nomEntreprise": "[ND]",
+    "formeJuridique": "1000",
+    "formeJuridiqueLabel": "Entrepreneur individuel",
+    "Nvoie": "[ND]",
+    "typevoie": "[ND]",
+    "nomvoie": "[ND]",
+    "codepostal": "[ND]",
+    "ville": "LYON"
+  }
+}</code></pre>
+
+<p>Seule la ville reste diffusée (car c'est une donnée publique de niveau commune).</p>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : gérer les [ND] côté frontend</strong><br>
+Dans votre interface WeWeb, détectez si les champs contiennent <code>[ND]</code> et affichez un message à l'utilisateur : "Cette entreprise a demandé la non-diffusion de ses données. Veuillez saisir manuellement les informations."
+</div>
+
+<h2>🚧 Problème fréquent : variable non accessible dans Edit Record</h2>
+
+<p>Après avoir créé votre fonction, vous voulez l'utiliser dans un <strong>API endpoint</strong> pour remplir automatiquement un enregistrement de votre table <code>P10_client</code>.</p>
+
+<p>Vous appelez la fonction :</p>
+
+<pre><code>var $infosiren {
+  value = function.P10_SIREN($input.SIRET)
+}</code></pre>
+
+<p>Mais dans le bloc <strong>Edit Record</strong>, le sélecteur visuel de Xano ne voit pas la structure de <code>$infosiren</code>. Vous ne pouvez pas faire <code>$infosiren.ville</code> avec le sélecteur.</p>
+
+<p><strong>✅ Solution 1 : Publier la fonction</strong></p>
+<ol>
+    <li>Votre fonction est en <strong>DRAFT</strong></li>
+    <li>Cliquez sur "Review & Publish"</li>
+    <li>Réactivez votre API endpoint</li>
+    <li>Le sélecteur devrait maintenant voir la structure</li>
+</ol>
+
+<p><strong>✅ Solution 2 : Saisie manuelle</strong></p>
+<p>Si le sélecteur ne fonctionne toujours pas, tapez manuellement les expressions :</p>
+<ul>
+    <li><code>$infosiren.nomEntreprise</code></li>
+    <li><code>$infosiren.ville</code></li>
+    <li><code>$infosiren.codepostal</code></li>
+    <li>etc.</li>
+</ul>
+
+<h2>📋 Tableau des codes forme juridique</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Libellé</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>1000</td><td>Entrepreneur individuel</td></tr>
+        <tr><td>5498</td><td>EURL</td></tr>
+        <tr><td>5499</td><td>SARL</td></tr>
+        <tr><td>5710</td><td>SAS</td></tr>
+        <tr><td>5720</td><td>SASU</td></tr>
+        <tr><td>5599</td><td>SA</td></tr>
+        <tr><td>6540</td><td>SCI</td></tr>
+        <tr><td>9220</td><td>Association</td></tr>
+    </tbody>
+</table>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+L'INSEE propose des centaines de codes forme juridique. Si vous avez besoin de tous les gérer, consultez la nomenclature complète sur le site de l'INSEE, puis créez une <strong>table de référence</strong> dans Xano avec les codes et libellés. Vous pourrez ensuite faire un <code>Query All Records</code> avec filtre pour récupérer le bon libellé, au lieu d'utiliser des ternaires imbriqués.
+</div>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>L'API Sirene de l'INSEE permet de récupérer automatiquement les infos d'une entreprise via son SIRET (gratuit)</li>
+  <li>URL correcte (2026) : <code>https://api.insee.fr/api-sirene/3.11/siret/{siret}</code></li>
+  <li>Authentification : clé API dans le header <code>X-INSEE-Api-Key-Integration</code></li>
+  <li>Certaines données peuvent être masquées (<code>[ND]</code>) si l'entreprise a demandé la non-diffusion</li>
+  <li>Xano ne supporte ni <code>switch</code> ni <code>if</code> → utiliser des ternaires imbriqués (frustrant mais fonctionnel)</li>
+  <li>Pensez à <strong>publier votre fonction</strong> avant de l'utiliser dans un API endpoint</li>
+  <li>Téléphone et email ne sont pas disponibles dans l'API → saisie manuelle obligatoire</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://portail-api.insee.fr" target="_blank" rel="noopener">Portail API INSEE</a> – Créer un compte et obtenir une clé</li>
+    <li><a href="https://api.insee.fr/catalogue/site/themes/wso2/subthemes/insee/pages/item-info.jag?name=Sirene&version=V3.11&provider=insee" target="_blank" rel="noopener">Documentation API Sirene V3.11</a></li>
+    <li><a href="https://www.sirene.fr/sirene/public/accueil" target="_blank" rel="noopener">Répertoire Sirene</a> – Recherche manuelle d'entreprises</li>
+    <li><a href="https://www.insee.fr/fr/information/2028129" target="_blank" rel="noopener">Nomenclature des formes juridiques</a> – Liste complète des codes</li>
+</ul>
