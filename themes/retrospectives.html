@@ -37,29 +37,7 @@
     <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
 
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="../index.html" class="navbar-brand">Base de Connaissance Low-Code</a>
-            <ul class="navbar-menu">
-                <li><a href="weweb.html">WeWeb</a></li>
-                <li><a href="xano.html">Xano</a></li>
-                <li><a href="api.html">API & Backend</a></li>
-                <li><a href="bonnes-pratiques.html">Bonnes pratiques</a></li>
-                <li><a href="notes-diverses.html">Notes diverses</a></li>
-                <li><a href="retrospectives.html" aria-current="page">Rétrospectives</a></li>
-                            <li><a href="../favorites.html">Favoris</a></li>
-                <li><a href="../recent.html">Récents</a></li>
-            </ul>
-            <div class="navbar-search">
-                <input type="text" id="global-search-input" placeholder="Rechercher un article..." aria-label="Rechercher un article">
-                <span class="search-icon">🔍</span>
-                <label class="search-scope-toggle">
-                    <input type="checkbox" id="search-scope-toggle">
-                    <span>Dans Rétrospectives uniquement</span>
-                </label>
-            </div>
-        </div>
-    </nav>
+    <div id="navbar-root"></div>
 
     <!-- Contenu principal -->
     <main class="main-content" id="main-content">
@@ -133,6 +111,7 @@
     </script>
 
     <!-- Scripts -->
+    <script src="../public/js/navbar.js" defer></script>
     <script src="../public/js/power-ux.js" defer></script>
     <script src="../public/js/search.js" defer></script>
     <script src="../public/js/command-palette.js" defer></script>
