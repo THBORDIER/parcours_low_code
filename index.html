@@ -49,6 +49,8 @@
                 <li><a href="themes/bonnes-pratiques.html">Bonnes pratiques</a></li>
                 <li><a href="themes/notes-diverses.html">Notes diverses</a></li>
                 <li><a href="themes/retrospectives.html">Rétrospectives</a></li>
+                <li><a href="favorites.html">Favoris</a></li>
+                <li><a href="recent.html">Récents</a></li>
             </ul>
             <div class="navbar-search">
                 <input type="text" id="global-search-input" placeholder="Rechercher un article..." aria-label="Rechercher un article">
@@ -62,59 +64,140 @@
         <div class="container">
             <!-- Section Hero -->
             <section class="hero">
-                <h1>Base de connaissance – Formation Développeur Low-Code (OpenClassrooms)</h1>
-                <div class="hero-content">
-                    <p>
-                        <strong>Bienvenue sur ma base de connaissance du parcours Développeur Low-Code chez OpenClassrooms.</strong>
-                    </p>
-                    <p>
-                        Je suis élève OpenClassrooms sur le parcours Développeur Low-Code.
-                        Ce site regroupe mes notes personnelles, mon expérience, et des explications issues des tutoriels officiels WeWeb et Xano.
-                    </p>
-                    <p>
-                        <strong>Objectif :</strong> structurer mon apprentissage sous forme de tutoriels et d'articles organisés par thème,
-                        en partageant chaque concept de manière claire et illustrée.
-                    </p>
+                <h1>Base de connaissance – Formation Développeur Low-Code</h1>
+                <p class="hero-subtitle">
+                    Explorez mes notes, tutoriels et retours d'expérience sur WeWeb, Xano et le développement low-code.
+                </p>
+            </section>
+
+            <!-- Section Reprendre (Récents) -->
+            <section class="home-section" id="recent-section" style="display: none;">
+                <div class="section-header">
+                    <h2>🕒 Reprendre là où vous en étiez</h2>
+                    <a href="recent.html" class="section-link">Voir tout →</a>
+                </div>
+                <div class="articles-grid" id="recent-grid">
+                    <!-- Populated by JS -->
                 </div>
             </section>
 
-            <!-- Grille de thèmes -->
-            <div class="themes-grid">
-                <a href="themes/weweb.html" class="theme-card">
-                    <h3>WeWeb</h3>
-                    <p>Frontend no-code pour créer des applications web modernes et responsive</p>
-                </a>
+            <!-- Section Favoris -->
+            <section class="home-section" id="favorites-section" style="display: none;">
+                <div class="section-header">
+                    <h2>⭐ Vos favoris</h2>
+                    <a href="favorites.html" class="section-link">Voir tout →</a>
+                </div>
+                <div class="articles-grid" id="favorites-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
 
-                <a href="themes/xano.html" class="theme-card">
-                    <h3>Xano</h3>
-                    <p>Backend no-code avec base de données, API et logique métier</p>
-                </a>
+            <!-- Section Tags populaires -->
+            <section class="home-section" id="popular-tags-section">
+                <div class="section-header">
+                    <h2>🏷️ Tags populaires</h2>
+                </div>
+                <div class="popular-tags" id="popular-tags-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
 
-                <a href="themes/api.html" class="theme-card">
-                    <h3>API & Backend</h3>
-                    <p>Intégrations, REST API, authentification et gestion des données</p>
-                </a>
+            <!-- Section Tous les articles -->
+            <section class="home-section" id="all-articles-section">
+                <div class="section-header">
+                    <h2>📚 Tous les articles</h2>
+                    <span class="article-count" id="article-count"></span>
+                </div>
 
-                <a href="themes/bonnes-pratiques.html" class="theme-card">
-                    <h3>Bonnes pratiques</h3>
-                    <p>Conventions, architecture, organisation du code et optimisations</p>
-                </a>
+                <!-- Search controls (reused from search.js) -->
+                <div class="search-controls" id="home-search-controls">
+                    <div class="search-options">
+                        <label class="search-toggle">
+                            <input type="checkbox" id="home-search-in-content" checked>
+                            <span>Rechercher dans le contenu</span>
+                        </label>
+                    </div>
+                    <div class="search-filters">
+                        <div class="filter-group">
+                            <label>Thèmes</label>
+                            <div class="filter-chips" id="home-theme-filters"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label>Tags</label>
+                            <div class="filter-chips" id="home-tag-filters"></div>
+                        </div>
+                    </div>
+                    <div class="sort-controls">
+                        <label for="home-sort-select">Trier par :</label>
+                        <select id="home-sort-select" class="sort-select">
+                            <option value="relevance">Pertinence</option>
+                            <option value="title">Titre (A → Z)</option>
+                            <option value="date">Plus récents</option>
+                        </select>
+                    </div>
+                </div>
 
-                <a href="themes/notes-diverses.html" class="theme-card">
-                    <h3>Notes diverses</h3>
-                    <p>Astuces, ressources et notes en vrac sur le développement low-code</p>
-                </a>
+                <!-- Articles grid -->
+                <div class="articles-grid" id="all-articles-grid">
+                    <!-- Populated by JS -->
+                </div>
 
-                <a href="themes/retrospectives.html" class="theme-card">
-                    <h3>Rétrospectives</h3>
-                    <p>Carnets de route, ressentis et apprentissages sur chaque projet de formation</p>
-                </a>
-            </div>
+                <!-- Load more button -->
+                <div class="load-more-container" id="home-load-more-container" style="display: none;">
+                    <button class="load-more-btn" id="home-load-more-btn">
+                        Afficher plus
+                    </button>
+                </div>
+            </section>
+
+            <!-- Quick access themes grid (at the bottom) -->
+            <section class="home-section">
+                <div class="section-header">
+                    <h2>🚀 Accès rapide par thème</h2>
+                </div>
+                <div class="themes-grid">
+                    <a href="themes/weweb.html" class="theme-card">
+                        <h3>WeWeb</h3>
+                        <p>Frontend no-code pour créer des applications web modernes et responsive</p>
+                    </a>
+
+                    <a href="themes/xano.html" class="theme-card">
+                        <h3>Xano</h3>
+                        <p>Backend no-code avec base de données, API et logique métier</p>
+                    </a>
+
+                    <a href="themes/api.html" class="theme-card">
+                        <h3>API & Backend</h3>
+                        <p>Intégrations, REST API, authentification et gestion des données</p>
+                    </a>
+
+                    <a href="themes/bonnes-pratiques.html" class="theme-card">
+                        <h3>Bonnes pratiques</h3>
+                        <p>Conventions, architecture, organisation du code et optimisations</p>
+                    </a>
+
+                    <a href="themes/notes-diverses.html" class="theme-card">
+                        <h3>Notes diverses</h3>
+                        <p>Astuces, ressources et notes en vrac sur le développement low-code</p>
+                    </a>
+
+                    <a href="themes/retrospectives.html" class="theme-card">
+                        <h3>Rétrospectives</h3>
+                        <p>Carnets de route, ressentis et apprentissages sur chaque projet de formation</p>
+                    </a>
+                </div>
+            </section>
         </div>
     </main>
+
+    <!-- Floating help button -->
+    <button class="floating-help-btn" id="floating-help-btn" aria-label="Aide clavier" title="Raccourcis clavier (?)">
+        ⌨️
+    </button>
 
     <!-- Scripts -->
     <script src="public/js/power-ux.js" defer></script>
     <script src="public/js/search.js" defer></script>
+    <script src="public/js/home-hub.js" defer></script>
 </body>
 </html>
