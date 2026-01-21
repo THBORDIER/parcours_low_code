@@ -4,15 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WeWeb - Base de connaissance Low-Code</title>
+    <meta name="description" content="Articles et tutoriels sur WeWeb, la plateforme no-code pour créer des applications web modernes. Composants, workflows, déploiement et intégrations.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../public/images/favicon.svg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://parcours-low-code.vercel.app/themes/weweb.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://parcours-low-code.vercel.app/themes/weweb.html">
+    <meta property="og:title" content="WeWeb - Base de connaissance Low-Code">
+    <meta property="og:description" content="Articles et tutoriels sur WeWeb, la plateforme no-code pour créer des applications web modernes.">
+
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin">
+
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
+    <!-- Skip to content link -->
+    <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="navbar-container">
             <a href="../index.html" class="navbar-brand">Base de Connaissance Low-Code</a>
             <ul class="navbar-menu">
-                <li><a href="weweb.html">WeWeb</a></li>
+                <li><a href="weweb.html" aria-current="page">WeWeb</a></li>
                 <li><a href="xano.html">Xano</a></li>
                 <li><a href="api.html">API & Backend</a></li>
                 <li><a href="bonnes-pratiques.html">Bonnes pratiques</a></li>
@@ -31,7 +52,7 @@
     </nav>
 
     <!-- Contenu principal -->
-    <main class="main-content">
+    <main class="main-content" id="main-content">
         <div class="container">
             <div class="two-column-layout">
                 <!-- Colonne gauche : Liste des articles -->
@@ -86,25 +107,34 @@
             });
 
             function loadArticle(url) {
+                // Afficher un indicateur de chargement
+                articleDisplay.innerHTML = '<div class="default-message"><p>⏳ Chargement de l\'article...</p></div>';
+
                 fetch(url)
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('Article non trouvé');
+                            throw new Error(`HTTP ${response.status}: Article not found`);
                         }
                         return response.text();
                     })
                     .then(html => {
                         articleDisplay.innerHTML = html;
+                        console.log('[APP] Article loaded:', url);
                     })
                     .catch(error => {
-                        articleDisplay.innerHTML = '<div class="default-message"><p>Erreur lors du chargement de l\'article.</p></div>';
-                        console.error('Erreur:', error);
+                        articleDisplay.innerHTML = `
+                            <div class="default-message">
+                                <p style="color: #F44336;">❌ Erreur lors du chargement de l'article.</p>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">L'article n'existe peut-être pas ou le chemin est incorrect.</p>
+                            </div>
+                        `;
+                        console.error('[APP] Failed to load article:', url, error);
                     });
             }
         });
     </script>
 
     <!-- Script de recherche -->
-    <script src="../public/js/search.js"></script>
+    <script src="../public/js/search.js" defer></script>
 </body>
 </html>

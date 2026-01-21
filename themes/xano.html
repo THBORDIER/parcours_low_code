@@ -4,16 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xano - Base de connaissance Low-Code</title>
+    <meta name="description" content="Articles et tutoriels sur Xano, la plateforme backend no-code. Base de données, API endpoints, workflows, authentification et intégrations.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../public/images/favicon.svg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://parcours-low-code.vercel.app/themes/xano.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://parcours-low-code.vercel.app/themes/xano.html">
+    <meta property="og:title" content="Xano - Base de connaissance Low-Code">
+    <meta property="og:description" content="Articles et tutoriels sur Xano, la plateforme backend no-code. Base de données, API endpoints, workflows et intégrations.">
+    <meta property="og:image" content="https://parcours-low-code.vercel.app/public/images/favicon.svg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:url" content="https://parcours-low-code.vercel.app/themes/xano.html">
+    <meta name="twitter:title" content="Xano - Base de connaissance Low-Code">
+    <meta name="twitter:description" content="Articles et tutoriels sur Xano, la plateforme backend no-code.">
+    <meta name="twitter:image" content="https://parcours-low-code.vercel.app/public/images/favicon.svg">
+
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
+    <!-- Skip to content link -->
+    <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="navbar-container">
             <a href="../index.html" class="navbar-brand">Base de Connaissance Low-Code</a>
             <ul class="navbar-menu">
                 <li><a href="weweb.html">WeWeb</a></li>
-                <li><a href="xano.html">Xano</a></li>
+                <li><a href="xano.html" aria-current="page">Xano</a></li>
                 <li><a href="api.html">API & Backend</a></li>
                 <li><a href="bonnes-pratiques.html">Bonnes pratiques</a></li>
                 <li><a href="notes-diverses.html">Notes diverses</a></li>
@@ -31,7 +60,7 @@
     </nav>
 
     <!-- Contenu principal -->
-    <main class="main-content">
+    <main class="main-content" id="main-content">
         <div class="container">
             <div class="two-column-layout">
                 <!-- Colonne gauche : Liste des articles -->
@@ -103,6 +132,6 @@
     </script>
 
     <!-- Script de recherche -->
-    <script src="../public/js/search.js"></script>
+    <script src="../public/js/search.js" defer></script>
 </body>
 </html>

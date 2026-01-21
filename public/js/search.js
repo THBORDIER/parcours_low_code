@@ -17,6 +17,21 @@ class ArticleSearch {
         this.searchInput = null;
         this.searchScope = 'global'; // 'global' ou 'theme'
         this.initialized = false;
+        this.debounceTimer = null;
+        this.debugMode = new URLSearchParams(window.location.search).has('debug');
+    }
+
+    /**
+     * Log avec préfixe [APP] et mode debug
+     */
+    log(...args) {
+        if (this.debugMode) {
+            console.log('[APP]', ...args);
+        }
+    }
+
+    error(...args) {
+        console.error('[APP]', ...args);
     }
 
     /**
@@ -27,20 +42,38 @@ class ArticleSearch {
 
         try {
             // Charger l'index des articles
+            this.log('Loading articles index...');
             const response = await fetch('../public/data/articles-index.json');
-            if (!response.ok) throw new Error('Impossible de charger l\'index des articles');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: Unable to load articles index`);
+            }
             this.articles = await response.json();
+            this.log(`Loaded ${this.articles.length} articles`);
 
             // Détecter le thème actuel à partir de l'URL
             this.detectCurrentTheme();
+            this.log(`Current theme: ${this.currentTheme || 'none (index page)'}`);
 
             // Initialiser les éléments DOM
             this.initDOM();
 
             this.initialized = true;
-            console.log(`✅ Recherche initialisée : ${this.articles.length} articles chargés`);
+            this.log('Search initialized successfully');
+            console.log(`[APP] ✅ Search ready: ${this.articles.length} articles indexed`);
         } catch (error) {
-            console.error('❌ Erreur lors de l\'initialisation de la recherche:', error);
+            this.error('Failed to initialize search:', error);
+            this.showSearchError();
+        }
+    }
+
+    /**
+     * Affiche un message d'erreur si l'index ne peut pas être chargé
+     */
+    showSearchError() {
+        if (this.searchInput) {
+            this.searchInput.disabled = true;
+            this.searchInput.placeholder = 'Recherche indisponible';
+            this.searchInput.title = 'Impossible de charger l\'index de recherche';
         }
     }
 
@@ -75,9 +108,9 @@ class ArticleSearch {
             return;
         }
 
-        // Événement de recherche en temps réel
+        // Événement de recherche en temps réel avec debounce
         this.searchInput.addEventListener('input', (e) => {
-            this.performSearch(e.target.value);
+            this.debouncedSearch(e.target.value);
         });
 
         // Toggle entre recherche globale et par thème
@@ -90,9 +123,26 @@ class ArticleSearch {
     }
 
     /**
+     * Recherche avec debounce (délai de 200ms)
+     */
+    debouncedSearch(query) {
+        // Annuler le timer précédent
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
+
+        // Créer un nouveau timer
+        this.debounceTimer = setTimeout(() => {
+            this.performSearch(query);
+        }, 200);
+    }
+
+    /**
      * Effectue la recherche
      */
     performSearch(query) {
+        this.log(`Searching for: "${query}"`);
+
         if (!query || query.trim().length < 2) {
             this.resetSearch();
             return;
@@ -104,8 +154,10 @@ class ArticleSearch {
         // Filtrer par thème si mode "theme" activé
         if (this.searchScope === 'theme' && this.currentTheme) {
             results = results.filter(article => article.theme === this.currentTheme);
+            this.log(`Filtered to theme "${this.currentTheme}": ${results.length} results`);
         }
 
+        this.log(`Found ${results.length} results`);
         this.displayResults(results, query);
     }
 
@@ -162,6 +214,7 @@ class ArticleSearch {
 
         // Sur une page thème, filtrer la liste existante
         const allLinks = articlesList.querySelectorAll('li');
+        let visibleCount = 0;
 
         allLinks.forEach(li => {
             const link = li.querySelector('a');
@@ -173,12 +226,14 @@ class ArticleSearch {
             if (found) {
                 li.style.display = 'block';
                 this.highlightText(link, query);
+                visibleCount++;
             } else {
                 li.style.display = 'none';
             }
         });
 
-        // Afficher un message si aucun résultat
+        // Afficher un compteur et message si aucun résultat
+        this.showResultsCounter(visibleCount, articlesList.parentElement);
         this.showNoResultsMessage(results.length, articlesList.parentElement);
     }
 
@@ -194,6 +249,8 @@ class ArticleSearch {
             resultsContainer = document.createElement('div');
             resultsContainer.id = 'search-results-container';
             resultsContainer.className = 'search-results';
+            resultsContainer.setAttribute('aria-live', 'polite');
+            resultsContainer.setAttribute('aria-atomic', 'true');
             mainContent.insertBefore(resultsContainer, mainContent.firstChild);
         }
 
@@ -256,6 +313,28 @@ class ArticleSearch {
     }
 
     /**
+     * Affiche un compteur de résultats
+     */
+    showResultsCounter(count, container) {
+        let counterDiv = container.querySelector('.search-results-counter');
+
+        if (count > 0) {
+            if (!counterDiv) {
+                counterDiv = document.createElement('div');
+                counterDiv.className = 'search-results-counter';
+                counterDiv.setAttribute('aria-live', 'polite');
+                container.insertBefore(counterDiv, container.firstChild);
+            }
+            counterDiv.innerHTML = `<p>📊 ${count} article${count > 1 ? 's' : ''} trouvé${count > 1 ? 's' : ''}</p>`;
+            counterDiv.style.display = 'block';
+        } else {
+            if (counterDiv) {
+                counterDiv.style.display = 'none';
+            }
+        }
+    }
+
+    /**
      * Affiche un message "aucun résultat"
      */
     showNoResultsMessage(count, container) {
@@ -265,12 +344,14 @@ class ArticleSearch {
             if (!noResultsDiv) {
                 noResultsDiv = document.createElement('div');
                 noResultsDiv.className = 'no-results-message';
-                noResultsDiv.innerHTML = '<p>Aucun article ne correspond à votre recherche.</p>';
+                noResultsDiv.setAttribute('aria-live', 'assertive');
+                noResultsDiv.innerHTML = '<p>❌ Aucun article ne correspond à votre recherche.</p>';
                 container.insertBefore(noResultsDiv, container.firstChild);
             }
+            noResultsDiv.style.display = 'block';
         } else {
             if (noResultsDiv) {
-                noResultsDiv.remove();
+                noResultsDiv.style.display = 'none';
             }
         }
     }
@@ -279,6 +360,7 @@ class ArticleSearch {
      * Réinitialise la recherche
      */
     resetSearch() {
+        this.log('Resetting search');
         const articlesList = document.getElementById('articles-menu');
 
         if (articlesList) {
@@ -288,8 +370,14 @@ class ArticleSearch {
                 li.style.display = 'block';
             });
 
-            // Supprimer le message "aucun résultat"
-            const noResultsDiv = articlesList.parentElement.querySelector('.no-results-message');
+            // Supprimer le compteur et message "aucun résultat"
+            const container = articlesList.parentElement;
+            const counterDiv = container.querySelector('.search-results-counter');
+            const noResultsDiv = container.querySelector('.no-results-message');
+
+            if (counterDiv) {
+                counterDiv.remove();
+            }
             if (noResultsDiv) {
                 noResultsDiv.remove();
             }

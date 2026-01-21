@@ -35,3 +35,10 @@ yarn-error.log*
 # Backup files
 *.bak
 *~
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Reports
+reports/
