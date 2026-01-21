@@ -49,6 +49,62 @@ function stripHtml(html) {
 }
 
 /**
+ * Extrait les tags depuis le contenu HTML
+ */
+function extractTags(htmlContent, theme, keywords, category) {
+    const tags = new Set();
+
+    // 1. Ajouter le thème comme tag
+    tags.add(theme);
+
+    // 2. Chercher des tags explicites dans un commentaire HTML
+    // Format: <!-- tags: xano, auth, api -->
+    const tagsCommentMatch = htmlContent.match(/<!--\s*tags:\s*([^>]+)\s*-->/i);
+    if (tagsCommentMatch) {
+        const explicitTags = tagsCommentMatch[1].split(',').map(t => t.trim().toLowerCase());
+        explicitTags.forEach(tag => {
+            if (tag) tags.add(tag);
+        });
+    }
+
+    // 3. Ajouter les keywords comme tags (limitées aux 3 premières)
+    if (keywords && keywords.length > 0) {
+        keywords.slice(0, 3).forEach(kw => {
+            const normalized = kw.toLowerCase().trim();
+            if (normalized.length > 2) {
+                tags.add(normalized);
+            }
+        });
+    }
+
+    // 4. Ajouter la catégorie comme tag si présente
+    if (category && category.trim()) {
+        tags.add(category.toLowerCase());
+    }
+
+    // 5. Détecter des tags techniques communs dans le contenu
+    const technicalTerms = [
+        'api', 'rest', 'jwt', 'auth', 'authentication', 'database', 'sql',
+        'weweb', 'xano', 'stripe', 'brevo', 'webhook', 'frontend', 'backend',
+        'debug', 'error', 'bug', 'fix', 'workflow', 'query', 'filter',
+        'component', 'variable', 'collection', 'endpoint', 'middleware'
+    ];
+
+    const contentLower = htmlContent.toLowerCase();
+    technicalTerms.forEach(term => {
+        // Compter les occurrences (minimum 3 pour être considéré comme tag)
+        const regex = new RegExp(`\\b${term}\\b`, 'gi');
+        const matches = contentLower.match(regex);
+        if (matches && matches.length >= 3) {
+            tags.add(term);
+        }
+    });
+
+    // Convertir en array et limiter à 8 tags max
+    return Array.from(tags).slice(0, 8);
+}
+
+/**
  * Extrait les métadonnées d'un fichier HTML
  */
 function extractMetadata(htmlContent, filePath) {
@@ -76,20 +132,20 @@ function extractMetadata(htmlContent, filePath) {
     const timeMatch = htmlContent.match(/⏱️\s*<strong>Temps passé:<\/strong>\s*([^<]+)/i);
     const timeSpent = timeMatch ? timeMatch[1].trim() : '';
 
-    // Extraire le TL;DR comme extrait/description
+    // Extraire le TL;DR comme extrait/description (limité à 180 caractères)
     const tldrMatch = htmlContent.match(/<div class="tldr"[^>]*>(.*?)<\/div>/is);
     let excerpt = '';
     if (tldrMatch) {
         excerpt = stripHtml(tldrMatch[1])
             .replace(/^✅\s*TL;DR\s*:\s*/i, '')
-            .substring(0, 200);
-        if (excerpt.length === 200) excerpt += '...';
+            .substring(0, 180);
+        if (excerpt.length === 180) excerpt += '...';
     } else {
         // Si pas de TL;DR, extraire le premier paragraphe
         const firstPMatch = htmlContent.match(/<p[^>]*>(.*?)<\/p>/i);
         if (firstPMatch) {
-            excerpt = stripHtml(firstPMatch[1]).substring(0, 200);
-            if (excerpt.length === 200) excerpt += '...';
+            excerpt = stripHtml(firstPMatch[1]).substring(0, 180);
+            if (excerpt.length === 180) excerpt += '...';
         }
     }
 
@@ -100,6 +156,9 @@ function extractMetadata(htmlContent, filePath) {
     // Chemin relatif pour l'URL (avec slashes Unix)
     const urlPath = '../articles/' + relativePath.replace(/\\/g, '/');
 
+    // Extraire les tags
+    const tags = extractTags(htmlContent, theme, keywords, category);
+
     return {
         title,
         category,
@@ -109,7 +168,8 @@ function extractMetadata(htmlContent, filePath) {
         path: urlPath,
         date,
         timeSpent,
-        excerpt
+        excerpt,
+        tags
     };
 }
 

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Récemment consultés - Base de connaissance Low-Code</title>
+    <meta name="description" content="Articles récemment consultés - Base de connaissance du parcours Développeur Low-Code OpenClassrooms.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="public/images/favicon.svg">
+
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+    <!-- Skip to content link -->
+    <a href="#main-content" class="skip-to-content">Aller au contenu principal</a>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">Base de Connaissance Low-Code</a>
+            <ul class="navbar-menu">
+                <li><a href="themes/weweb.html">WeWeb</a></li>
+                <li><a href="themes/xano.html">Xano</a></li>
+                <li><a href="themes/api.html">API & Backend</a></li>
+                <li><a href="themes/bonnes-pratiques.html">Bonnes pratiques</a></li>
+                <li><a href="themes/notes-diverses.html">Notes diverses</a></li>
+                <li><a href="themes/retrospectives.html">Rétrospectives</a></li>
+                <li><a href="favorites.html">Favoris</a></li>
+                <li><a href="recent.html" aria-current="page">Récents</a></li>
+            </ul>
+            <div class="navbar-search">
+                <input type="text" id="global-search-input" placeholder="Rechercher un article..." aria-label="Rechercher un article">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-content" id="main-content">
+        <div class="container">
+            <!-- Header -->
+            <section class="page-header">
+                <h1>🕒 Récemment consultés</h1>
+                <p class="page-description">Historique de vos 20 derniers articles consultés</p>
+
+                <div class="page-actions">
+                    <button id="clear-history" class="btn-secondary" title="Effacer l'historique">
+                        🗑️ Effacer l'historique
+                    </button>
+                </div>
+            </section>
+
+            <!-- Search controls (hidden by default, shown when searching) -->
+            <div class="search-controls" id="recent-search-controls" style="display: none;">
+                <div class="search-filters">
+                    <div class="filter-group">
+                        <label>Thèmes</label>
+                        <div class="filter-chips" id="recent-theme-filters"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Tags</label>
+                        <div class="filter-chips" id="recent-tag-filters"></div>
+                    </div>
+                </div>
+                <div class="sort-controls">
+                    <label for="recent-sort-select">Trier par :</label>
+                    <select id="recent-sort-select" class="sort-select">
+                        <option value="recent">Plus récents</option>
+                        <option value="title">Titre (A → Z)</option>
+                        <option value="theme">Thème</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Recent list -->
+            <div id="recent-container" class="recent-container">
+                <!-- Will be populated by JavaScript -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">🕒</div>
+                    <h2>Aucun historique pour le moment</h2>
+                    <p>Consultez des articles pour les voir apparaître ici.</p>
+                    <a href="index.html" class="btn-primary">Parcourir les articles</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="public/js/power-ux.js" defer></script>
+    <script src="public/js/search.js" defer></script>
+    <script src="public/js/recent-page.js" defer></script>
+</body>
+</html>

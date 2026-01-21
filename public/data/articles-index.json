@@ -8,7 +8,15 @@
     "path": "../articles/api/authentification.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 2 : Diagramme du flux d'authentification JWT (image à ajouter)"
+    "excerpt": "Figure 2 : Diagramme du flux d'authentification JWT (image à ajouter)",
+    "tags": [
+      "api",
+      "jwt",
+      "auth",
+      "weweb",
+      "xano",
+      "variable"
+    ]
   },
   {
     "title": "Intégration WeWeb-Xano",
@@ -19,7 +27,14 @@
     "path": "../articles/api/integration-weweb-xano.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Exemple : Créer un nouveau produit"
+    "excerpt": "Exemple : Créer un nouveau produit",
+    "tags": [
+      "api",
+      "weweb",
+      "xano",
+      "workflow",
+      "collection"
+    ]
   },
   {
     "title": "Résoudre l'erreur \"An error happened during the execution of the workflow\"",
@@ -30,7 +45,17 @@
     "path": "../articles/api/resoudre-erreur-workflow-weweb-xano.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Mettre en place un login utilisateur fonctionnel avec :"
+    "excerpt": "Mettre en place un login utilisateur fonctionnel avec :",
+    "tags": [
+      "api",
+      "auth",
+      "weweb",
+      "xano",
+      "backend",
+      "debug",
+      "error",
+      "workflow"
+    ]
   },
   {
     "title": "Introduction aux REST API",
@@ -41,7 +66,11 @@
     "path": "../articles/api/rest-api.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 1 : Diagramme d'architecture REST (image à ajouter)"
+    "excerpt": "Figure 1 : Diagramme d'architecture REST (image à ajouter)",
+    "tags": [
+      "api",
+      "rest"
+    ]
   },
   {
     "title": "Mettre à jour un profil utilisateur via API PUT sans effacer les données existantes",
@@ -60,7 +89,16 @@
     "path": "../articles/api/update-profil-utilisateur-put.html",
     "date": "26/10/2025",
     "timeSpent": "1h30",
-    "excerpt": "Un endpoint PUT remplace intégralement un enregistrement. Si vous envoyez des champs vides depuis WeWeb, Xano les enregistre comme tels et écrase les données existantes. Solution : pré-remplir les cha..."
+    "excerpt": "Un endpoint PUT remplace intégralement un enregistrement. Si vous envoyez des champs vides depuis WeWeb, Xano les enregistre comme tels et écrase les données existantes. Solution :...",
+    "tags": [
+      "api",
+      "put",
+      "patch",
+      "edit record",
+      "weweb",
+      "xano",
+      "endpoint"
+    ]
   },
   {
     "title": "Créer une application de prise de commande au restaurant avec une IA No-Code",
@@ -71,7 +109,10 @@
     "path": "../articles/bonnes-pratiques/app-restaurant-nocode.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Du besoin métier à la solution digitale"
+    "excerpt": "Du besoin métier à la solution digitale",
+    "tags": [
+      "bonnes-pratiques"
+    ]
   },
   {
     "title": "Conventions de nommage",
@@ -82,7 +123,12 @@
     "path": "../articles/bonnes-pratiques/conventions-nommage.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 2 : Exemple de conventions appliquées (image à ajouter)"
+    "excerpt": "Figure 2 : Exemple de conventions appliquées (image à ajouter)",
+    "tags": [
+      "bonnes-pratiques",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Construire une logique métier robuste avec WeWeb et Xano",
@@ -104,7 +150,17 @@
     "path": "../articles/bonnes-pratiques/logique-metier-robuste-weweb-xano.html",
     "date": "18/01/2026",
     "timeSpent": "1h",
-    "excerpt": "Le no-code ne supprime pas la complexité, il la déplace vers la compréhension des flux et des données. Dans le Projet 10, les vrais défis n'étaient pas techniques mais conceptuels : maîtriser les type..."
+    "excerpt": "Le no-code ne supprime pas la complexité, il la déplace vers la compréhension des flux et des données. Dans le Projet 10, les vrais défis n'étaient pas techniques mais conceptuels ...",
+    "tags": [
+      "bonnes-pratiques",
+      "gestion d'état",
+      "workflows weweb",
+      "collections",
+      "bonnes pratiques",
+      "api",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Optimisation et performance",
@@ -115,7 +171,13 @@
     "path": "../articles/bonnes-pratiques/optimisation-performance.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 3 : Dashboard de performance (image à ajouter)"
+    "excerpt": "Figure 3 : Dashboard de performance (image à ajouter)",
+    "tags": [
+      "bonnes-pratiques",
+      "api",
+      "xano",
+      "frontend"
+    ]
   },
   {
     "title": "Organisation d'un projet Low-Code",
@@ -126,7 +188,11 @@
     "path": "../articles/bonnes-pratiques/organisation-projet.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 1 : Schéma d'organisation d'un projet (image à ajouter)"
+    "excerpt": "Figure 1 : Schéma d'organisation d'un projet (image à ajouter)",
+    "tags": [
+      "bonnes-pratiques",
+      "api"
+    ]
   },
   {
     "title": "Astuces de productivité",
@@ -137,7 +203,13 @@
     "path": "../articles/notes-diverses/astuces-productivite.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 2 : Workflow de productivité optimale (image à ajouter)"
+    "excerpt": "Figure 2 : Workflow de productivité optimale (image à ajouter)",
+    "tags": [
+      "notes-diverses",
+      "weweb",
+      "workflow",
+      "endpoint"
+    ]
   },
   {
     "title": "À propos de ce site et ma méthode de travail",
@@ -148,7 +220,14 @@
     "path": "../articles/notes-diverses/methode-de-travail.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Comment je transforme mes blocages en apprentissage partagé"
+    "excerpt": "Comment je transforme mes blocages en apprentissage partagé",
+    "tags": [
+      "notes-diverses",
+      "api",
+      "weweb",
+      "xano",
+      "workflow"
+    ]
   },
   {
     "title": "Outils complémentaires",
@@ -159,7 +238,13 @@
     "path": "../articles/notes-diverses/outils-complementaires.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 3 : Écosystème d'outils complémentaires (image à ajouter)"
+    "excerpt": "Figure 3 : Écosystème d'outils complémentaires (image à ajouter)",
+    "tags": [
+      "notes-diverses",
+      "api",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Journal de bord – Projet 10 : Authentification et calcul automatique des devis",
@@ -181,7 +266,17 @@
     "path": "../articles/notes-diverses/projet-10-authentification-devis.html",
     "date": "16/01/2026",
     "timeSpent": "2h",
-    "excerpt": "Résolution du problème d'authentification incomplète en configurant correctement l'endpoint /auth/me, mise en place d'un tableau de devis avec formatage des données, et création d'une fonction Xano po..."
+    "excerpt": "Résolution du problème d'authentification incomplète en configurant correctement l'endpoint /auth/me, mise en place d'un tableau de devis avec formatage des données, et création d'...",
+    "tags": [
+      "notes-diverses",
+      "auth/me",
+      "authentication",
+      "custom function",
+      "notes diverses",
+      "auth",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Génération de devis dynamiques avec WeWeb et Xano",
@@ -201,7 +296,16 @@
     "path": "../articles/notes-diverses/projet-10-generation-devis-pdf.html",
     "date": "17/01/2025",
     "timeSpent": "1h",
-    "excerpt": "Pour générer un PDF propre depuis WeWeb : (1) utiliser des attributs data-* pour cibler le div, (2) ouvrir une fenêtre temporaire, (3) imposer un format A4 avec @page, (4) auto-scale le contenu si néc..."
+    "excerpt": "Pour générer un PDF propre depuis WeWeb : (1) utiliser des attributs data-* pour cibler le div, (2) ouvrir une fenêtre temporaire, (3) imposer un format A4 avec @page, (4) auto-sca...",
+    "tags": [
+      "notes-diverses",
+      "pdf generation",
+      "window.print()",
+      "queryselector",
+      "notes diverses",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Synthèse d'avancement – P10",
@@ -222,7 +326,16 @@
     "path": "../articles/notes-diverses/projet11-synthese-avancement.html",
     "date": "14/01/2026",
     "timeSpent": "4h",
-    "excerpt": "Session de 4h pour poser les fondations du Projet 10 : authentification WeWeb fonctionnelle, design system (15 couleurs, 10 styles typo), base de données Xano complète avec relations, composants trans..."
+    "excerpt": "Session de 4h pour poser les fondations du Projet 10 : authentification WeWeb fonctionnelle, design system (15 couleurs, 10 styles typo), base de données Xano complète avec relatio...",
+    "tags": [
+      "notes-diverses",
+      "authentification weweb",
+      "design system",
+      "base de données xano",
+      "notes diverses",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Ressources utiles",
@@ -233,7 +346,13 @@
     "path": "../articles/notes-diverses/ressources-utiles.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 1 : Carte des ressources essentielles (image à ajouter)"
+    "excerpt": "Figure 1 : Carte des ressources essentielles (image à ajouter)",
+    "tags": [
+      "notes-diverses",
+      "api",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Projet 2 : Prise en main de WeWeb",
@@ -254,7 +373,14 @@
     "path": "../articles/retrospectives/projet-2-weweb.html",
     "date": "Octobre 2024",
     "timeSpent": "~25h",
-    "excerpt": "Premier projet pratique centré sur la prise en main de WeWeb. Un parcours en demi-teinte : Figma bien maîtrisé, mais frustration face au manque de cours structurés, obligation de bidouiller seul, et u..."
+    "excerpt": "Premier projet pratique centré sur la prise en main de WeWeb. Un parcours en demi-teinte : Figma bien maîtrisé, mais frustration face au manque de cours structurés, obligation de b...",
+    "tags": [
+      "retrospectives",
+      "weweb",
+      "figma",
+      "formation openclassrooms",
+      "rétrospectives"
+    ]
   },
   {
     "title": "Projet 3 : Prise en main de Xano",
@@ -277,7 +403,17 @@
     "path": "../articles/retrospectives/projet-3-xano.html",
     "date": "Novembre 2024",
     "timeSpent": "~25h (sur 2-3 semaines)",
-    "excerpt": "Projet très attendu pour enfin mettre les mains dans les données. Malgré une expérience SQL quotidienne, Xano impose ses contraintes et bride la liberté des requêtes. L'IA intégrée est décevante (rapp..."
+    "excerpt": "Projet très attendu pour enfin mettre les mains dans les données. Malgré une expérience SQL quotidienne, Xano impose ses contraintes et bride la liberté des requêtes. L'IA intégrée...",
+    "tags": [
+      "retrospectives",
+      "xano",
+      "base de données",
+      "sql",
+      "rétrospectives",
+      "api",
+      "rest",
+      "auth"
+    ]
   },
   {
     "title": "Projet 4 : Tester son application avec un cahier de recette",
@@ -299,7 +435,17 @@
     "path": "../articles/retrospectives/projet-4-cahier-recette.html",
     "date": "Novembre 2025",
     "timeSpent": "~10h",
-    "excerpt": "Projet abordé avec confiance après avoir parcouru le Notion plusieurs fois. Validation rapide de la moitié des points en suivant méthodiquement les étapes. Découverte tardive de détails sur les workfl..."
+    "excerpt": "Projet abordé avec confiance après avoir parcouru le Notion plusieurs fois. Validation rapide de la moitié des points en suivant méthodiquement les étapes. Découverte tardive de dé...",
+    "tags": [
+      "retrospectives",
+      "cahier de recette",
+      "tests",
+      "debug xano",
+      "rétrospectives",
+      "api",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Projet 5 : API Stripe, Brevo et Webhooks",
@@ -321,7 +467,17 @@
     "path": "../articles/retrospectives/projet-5-api-stripe-brevo.html",
     "date": "Novembre 2025",
     "timeSpent": "~6h",
-    "excerpt": "Projet centré sur l'intégration d'APIs externes (Stripe pour le paiement, Brevo pour les emails). Le flux complet WeWeb → Xano → Stripe → webhook → Xano → Brevo semblait simple sur le papier. Réalité ..."
+    "excerpt": "Projet centré sur l'intégration d'APIs externes (Stripe pour le paiement, Brevo pour les emails). Le flux complet WeWeb → Xano → Stripe → webhook → Xano → Brevo semblait simple sur...",
+    "tags": [
+      "retrospectives",
+      "api rest",
+      "stripe checkout",
+      "brevo",
+      "rétrospectives",
+      "api",
+      "rest",
+      "weweb"
+    ]
   },
   {
     "title": "Projet 6 : Initiez-vous à la sécurité et à la gestion des rôles sur votre application",
@@ -342,7 +498,17 @@
     "path": "../articles/retrospectives/projet6-securite-roles.html",
     "date": "14/01/2026",
     "timeSpent": "7h",
-    "excerpt": "Projet de 7h sur la sécurité et les rôles utilisateurs : middlewares Xano pour contrôler l'accès aux ressources, validation de signature Stripe (5h de galère avec le parsing), et découverte des functi..."
+    "excerpt": "Projet de 7h sur la sécurité et les rôles utilisateurs : middlewares Xano pour contrôler l'accès aux ressources, validation de signature Stripe (5h de galère avec le parsing), et d...",
+    "tags": [
+      "retrospectives",
+      "sécurité",
+      "middlewares xano",
+      "stripe signature",
+      "rétrospectives",
+      "api",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Projet 7 : Spécifiez de nouvelles fonctionnalités pour faire évoluer votre application",
@@ -365,7 +531,14 @@
     "path": "../articles/retrospectives/projet7-specification-fonctionnalites.html",
     "date": "14/01/2026",
     "timeSpent": "2h",
-    "excerpt": "Projet de 2h sur la spécification et priorisation de fonctionnalités : tri des retours utilisateurs, notation impact/effort avec IA, création d'un sprint backlog. Excellente introduction à la méthodol..."
+    "excerpt": "Projet de 2h sur la spécification et priorisation de fonctionnalités : tri des retours utilisateurs, notation impact/effort avec IA, création d'un sprint backlog. Excellente introd...",
+    "tags": [
+      "retrospectives",
+      "sprint",
+      "backlog",
+      "user stories",
+      "rétrospectives"
+    ]
   },
   {
     "title": "Projet 8 : Finalisez votre application en implémentant de nouvelles fonctionnalités",
@@ -387,7 +560,17 @@
     "path": "../articles/retrospectives/projet8-implementation-fonctionnalites.html",
     "date": "14/01/2026",
     "timeSpent": "3h",
-    "excerpt": "Projet de 3h pour implémenter les 6 fonctionnalités priorisées au Projet 7 : notifications automatiques, rebooking en un clic, historique réservations, système d'avis, rappels automatiques, dashboard ..."
+    "excerpt": "Projet de 3h pour implémenter les 6 fonctionnalités priorisées au Projet 7 : notifications automatiques, rebooking en un clic, historique réservations, système d'avis, rappels auto...",
+    "tags": [
+      "retrospectives",
+      "implémentation",
+      "triggers xano",
+      "cron jobs",
+      "rétrospectives",
+      "api",
+      "weweb",
+      "xano"
+    ]
   },
   {
     "title": "Afficher une liste de noms dans une SelectBox : comprendre la structure des collections WeWeb",
@@ -407,7 +590,15 @@
     "path": "../articles/weweb/afficher-liste-selectbox-rollup.html",
     "date": "27/10/2025",
     "timeSpent": "Moins d'1 heure",
-    "excerpt": "Pour afficher une liste de noms depuis une collection dans une SelectBox, utilisez rollup(collection.data, \"name\"). Ne vous fiez pas au [0] automatiquement inséré par WeWeb quand vous cliquez : il mon..."
+    "excerpt": "Pour afficher une liste de noms depuis une collection dans une SelectBox, utilisez rollup(collection.data, \"name\"). Ne vous fiez pas au [0] automatiquement inséré par WeWeb quand v...",
+    "tags": [
+      "weweb",
+      "rollup",
+      "collections",
+      "selectbox",
+      "api",
+      "collection"
+    ]
   },
   {
     "title": "Comprendre l'arborescence d'une page WeWeb : exemple de la page Mon Compte",
@@ -418,7 +609,10 @@
     "path": "../articles/weweb/arborescence-page-weweb.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Dans cet article, nous découvrons la structure complète d'une page construite avec WeWeb. L'objectif est de comprendre la logique d'imbrication des éléments et leur rôle dans l'interface utilisateur. ..."
+    "excerpt": "Dans cet article, nous découvrons la structure complète d'une page construite avec WeWeb. L'objectif est de comprendre la logique d'imbrication des éléments et leur rôle dans l'int...",
+    "tags": [
+      "weweb"
+    ]
   },
   {
     "title": "Les composants WeWeb",
@@ -429,7 +623,10 @@
     "path": "../articles/weweb/composants-weweb.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 2 : Exemple de carte utilisateur (image à ajouter)"
+    "excerpt": "Figure 2 : Exemple de carte utilisateur (image à ajouter)",
+    "tags": [
+      "weweb"
+    ]
   },
   {
     "title": "Récapitulatif Complet – Connexion WeWeb / Xano + Filtres Dynamiques",
@@ -449,7 +646,17 @@
     "path": "../articles/weweb/connexion-weweb-xano-filtres-dynamiques.html",
     "date": "19/10/2025",
     "timeSpent": "1h30",
-    "excerpt": "Guide complet pour connecter WeWeb à Xano avec des filtres dynamiques. Vous apprendrez à configurer les collections, résoudre les problèmes d'affichage vide, utiliser correctement les conteneurs répét..."
+    "excerpt": "Guide complet pour connecter WeWeb à Xano avec des filtres dynamiques. Vous apprendrez à configurer les collections, résoudre les problèmes d'affichage vide, utiliser correctement ...",
+    "tags": [
+      "weweb",
+      "collections",
+      "xano",
+      "filtres",
+      "api",
+      "workflow",
+      "query",
+      "variable"
+    ]
   },
   {
     "title": "Déployer votre site WeWeb",
@@ -460,7 +667,10 @@
     "path": "../articles/weweb/deploiement-weweb.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 1 : Le bouton \"Deploy\" dans l'interface WeWeb"
+    "excerpt": "Figure 1 : Le bouton \"Deploy\" dans l'interface WeWeb",
+    "tags": [
+      "weweb"
+    ]
   },
   {
     "title": "Introduction à WeWeb",
@@ -471,7 +681,10 @@
     "path": "../articles/weweb/introduction-weweb.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 1 : Exemple d'interface WeWeb (image à ajouter dans /public/images/weweb/)"
+    "excerpt": "Figure 1 : Exemple d'interface WeWeb (image à ajouter dans /public/images/weweb/)",
+    "tags": [
+      "weweb"
+    ]
   },
   {
     "title": "Quand les composants deviennent un piège : comprendre les limites pour mieux les maîtriser",
@@ -482,7 +695,10 @@
     "path": "../articles/weweb/limites-composants-weweb.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Retour d'expérience réel – du blocage à la solution concrète"
+    "excerpt": "Retour d'expérience réel – du blocage à la solution concrète",
+    "tags": [
+      "weweb"
+    ]
   },
   {
     "title": "Mettre à jour la photo de profil utilisateur via un modal WeWeb",
@@ -493,7 +709,15 @@
     "path": "../articles/weweb/mettre-a-jour-photo-profil-modal.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Pour mettre à jour une photo de profil depuis un modal WeWeb, crée une variable de page (ex: newPhotoURL), lie-la au champ texte du modal, puis configure un workflow avec une action Xano Request (PUT)..."
+    "excerpt": "Pour mettre à jour une photo de profil depuis un modal WeWeb, crée une variable de page (ex: newPhotoURL), lie-la au champ texte du modal, puis configure un workflow avec une actio...",
+    "tags": [
+      "weweb",
+      "api",
+      "xano",
+      "workflow",
+      "variable",
+      "endpoint"
+    ]
   },
   {
     "title": "État d'avancement du projet (Design & Intégration WeWeb)",
@@ -513,7 +737,13 @@
     "path": "../articles/weweb/projet11-design-integration.html",
     "date": "14/01/2026",
     "timeSpent": "1h",
-    "excerpt": "Mise en place des fondations design du Projet 11 dans WeWeb : typographies, couleurs, composants de navigation (Navbar/Footer), et début d'intégration de la page Login avec gestion d'un gradient CSS p..."
+    "excerpt": "Mise en place des fondations design du Projet 11 dans WeWeb : typographies, couleurs, composants de navigation (Navbar/Footer), et début d'intégration de la page Login avec gestion...",
+    "tags": [
+      "weweb",
+      "design system",
+      "figma",
+      "typographies"
+    ]
   },
   {
     "title": "Récupérer l'ID utilisateur avec Xano Auth : pas besoin de requête !",
@@ -530,7 +760,16 @@
     "path": "../articles/weweb/recuperer-id-utilisateur-xano-auth.html",
     "date": "19/10/2025",
     "timeSpent": "20min",
-    "excerpt": "Le plugin Xano Auth de WeWeb retourne automatiquement l'objet user complet (incluant l'ID). Vous n'avez pas besoin de créer une requête GET /user/{id} pour récupérer l'ID utilisateur. Utilisez simplem..."
+    "excerpt": "Le plugin Xano Auth de WeWeb retourne automatiquement l'objet user complet (incluant l'ID). Vous n'avez pas besoin de créer une requête GET /user/{id} pour récupérer l'ID utilisate...",
+    "tags": [
+      "weweb",
+      "xano auth",
+      "user.id",
+      "authentification",
+      "auth",
+      "xano",
+      "variable"
+    ]
   },
   {
     "title": "🎛️ Remplir un sélecteur dynamique dans WeWeb à partir d'une requête",
@@ -550,7 +789,16 @@
     "path": "../articles/weweb/remplir-selecteur-dynamique-requete.html",
     "date": "07/01/2025",
     "timeSpent": "20min",
-    "excerpt": "Pour remplir un composant Select dans WeWeb avec des données dynamiques, utilisez la formule get_all_categorie.data dans Options, puis item.name pour le Label per item et item.id pour le Value per ite..."
+    "excerpt": "Pour remplir un composant Select dans WeWeb avec des données dynamiques, utilisez la formule get_all_categorie.data dans Options, puis item.name pour le Label per item et item.id p...",
+    "tags": [
+      "weweb",
+      "select",
+      "options dynamiques",
+      "data binding",
+      "api",
+      "xano",
+      "workflow"
+    ]
   },
   {
     "title": "Variables et workflows dans WeWeb",
@@ -561,7 +809,12 @@
     "path": "../articles/weweb/variables-workflow.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 3 : Schéma d'un workflow de connexion (image à ajouter)"
+    "excerpt": "Figure 3 : Schéma d'un workflow de connexion (image à ajouter)",
+    "tags": [
+      "weweb",
+      "api",
+      "workflow"
+    ]
   },
   {
     "title": "Créer des API endpoints dans Xano",
@@ -572,7 +825,14 @@
     "path": "../articles/xano/api-endpoints.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 3 : Schéma d'un Function Stack (image à ajouter)"
+    "excerpt": "Figure 3 : Schéma d'un Function Stack (image à ajouter)",
+    "tags": [
+      "xano",
+      "api",
+      "auth",
+      "query",
+      "endpoint"
+    ]
   },
   {
     "title": "Authentification Xano : Session Cookie vs JWT (Bearer Token)",
@@ -595,7 +855,17 @@
     "path": "../articles/xano/authentification-session-cookie-vs-jwt.html",
     "date": "09/12/2025",
     "timeSpent": "2h",
-    "excerpt": "WeWeb + Xano Auth utilise des cookies de session (HttpOnly), pas des Bearer Tokens. Le cours enseigne JWT classique, mais le plugin gère tout automatiquement via cookies. Pas besoin de header Authoriz..."
+    "excerpt": "WeWeb + Xano Auth utilise des cookies de session (HttpOnly), pas des Bearer Tokens. Le cours enseigne JWT classique, mais le plugin gère tout automatiquement via cookies. Pas besoi...",
+    "tags": [
+      "xano",
+      "authentification",
+      "jwt",
+      "bearer token",
+      "api",
+      "auth",
+      "authentication",
+      "weweb"
+    ]
   },
   {
     "title": "Base de données Xano",
@@ -606,7 +876,10 @@
     "path": "../articles/xano/base-de-donnees.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 2 : Schéma de relations entre tables (image à ajouter)"
+    "excerpt": "Figure 2 : Schéma de relations entre tables (image à ajouter)",
+    "tags": [
+      "xano"
+    ]
   },
   {
     "title": "Pourquoi mon API Xano retourne toujours les mêmes données ?",
@@ -624,7 +897,14 @@
     "path": "../articles/xano/corriger-api-filtres-categories.html",
     "date": "19/01/2025",
     "timeSpent": "20 minutes",
-    "excerpt": "Si votre API Xano retourne toujours les mêmes résultats peu importe les paramètres envoyés, vérifiez vos JOINs (liaisons entre tables) et assurez-vous que vos filtres sont appliqués dans l'onglet FILT..."
+    "excerpt": "Si votre API Xano retourne toujours les mêmes résultats peu importe les paramètres envoyés, vérifiez vos JOINs (liaisons entre tables) et assurez-vous que vos filtres sont appliqué...",
+    "tags": [
+      "xano",
+      "api",
+      "joins",
+      "filtres",
+      "filter"
+    ]
   },
   {
     "title": "Filtrer par date avec des jointures : résoudre le problème de recouvrement de périodes dans Xano",
@@ -644,7 +924,13 @@
     "path": "../articles/xano/filtrage-dates-jointures-recouvrement.html",
     "date": "27/10/2025",
     "timeSpent": "1-2 heures",
-    "excerpt": "Pour filtrer par dates avec des jointures dans Xano, utilisez la bonne clé de relation (repairer_category_id au lieu de repairer_id) et la logique de recouvrement : session.start_date &lt;= input.end_..."
+    "excerpt": "Pour filtrer par dates avec des jointures dans Xano, utilisez la bonne clé de relation (repairer_category_id au lieu de repairer_id) et la logique de recouvrement : session.start_d...",
+    "tags": [
+      "xano",
+      "joins",
+      "filtres de dates",
+      "recouvrement de périodes"
+    ]
   },
   {
     "title": "Xano : Filtrer des sessions par date (même jour) en ignorant l'heure — Mission impossible ?",
@@ -663,7 +949,16 @@
     "path": "../articles/xano/filtrer-sessions-meme-jour-sans-heure.html",
     "date": "19/11/2025",
     "timeSpent": "3h30",
-    "excerpt": "Comparer uniquement le jour de deux timestamps (en ignorant l'heure) est trivial en SQL. Mais dans Xano, c'est un enfer : le Query Builder refuse format_timestamp() dans les WHERE, ne permet pas de pa..."
+    "excerpt": "Comparer uniquement le jour de deux timestamps (en ignorant l'heure) est trivial en SQL. Mais dans Xano, c'est un enfer : le Query Builder refuse format_timestamp() dans les WHERE,...",
+    "tags": [
+      "xano",
+      "query builder",
+      "timestamps",
+      "filtres",
+      "sql",
+      "weweb",
+      "query"
+    ]
   },
   {
     "title": "Filtrer des sessions sans réservations : la solution avec LEFT JOIN et IS NULL",
@@ -683,7 +978,16 @@
     "path": "../articles/xano/filtrer-sessions-sans-reservations-left-join.html",
     "date": "16/11/2025",
     "timeSpent": "3 heures",
-    "excerpt": "Pour filtrer les sessions sans réservations dans Xano, utilisez un LEFT JOIN sur reservation avec les filtres de dates directement dans le JOIN, puis ajoutez un WHERE $db.reservation.id == null. Cette..."
+    "excerpt": "Pour filtrer les sessions sans réservations dans Xano, utilisez un LEFT JOIN sur reservation avec les filtres de dates directement dans le JOIN, puis ajoutez un WHERE $db.reservati...",
+    "tags": [
+      "xano",
+      "left join",
+      "is null",
+      "filtres where",
+      "api",
+      "sql",
+      "query"
+    ]
   },
   {
     "title": "Xano + WeWeb : Comment filtrer des sessions par utilisateur et par date avec une seule API dynamique",
@@ -703,7 +1007,17 @@
     "path": "../articles/xano/filtrer-sessions-utilisateur-api-dynamique.html",
     "date": "27/10/2025",
     "timeSpent": "1-2 heures",
-    "excerpt": "Pour filtrer des sessions par utilisateur, interrogez la table reservation (qui contient user_id) plutôt que la table session. Utilisez un input dynamique (filter) pour gérer plusieurs cas (passé, à v..."
+    "excerpt": "Pour filtrer des sessions par utilisateur, interrogez la table reservation (qui contient user_id) plutôt que la table session. Utilisez un input dynamique (filter) pour gérer plusi...",
+    "tags": [
+      "xano",
+      "filtrage utilisateur",
+      "api dynamique",
+      "relations tables",
+      "api",
+      "weweb",
+      "query",
+      "filter"
+    ]
   },
   {
     "title": "Flux complet : WeWeb, Xano, Stripe, Webhook et Brevo",
@@ -724,7 +1038,17 @@
     "path": "../articles/xano/flux-complet-weweb-xano-stripe-brevo.html",
     "date": "03/12/2025",
     "timeSpent": "3h",
-    "excerpt": "Cet article synthétise le flux complet de paiement : WeWeb crée une réservation → Xano génère une session Stripe → l'utilisateur paie → Stripe envoie un webhook → Xano met à jour la BDD et déclenche u..."
+    "excerpt": "Cet article synthétise le flux complet de paiement : WeWeb crée une réservation → Xano génère une session Stripe → l'utilisateur paie → Stripe envoie un webhook → Xano met à jour l...",
+    "tags": [
+      "xano",
+      "flux paiement complet",
+      "weweb xano stripe brevo",
+      "checkout.session.completed",
+      "api",
+      "weweb",
+      "stripe",
+      "brevo"
+    ]
   },
   {
     "title": "Intégration des Add-ons Xano pour enrichir les réponses API",
@@ -742,7 +1066,16 @@
     "path": "../articles/xano/integration-addons-reservation.html",
     "date": "29/10/2025",
     "timeSpent": "1-2 heures",
-    "excerpt": "Les Add-ons Xano permettent de joindre automatiquement des données liées sans écrire de SQL. Ils remplacent les JOIN traditionnels et nécessitent une configuration précise : sélection du champ de liai..."
+    "excerpt": "Les Add-ons Xano permettent de joindre automatiquement des données liées sans écrire de SQL. Ils remplacent les JOIN traditionnels et nécessitent une configuration précise : sélect...",
+    "tags": [
+      "xano",
+      "add-ons xano",
+      "relations tables",
+      "query enrichment",
+      "api",
+      "database",
+      "sql"
+    ]
   },
   {
     "title": "Intégration Xano + WeWeb : Afficher dynamiquement les catégories pour chaque réparateur",
@@ -760,7 +1093,14 @@
     "path": "../articles/xano/integration-categories-dynamiques.html",
     "date": "18/10/2025",
     "timeSpent": "2h",
-    "excerpt": "Grâce aux jointures dans Xano (Query All Records + Add-on), j'ai créé une API unique qui renvoie les réparateurs avec leurs catégories. Résultat : une seule requête API pour alimenter WeWeb, un JSON s..."
+    "excerpt": "Grâce aux jointures dans Xano (Query All Records + Add-on), j'ai créé une API unique qui renvoie les réparateurs avec leurs catégories. Résultat : une seule requête API pour alimen...",
+    "tags": [
+      "xano",
+      "weweb",
+      "api",
+      "query",
+      "endpoint"
+    ]
   },
   {
     "title": "Intégrer Stripe Checkout avec Xano : résolution des erreurs courantes",
@@ -779,7 +1119,16 @@
     "path": "../articles/xano/integration-stripe-checkout.html",
     "date": "26/11/2025",
     "timeSpent": "1h",
-    "excerpt": "Pour intégrer Stripe Checkout avec Xano : (1) les headers doivent être en format key/value et non text[], (2) le body doit être en application/x-www-form-urlencoded et non JSON, (3) la clé API doit êt..."
+    "excerpt": "Pour intégrer Stripe Checkout avec Xano : (1) les headers doivent être en format key/value et non text[], (2) le body doit être en application/x-www-form-urlencoded et non JSON, (3...",
+    "tags": [
+      "xano",
+      "stripe checkout",
+      "external api request",
+      "headers key/value",
+      "api",
+      "stripe",
+      "variable"
+    ]
   },
   {
     "title": "Introduction à Xano",
@@ -790,7 +1139,11 @@
     "path": "../articles/xano/introduction-xano.html",
     "date": "",
     "timeSpent": "",
-    "excerpt": "Figure 1 : Interface de Xano (image à ajouter dans /public/images/xano/)"
+    "excerpt": "Figure 1 : Interface de Xano (image à ajouter dans /public/images/xano/)",
+    "tags": [
+      "xano",
+      "api"
+    ]
   },
   {
     "title": "Génération d'un numéro de devis incrémental avec WeWeb et Xano",
@@ -811,7 +1164,17 @@
     "path": "../articles/xano/numero-devis-incremental.html",
     "date": "18/01/2026",
     "timeSpent": "30 min",
-    "excerpt": "La génération d'un numéro de devis incrémental (format DV-2026-001) avec Xano nécessite de bien comprendre la différence entre valeurs scalaires, objets et listes. L'erreur la plus fréquente : passer ..."
+    "excerpt": "La génération d'un numéro de devis incrémental (format DV-2026-001) avec Xano nécessite de bien comprendre la différence entre valeurs scalaires, objets et listes. L'erreur la plus...",
+    "tags": [
+      "xano",
+      "numéro incrémental",
+      "direct database query",
+      "coalesce",
+      "database",
+      "sql",
+      "weweb",
+      "query"
+    ]
   },
   {
     "title": "Pourquoi Xano rend les webhooks si compliqués (et comment s'en sortir)",
@@ -834,7 +1197,17 @@
     "path": "../articles/xano/pourquoi-xano-webhooks-compliques.html",
     "date": "03/12/2024",
     "timeSpent": "2h",
-    "excerpt": "Dans Xano, input.body est souvent vide sur les webhooks entrants, même si le JSON est visible dans l'historique. La solution : utiliser le bloc \"Get All Raw Input\" (caché, mal documenté) puis assigner..."
+    "excerpt": "Dans Xano, input.body est souvent vide sur les webhooks entrants, même si le JSON est visible dans l'historique. La solution : utiliser le bloc \"Get All Raw Input\" (caché, mal docu...",
+    "tags": [
+      "xano",
+      "get all raw input",
+      "input.body vide",
+      "webhook payload",
+      "weweb",
+      "stripe",
+      "brevo",
+      "webhook"
+    ]
   },
   {
     "title": "Comprendre la réalité des middlewares dans Xano",
@@ -856,7 +1229,17 @@
     "path": "../articles/xano/realite-middlewares-xano.html",
     "date": "10/12/2025",
     "timeSpent": "3h",
-    "excerpt": "Les middlewares Xano ne peuvent PAS bloquer l'exécution d'un endpoint, même en cas d'erreur. Pour une sécurité par rôle, il faut utiliser une fonction check_role() appelée en début de chaque endpoint ..."
+    "excerpt": "Les middlewares Xano ne peuvent PAS bloquer l'exécution d'un endpoint, même en cas d'erreur. Pour une sécurité par rôle, il faut utiliser une fonction check_role() appelée en début...",
+    "tags": [
+      "xano",
+      "middleware",
+      "sécurité verticale",
+      "check_role",
+      "api",
+      "auth",
+      "debug",
+      "endpoint"
+    ]
   },
   {
     "title": "Renouveler sa clé Metadata API Xano expirée",
@@ -873,7 +1256,15 @@
     "path": "../articles/xano/renouveler-cle-metadata-api.html",
     "date": "19/10/2025",
     "timeSpent": "20 min",
-    "excerpt": "Si ta clé Metadata API Xano est expirée, génère-en une nouvelle sans date d'expiration depuis la page compte Xano. La section \"Developer Access\" est dépréciée et ne doit plus être utilisée."
+    "excerpt": "Si ta clé Metadata API Xano est expirée, génère-en une nouvelle sans date d'expiration depuis la page compte Xano. La section \"Developer Access\" est dépréciée et ne doit plus être ...",
+    "tags": [
+      "xano",
+      "metadata api",
+      "clé api",
+      "authentication",
+      "api",
+      "backend"
+    ]
   },
   {
     "title": "Vérifier une signature Stripe dans Xano",
@@ -893,7 +1284,15 @@
     "path": "../articles/xano/verifier-signature-stripe.html",
     "date": "16/12/2025",
     "timeSpent": "2h30",
-    "excerpt": "La fonction \"Stripe: Verify Signature\" de Xano échoue si le body est modifié (même légèrement). Il faut utiliser le raw body brut, reconstruire exactement le payload signé (t.raw_body), et comparer le..."
+    "excerpt": "La fonction \"Stripe: Verify Signature\" de Xano échoue si le body est modifié (même légèrement). Il faut utiliser le raw body brut, reconstruire exactement le payload signé (t.raw_b...",
+    "tags": [
+      "xano",
+      "stripe",
+      "webhook",
+      "signature",
+      "brevo",
+      "backend"
+    ]
   },
   {
     "title": "Webhook Stripe → Xano → Email Brevo : automatiser l'après-paiement",
@@ -916,6 +1315,16 @@
     "path": "../articles/xano/webhook-stripe-xano-brevo.html",
     "date": "26/11/2025",
     "timeSpent": "1h",
-    "excerpt": "Pour recevoir un webhook Stripe dans Xano : (1) créer un endpoint public, (2) récupérer input.raw et input.headers en mode expression, (3) utiliser l'action Stripe → Verify Signature avec la clé whsec..."
+    "excerpt": "Pour recevoir un webhook Stripe dans Xano : (1) créer un endpoint public, (2) récupérer input.raw et input.headers en mode expression, (3) utiliser l'action Stripe → Verify Signatu...",
+    "tags": [
+      "xano",
+      "webhook",
+      "stripe-signature",
+      "checkout.session.completed",
+      "api",
+      "stripe",
+      "brevo",
+      "workflow"
+    ]
   }
 ]
