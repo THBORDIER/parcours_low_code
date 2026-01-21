@@ -2231,3 +2231,55 @@ a:focus-visible {
         font-size: 1rem;
     }
 }
+
+/* ===========================
+   Theme Page Enhancement
+   =========================== */
+.theme-enhancement {
+    margin-top: 20px;
+}
+
+.theme-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.theme-header .article-count {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Compact article cards for theme pages */
+.article-card-compact {
+    padding: 16px;
+}
+
+.article-card-compact .article-excerpt {
+    display: none;
+}
+
+.article-card-compact .article-header h3 {
+    font-size: 0.95rem;
+}
+
+/* Original list fallback (hidden when JS enhances) */
+[data-original-list="true"] {
+    display: none;
+}
+
+/* Ensure proper styling when JS is off */
+body:not(.js-enhanced) [data-original-list="true"] {
+    display: block;
+}
+
+/* Empty state for theme pages */
+.theme-enhancement .empty-state {
+    grid-column: 1 / -1;
+}
+
+.reset-empty-filters-btn {
+    margin-top: 16px;
+}
