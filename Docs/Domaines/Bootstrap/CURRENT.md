@@ -1,5 +1,128 @@
 # Bootstrap - Travail en cours
 
+## Tâche: UI-UX-01 - Améliorer l'interface et l'expérience utilisateur
+
+**Date:** 21/01/2026
+**Statut:** ✅ En cours (Itération 1)
+**Précédent:** BUG-LH-01 (Fix Lighthouse - ✅ Terminé)
+
+### Objectif
+
+Améliorer l'expérience de lecture et de navigation (cercle privé):
+- ✅ Interface plus agréable (lisibilité, espaces, cards, responsive)
+- ✅ Recherche plus puissante (filtres, highlight, état vide, clavier)
+- ✅ Tri & classement (par thème, par date, A→Z, récemment consultés)
+- ✅ Navigation (breadcrumbs, retour, liens internes)
+- ✅ Mode sombre avec toggle
+- ✅ Système de favoris
+- ✅ Historique de consultation
+
+### Plan d'implémentation
+
+#### Phase 1: Données & Index ✅
+- [x] Enrichir generate-index.js (dates, temps passé, excerpts)
+- [x] Ajouter fonction stripHtml()
+- [x] Extraire TL;DR ou premier paragraphe comme excerpt
+- [x] Tester génération index (55 articles)
+
+#### Phase 2: CSS & Design System ✅
+- [x] Ajouter variables CSS dark mode
+- [x] Créer composants chips de filtres
+- [x] Créer select personnalisé pour tri
+- [x] Ajouter styles breadcrumbs
+- [x] Créer cartes related articles
+- [x] Ajouter styles favoris/recent sections
+- [x] Améliorer responsive mobile
+- [x] Accessibility: focus-visible
+
+#### Phase 3: Search.js Enhancement ✅
+- [x] Refactoriser classe ArticleSearch
+- [x] Ajouter système de filtres (thèmes, niveaux)
+- [x] Ajouter tri (relevance, A-Z, date)
+- [x] Implémenter highlighting (balise <mark>)
+- [x] Ajouter navigation clavier (↑↓ Enter ESC)
+- [x] Créer hints clavier (desktop)
+
+#### Phase 4: Features Avancées ✅
+- [x] Dark mode toggle avec localStorage
+- [x] Système favoris (localStorage)
+- [x] Historique articles (localStorage, MutationObserver)
+- [x] Related articles (injection dynamique)
+- [x] Affichage favoris sur homepage
+- [x] Affichage recent sur homepage
+
+#### Phase 5: Tests & Documentation ⏳
+- [ ] Tester recherche avec filtres
+- [ ] Tester navigation clavier
+- [ ] Tester dark mode (persist + prefers-color-scheme)
+- [ ] Tester favoris (toggle, persist)
+- [ ] Tester historique
+- [ ] Vérifier responsive mobile
+- [ ] Documentation DASHBOARD.md ✅
+- [ ] Documentation CURRENT.md (ce fichier)
+- [ ] Documentation DONE.md
+- [ ] Documentation TODO.md (backlog)
+
+### Fichiers modifiés
+
+**Scripts:**
+- scripts/generate-index.js (enrichissement métadonnées)
+
+**CSS:**
+- public/css/style.css (+450 lignes: dark mode, filtres, favoris, breadcrumbs, related, accessibility)
+
+**JavaScript:**
+- public/js/search.js (réécriture complète: 1080 lignes, toutes features)
+
+**Data:**
+- public/data/articles-index.json (régénéré avec dates/excerpts)
+
+**Documentation:**
+- Docs/DASHBOARD.md (section UI/UX-01)
+- Docs/Domaines/Bootstrap/CURRENT.md (ce fichier)
+
+### Features implémentées
+
+#### 🌙 Dark Mode
+- Toggle animé (🌙/☀️) dans navbar
+- Respect prefers-color-scheme
+- Persistance localStorage
+- Transitions CSS fluides
+
+#### 🔍 Recherche Avancée
+- Filtres par thème (chips multi-sélection)
+- Filtres par niveau (Débutant, Intermédiaire, Avancé)
+- Tri: Pertinence, A→Z, Date
+- Highlighting termes recherchés (<mark>)
+- Navigation clavier (↑↓ Enter ESC)
+
+#### ⭐ Favoris & Historique
+- Bouton favoris (⭐/☆) sur chaque carte
+- Section "Mes Favoris" sur homepage
+- Section "Récemment consultés" sur homepage
+- Persistance localStorage
+
+#### 📚 Navigation
+- Articles liés (3 par article, même thème)
+- MutationObserver pour tracking
+- Cartes cliquables
+
+### Résultats attendus
+
+- 🎯 Navigation fluide (clavier + souris)
+- 💾 Persistance (favoris + historique + thème)
+- 🔍 Recherche puissante (filtres + tri + highlight)
+- 🌙 Confort visuel (mode sombre)
+- 📱 Responsive (mobile-friendly)
+
+### Prochaines étapes
+
+- Tests fonctionnels sur serveur local
+- Documentation finale (DONE.md, TODO.md)
+- Éventuellement: breadcrumbs, export favoris
+
+---
+
 ## Tâche: BUG-LH-01 - Fix Lighthouse avec serveur embarqué
 
 **Date:** 21/01/2026

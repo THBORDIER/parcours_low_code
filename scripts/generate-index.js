@@ -39,12 +39,22 @@ function getAllHtmlFiles(dir, fileList = []) {
 }
 
 /**
+ * Nettoie le HTML pour extraire le texte brut
+ */
+function stripHtml(html) {
+    return html
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
  * Extrait les métadonnées d'un fichier HTML
  */
 function extractMetadata(htmlContent, filePath) {
     // Extraire le titre (première balise <h1>)
     const titleMatch = htmlContent.match(/<h1[^>]*>(.*?)<\/h1>/i);
-    const title = titleMatch ? titleMatch[1].trim() : 'Sans titre';
+    const title = titleMatch ? stripHtml(titleMatch[1]) : 'Sans titre';
 
     // Extraire la catégorie
     const categoryMatch = htmlContent.match(/🏷️\s*<strong>Catégorie:<\/strong>\s*([^<]+)/i);
@@ -57,6 +67,31 @@ function extractMetadata(htmlContent, filePath) {
     // Extraire les mots-clés
     const keywordsMatch = htmlContent.match(/🔍\s*<strong>Mots-clés:<\/strong>\s*([^<]+)/i);
     const keywords = keywordsMatch ? keywordsMatch[1].trim().split(',').map(k => k.trim()) : [];
+
+    // Extraire la date de mise à jour
+    const dateMatch = htmlContent.match(/📅\s*<strong>Mise à jour:<\/strong>\s*([^<]+)/i);
+    const date = dateMatch ? dateMatch[1].trim() : '';
+
+    // Extraire le temps passé
+    const timeMatch = htmlContent.match(/⏱️\s*<strong>Temps passé:<\/strong>\s*([^<]+)/i);
+    const timeSpent = timeMatch ? timeMatch[1].trim() : '';
+
+    // Extraire le TL;DR comme extrait/description
+    const tldrMatch = htmlContent.match(/<div class="tldr"[^>]*>(.*?)<\/div>/is);
+    let excerpt = '';
+    if (tldrMatch) {
+        excerpt = stripHtml(tldrMatch[1])
+            .replace(/^✅\s*TL;DR\s*:\s*/i, '')
+            .substring(0, 200);
+        if (excerpt.length === 200) excerpt += '...';
+    } else {
+        // Si pas de TL;DR, extraire le premier paragraphe
+        const firstPMatch = htmlContent.match(/<p[^>]*>(.*?)<\/p>/i);
+        if (firstPMatch) {
+            excerpt = stripHtml(firstPMatch[1]).substring(0, 200);
+            if (excerpt.length === 200) excerpt += '...';
+        }
+    }
 
     // Déterminer le thème à partir du chemin
     const relativePath = path.relative(ARTICLES_DIR, filePath);
@@ -71,7 +106,10 @@ function extractMetadata(htmlContent, filePath) {
         level,
         keywords,
         theme,
-        path: urlPath
+        path: urlPath,
+        date,
+        timeSpent,
+        excerpt
     };
 }
 

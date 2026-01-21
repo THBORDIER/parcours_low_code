@@ -1,8 +1,8 @@
 # 📊 DASHBOARD - État du projet
 
-**Dernière mise à jour:** 21/01/2026 16:15
-**Audit:** PERF-UX-02 (Mode privé - Performance/UX/Robustesse)
-**Précédent:** FEA-PERF-01 (SEO/Perf/A11y - Terminé)
+**Dernière mise à jour:** 21/01/2026 18:30
+**Audit:** UI-UX-01 (Interface, Recherche, Navigation - En cours)
+**Précédent:** PERF-UX-02 (Mode privé - Performance/UX/Robustesse - Terminé)
 
 ---
 
@@ -91,6 +91,132 @@ Les éléments SEO existants (OG tags, Twitter cards, canonical, sitemap, robots
 - ⚡ Rendu: CLS réduit (width/height), TBT réduit (defer)
 - 🎯 UX: Feedback immédiat, erreurs explicites
 - 🛡️ Robustesse: 0 crash possible, debug facile
+
+---
+
+## 🎨 UI/UX-01 - Interface & Expérience Utilisateur
+
+**Date:** 21/01/2026
+**Statut:** ✅ En cours (Itération 1)
+**Objectif:** Améliorer l'interface, la recherche, le tri et la navigation
+
+### Améliorations implémentées
+
+#### 🌙 Mode Sombre (Dark Mode)
+- ✅ Toggle dark/light mode avec switch animé (🌙/☀️)
+- ✅ Respect de prefers-color-scheme (détection automatique)
+- ✅ Persistance localStorage (parcours_low_code_theme)
+- ✅ Variables CSS personnalisées pour thème sombre
+- ✅ Transitions fluides entre thèmes
+- **Raccourci:** Click sur toggle dans navbar
+
+#### 🔍 Recherche Améliorée
+**Filtres:**
+- ✅ Filtres par thème (chips multi-sélection)
+- ✅ Filtres par niveau (Débutant, Intermédiaire, Avancé)
+- ✅ Activation dynamique des filtres
+
+**Tri:**
+- ✅ Tri par pertinence (algorithme de scoring)
+- ✅ Tri alphabétique (A → Z)
+- ✅ Tri par date (plus récents en premier)
+
+**Highlighting:**
+- ✅ Surlignage des termes de recherche (balise `<mark>`)
+- ✅ Highlighting dans titres, mots-clés et excerpts
+- ✅ Couleur adaptée au thème (clair/sombre)
+
+**Navigation clavier:**
+- ✅ Flèches ↑/↓ pour naviguer dans les résultats
+- ✅ Entrée pour ouvrir l'article sélectionné
+- ✅ ESC pour effacer la recherche
+- ✅ Indicateur visuel de sélection (outline)
+- ✅ Hints clavier affichés (desktop uniquement)
+
+#### ⭐ Système de Favoris
+- ✅ Bouton favoris (⭐/☆) sur chaque article
+- ✅ Persistance localStorage (parcours_low_code_favorites)
+- ✅ Section "Mes Favoris" sur homepage
+- ✅ Animation pulse lors du toggle
+- ✅ Synchronisation temps réel
+
+#### 🕒 Historique Articles
+- ✅ Suivi des 10 derniers articles consultés
+- ✅ Persistance localStorage (parcours_low_code_recent)
+- ✅ Section "Récemment consultés" sur homepage (6 affichés)
+- ✅ MutationObserver pour tracking automatique
+- ✅ Timestamp pour ordre chronologique
+
+#### 📚 Articles Liés
+- ✅ Section "Articles liés" en bas de chaque article
+- ✅ Affichage de 3 articles du même thème
+- ✅ Cartes cliquables avec excerpt
+- ✅ Navigation fluide sans rechargement
+
+#### 📊 Données Enrichies (Index)
+- ✅ Script generate-index.js enrichi
+- ✅ Extraction de la date de mise à jour (format DD/MM/YYYY)
+- ✅ Extraction du temps passé
+- ✅ Extraction d'excerpts depuis TL;DR ou premier <p>
+- ✅ Nettoyage HTML pour texte brut
+- ✅ 55 articles indexés avec métadonnées complètes
+
+#### 🎨 Améliorations CSS
+**Composants:**
+- ✅ Chips de filtres avec états hover/active
+- ✅ Select personnalisé pour le tri
+- ✅ Cartes de résultats avec excerpts
+- ✅ Boutons favoris stylisés
+- ✅ Sections favoris/récents
+
+**Responsive:**
+- ✅ Amélioration mobile pour filtres et tri
+- ✅ Breadcrumbs responsive (wrap)
+- ✅ Grilles adaptatives (related articles)
+
+**Accessibilité:**
+- ✅ Focus visible pour navigation clavier
+- ✅ Outline 2px sur focus-visible
+- ✅ Aria-labels sur boutons
+- ✅ Rôles ARIA appropriés
+
+### Raccourcis Clavier
+
+| Touche | Action |
+|--------|--------|
+| `↑` `↓` | Naviguer dans les résultats |
+| `Enter` | Ouvrir l'article sélectionné |
+| `ESC` | Effacer la recherche |
+
+### Design Tokens (Dark Mode)
+
+```css
+/* Light Mode (défaut) */
+--primary-color: #6C63FF
+--background-color: #F9FAFB
+--text-color: #333333
+
+/* Dark Mode */
+--primary-color: #8B82FF
+--background-color: #1A1A2E
+--text-color: #E4E4E7
+```
+
+### Prochaines Améliorations (Backlog)
+
+- ⏳ Breadcrumbs navigation (en cours)
+- ⏳ Export favoris (JSON)
+- ⏳ Tags système (auto-génération)
+- ⏳ Full-text search (indexation complète)
+- ⏳ Statistiques de lecture
+
+### Impact Utilisateur
+
+- 🎯 **Navigation:** Clavier + souris fluides
+- 💾 **Persistance:** Favoris + historique + thème
+- 🔍 **Recherche:** Filtres + tri + highlighting
+- 🌙 **Confort:** Mode sombre adaptatif
+- 📱 **Responsive:** Mobile-friendly
 
 ---
 
