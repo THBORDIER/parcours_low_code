@@ -706,6 +706,35 @@
     ]
   },
   {
+    "title": "Générer un PDF depuis WeWeb : ce qui marche, ce qui casse, et pourquoi",
+    "category": "WeWeb",
+    "level": "Intermédiaire",
+    "keywords": [
+      "html2canvas",
+      "jsPDF",
+      "window.print()",
+      "Génération PDF",
+      "Capture DOM",
+      "Performances front-end",
+      "CORS",
+      "Pagination A4"
+    ],
+    "theme": "weweb",
+    "path": "../articles/weweb/generer-pdf-weweb.html",
+    "date": "27/01/2026",
+    "timeSpent": "30min",
+    "excerpt": "Générer un PDF côté front dans WeWeb avec html2canvas + jsPDF fonctionne conceptuellement, mais nécessite des optimisations sérieuses (scale réduit, JPEG, lock d'exécution, timeout...",
+    "tags": [
+      "weweb",
+      "html2canvas",
+      "jspdf",
+      "window.print()",
+      "xano",
+      "backend",
+      "error"
+    ]
+  },
+  {
     "title": "Introduction à WeWeb",
     "category": "",
     "level": "",

@@ -1,0 +1,384 @@
+<h1>Générer un PDF depuis WeWeb : ce qui marche, ce qui casse, et pourquoi</h1>
+
+<p class="subtitle">Analyse approfondie des différentes solutions pour générer un PDF côté front dans WeWeb, avec leurs avantages, limites, et pièges à éviter en production.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> html2canvas, jsPDF, window.print(), Génération PDF, Capture DOM, Performances front-end, CORS, Pagination A4</p>
+    <p>📅 <strong>Mise à jour:</strong> 27/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 30min</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Générer un PDF côté front dans WeWeb avec html2canvas + jsPDF fonctionne conceptuellement, mais nécessite des optimisations sérieuses (scale réduit, JPEG, lock d'exécution, timeouts) pour être utilisable en production. Pour des documents critiques ou complexes, un backend (Xano + Puppeteer) est recommandé.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Objectif :</strong> générer un PDF (devis, facture) depuis une application WeWeb, à partir d'un div HTML existant, sans backend (pas de Xano), avec :</p>
+
+<ul>
+    <li>un rendu fidèle au visuel</li>
+    <li>sans en-têtes/pieds de page navigateur</li>
+    <li>sans intervention utilisateur</li>
+    <li>avec pagination A4 correcte</li>
+</ul>
+
+<p><strong>⚙️ Contraintes :</strong></p>
+<ul>
+    <li>environnement no-code / low-code (WeWeb)</li>
+    <li>pas de bundler JS</li>
+    <li>rendu front uniquement</li>
+    <li>action déclenchée par un bouton</li>
+</ul>
+
+<p><strong>💡 Exemple utilisateur :</strong> Un utilisateur remplit un formulaire de devis dans WeWeb, clique sur "Télécharger PDF", et devrait recevoir immédiatement un document PDF propre, formaté en A4, sans headers/footers du navigateur.</p>
+
+<h2>🔍 Les différentes approches possibles</h2>
+
+<h3>1️⃣ Approche 1 : <code>window.print()</code></h3>
+
+<p><strong>Comment ça marche :</strong></p>
+<p>La fonction native <code>window.print()</code> ouvre la boîte de dialogue d'impression du navigateur. L'utilisateur peut ensuite choisir "Enregistrer en PDF".</p>
+
+<p><strong>✅ Avantages :</strong></p>
+<ul>
+    <li>Rapide et fidèle au rendu visuel</li>
+    <li>Aucune librairie externe</li>
+    <li>Fonctionne immédiatement</li>
+</ul>
+
+<p><strong>❌ Inconvénients majeurs :</strong></p>
+<ul>
+    <li>Ajoute des en-têtes / pieds de page (date, URL, numéro de page)</li>
+    <li>Impossible de les supprimer par code</li>
+    <li>Comportement dépend du navigateur</li>
+    <li>Nécessite une action utilisateur manuelle ("désactiver en-têtes")</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+<code>window.print()</code> n'est <strong>pas un générateur PDF programmable</strong>. C'est un outil d'impression, pas une solution pour générer automatiquement des documents PDF propres.
+</div>
+
+<h3>2️⃣ Approche 2 : <code>html2canvas + jsPDF</code></h3>
+
+<p><strong>Comment ça marche :</strong></p>
+<p>Cette stack est souvent enseignée dans les cours WeWeb car elle permet :</p>
+
+<ul>
+    <li>Une solution 100% front (pas de backend)</li>
+    <li>Génération directe d'un fichier PDF téléchargeable</li>
+    <li>Automatisation complète (1 clic = 1 PDF)</li>
+    <li>Pagination contrôlée (format A4)</li>
+</ul>
+
+<p><strong>Le principe :</strong></p>
+<ol>
+    <li>Capture un div via <code>html2canvas</code> (convertit le DOM en image canvas)</li>
+    <li>Convertit le canvas en image PNG/JPEG</li>
+    <li>Insère l'image dans un PDF A4 avec <code>jsPDF</code></li>
+    <li>Découpe intelligemment les pages pour éviter de couper des champs</li>
+</ol>
+
+<p><strong>✅ Avantages :</strong></p>
+<ul>
+    <li>Solution pédagogique viable pour prototypes</li>
+    <li>Contrôle total sur le rendu</li>
+    <li>Pas de dépendance backend</li>
+</ul>
+
+<p><strong>❌ Inconvénients en production :</strong></p>
+<ul>
+    <li><strong>Performances catastrophiques</strong> : génération pouvant durer plusieurs minutes</li>
+    <li><strong>Rendu incohérent</strong> : proportions déformées, layout différent du navigateur</li>
+    <li><strong>Comportement aléatoire</strong> : parfois ça marche, parfois non</li>
+    <li><strong>Blocages silencieux</strong> : images externes sans CORS, fonts pas chargées</li>
+</ul>
+
+<h2>🧪 Problèmes rencontrés en pratique avec html2canvas + jsPDF</h2>
+
+<h3>4.1 Performances catastrophiques</h3>
+
+<pre><code>// ❌ Configuration par défaut (désastreuse)
+html2canvas(element, {
+    scale: 2,  // Canvas énorme
+    useCORS: true,
+    imageTimeout: 0  // Pas de timeout
+}).then(canvas => {
+    // Génération PNG = fichier lourd
+    const imgData = canvas.toDataURL('image/png');
+})
+</code></pre>
+
+<p><strong>Conséquences :</strong></p>
+<ul>
+    <li>Canvas énorme (scale: 2 = 4x plus de pixels)</li>
+    <li>Génération pouvant durer plusieurs minutes</li>
+    <li>Parfois blocage total (aucun PDF généré)</li>
+</ul>
+
+<h3>4.2 Rendu incohérent</h3>
+
+<p>CSS WeWeb (flex, grid, transform) mal interprété par html2canvas :</p>
+<ul>
+    <li>Proportions déformées</li>
+    <li>Layout différent du navigateur</li>
+    <li>Éléments qui se chevauchent</li>
+</ul>
+
+<h3>4.3 Comportement aléatoire</h3>
+
+<ul>
+    <li>Parfois ça marche, parfois non</li>
+    <li>Spam du bouton ⇒ plusieurs générations en parallèle</li>
+    <li>Téléchargement multiple ou aucun téléchargement</li>
+</ul>
+
+<h3>4.4 Blocages silencieux</h3>
+
+<ul>
+    <li>Images externes sans CORS (jamais chargées)</li>
+    <li>Fonts web pas encore chargées</li>
+    <li><code>html2canvas</code> qui ne rejette pas mais ne termine jamais</li>
+</ul>
+
+<h2>🔧 Causes réelles des échecs</h2>
+
+<h3>5.1 Capture d'un mauvais conteneur</h3>
+
+<p>Capturer un wrapper WeWeb au lieu du bloc "papier" :</p>
+<ul>
+    <li><code>scrollHeight</code> gigantesque</li>
+    <li>Canvas trop lourd</li>
+    <li>Freeze du navigateur</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Toujours cibler précisément le div du devis, pas la page entière. Vérifier <code>scrollWidth</code> / <code>scrollHeight</code> avant capture.
+</div>
+
+<h3>5.2 Mauvais mapping mm ↔ px</h3>
+
+<ul>
+    <li>HTML responsive (%, vw)</li>
+    <li>PDF en millimètres</li>
+    <li>Sans largeur A4 fixe → proportions cassées</li>
+</ul>
+
+<h3>5.3 Absence de verrou d'exécution</h3>
+
+<pre><code>// ❌ Sans protection
+button.onClick(() => {
+    generatePDF(); // Appelé plusieurs fois en parallèle
+});
+</code></pre>
+
+<p><strong>Conséquences :</strong></p>
+<ul>
+    <li>Clics multiples = plusieurs exports simultanés</li>
+    <li>Mémoire saturée</li>
+    <li>Comportement imprévisible</li>
+</ul>
+
+<h3>5.4 Attente infinie</h3>
+
+<ul>
+    <li>Images jamais chargées</li>
+    <li>Fonts web lentes</li>
+    <li>Aucun timeout → script bloqué</li>
+</ul>
+
+<h2>✅ Solutions qui fonctionnent réellement</h2>
+
+<h3>6.1 Toujours verrouiller l'exécution</h3>
+
+<pre><code>// ✅ Avec lock global
+let isGenerating = false;
+
+button.onClick(async () => {
+    if (isGenerating) {
+        console.log('PDF déjà en cours de génération');
+        return;
+    }
+
+    isGenerating = true;
+    try {
+        await generatePDF();
+    } finally {
+        isGenerating = false;
+    }
+});
+</code></pre>
+
+<h3>6.2 Charger les librairies une seule fois</h3>
+
+<p>Ne jamais recharger <code>html2canvas</code> / <code>jsPDF</code> à chaque clic. Les charger au démarrage de l'app.</p>
+
+<h3>6.3 Réduire drastiquement le coût de capture</h3>
+
+<pre><code>// ✅ Configuration optimisée
+html2canvas(element, {
+    scale: 1,  // Ou 1.25 max (jamais 2)
+    useCORS: true,
+    imageTimeout: 5000,  // Timeout de 5 secondes
+    logging: false,
+    backgroundColor: '#ffffff'
+}).then(canvas => {
+    // JPEG au lieu de PNG (beaucoup plus léger)
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+})
+</code></pre>
+
+<p><strong>Bonnes pratiques :</strong></p>
+<ul>
+    <li><code>scale</code> entre 1 et 1.25 (jamais 2 par défaut)</li>
+    <li>JPEG au lieu de PNG</li>
+    <li>Supprimer ombres, animations, filters CSS si possible</li>
+</ul>
+
+<h3>6.4 Cibler précisément le devis</h3>
+
+<ul>
+    <li>Capturer le div du devis uniquement</li>
+    <li>Pas la page entière</li>
+    <li>Vérifier <code>scrollWidth</code> / <code>scrollHeight</code></li>
+</ul>
+
+<h3>6.5 Ajouter des timeouts</h3>
+
+<pre><code>// ✅ Avec timeout
+async function generatePDF() {
+    const element = document.querySelector('#devis-container');
+
+    try {
+        const canvas = await Promise.race([
+            html2canvas(element, {
+                scale: 1.25,
+                imageTimeout: 5000
+            }),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout')), 15000)
+            )
+        ]);
+
+        // Conversion en PDF...
+    } catch (error) {
+        console.error('Échec génération PDF:', error);
+        alert('Impossible de générer le PDF. Veuillez réessayer.');
+    }
+}
+</code></pre>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Pour des documents critiques (factures légales, gros volumes, rendu pixel-perfect), il est recommandé d'utiliser un backend (Xano + Puppeteer ou service HTML → PDF) plutôt que html2canvas.
+</div>
+
+<h2>⚖️ Limites structurelles de html2canvas</h2>
+
+<p>Même bien optimisé, html2canvas a des limites :</p>
+
+<ul>
+    <li>Ce n'est <strong>pas un moteur de rendu PDF</strong>, c'est une capture d'écran</li>
+    <li>Lourd pour le navigateur (dépend du DOM, CSS, machine client)</li>
+    <li>Rendu parfois différent du navigateur</li>
+    <li>Problèmes avec CORS, fonts web, animations CSS</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Pour des documents officiels (factures, contrats), un backend est <strong>fortement recommandé</strong> pour garantir un rendu professionnel et conforme.
+</div>
+
+<h2>🧭 Quand utiliser quoi ?</h2>
+
+<table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+    <thead>
+        <tr style="background-color: var(--primary-color); color: white;">
+            <th style="padding: 0.75rem; text-align: left;">Solution</th>
+            <th style="padding: 0.75rem; text-align: left;">Quand l'utiliser</th>
+            <th style="padding: 0.75rem; text-align: left;">Limites</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 0.75rem;"><strong>html2canvas + jsPDF</strong></td>
+            <td style="padding: 0.75rem;">
+                • 1–2 pages max<br>
+                • Contenu simple<br>
+                • Prototype / démo<br>
+                • Pas de backend
+            </td>
+            <td style="padding: 0.75rem;">
+                • Performances<br>
+                • Rendu approximatif<br>
+                • CORS / fonts
+            </td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 0.75rem;"><strong>window.print()</strong></td>
+            <td style="padding: 0.75rem;">
+                • Utilisateur accepte d'imprimer<br>
+                • Headers/footers non bloquants<br>
+                • Rendu ultra fidèle
+            </td>
+            <td style="padding: 0.75rem;">
+                • Pas programmable<br>
+                • Headers/footers imposés<br>
+                • Action utilisateur requise
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 0.75rem;"><strong>Backend (Xano + Puppeteer)</strong></td>
+            <td style="padding: 0.75rem;">
+                • Rendu professionnel exigé<br>
+                • Documents officiels<br>
+                • Génération fréquente<br>
+                • Email / stockage / archive
+            </td>
+            <td style="padding: 0.75rem;">
+                • Nécessite un backend<br>
+                • Complexité accrue
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>🚨 Pièges à éviter (résumé rapide)</h2>
+
+<ul>
+    <li>❌ <code>scale: 2</code> par défaut</li>
+    <li>❌ PNG systématique (préférer JPEG)</li>
+    <li>❌ Capturer un container géant</li>
+    <li>❌ Pas de lock / debounce sur le bouton</li>
+    <li>❌ Pas de timeout sur html2canvas</li>
+    <li>❌ Dépendre du rendu responsive pour un PDF</li>
+    <li>❌ Croire que <code>window.print()</code> est programmable</li>
+</ul>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li>La génération de PDF côté front n'est jamais "gratuite" : soit tu acceptes des compromis (perf, fidélité), soit tu passes par un backend</li>
+    <li>Le script du cours (<code>html2canvas + jsPDF</code>) fonctionne conceptuellement, mais nécessite des adaptations sérieuses pour être utilisable en production</li>
+    <li>Toujours utiliser un lock d'exécution, des timeouts, et optimiser les paramètres (<code>scale: 1-1.25</code>, JPEG, cibler le bon élément)</li>
+    <li>Pour des documents critiques (factures, contrats), privilégier un backend (Xano + Puppeteer)</li>
+    <li><strong>La vraie compétence, ce n'est pas coller un script, c'est comprendre où ça casse et pourquoi.</strong></li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://github.com/niklasvh/html2canvas" target="_blank" rel="noopener">html2canvas - Documentation officielle</a></li>
+    <li><a href="https://github.com/parallax/jsPDF" target="_blank" rel="noopener">jsPDF - Documentation officielle</a></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/print" target="_blank" rel="noopener">MDN - window.print()</a></li>
+</ul>
