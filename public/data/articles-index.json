@@ -19,6 +19,34 @@
     ]
   },
   {
+    "title": "Envoyer un devis par email avec Brevo (template + pièce jointe)",
+    "category": "API & Backend",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Brevo API",
+      "Email transactionnel",
+      "Template Brevo",
+      "Attachment PDF",
+      "Params vs Attributes",
+      "API Request Xano"
+    ],
+    "theme": "api",
+    "path": "../articles/api/envoi-email-brevo-template-attachment.html",
+    "date": "31/01/2026",
+    "timeSpent": "30 minutes",
+    "excerpt": "Pour envoyer un email Brevo avec template depuis Xano : utilisez params pour injecter les variables dans le template (pas to[]), déstructurez les objets fichiers Xano (devis_pdf.ur...",
+    "tags": [
+      "api",
+      "brevo api",
+      "email transactionnel",
+      "template brevo",
+      "api & backend",
+      "xano",
+      "brevo",
+      "backend"
+    ]
+  },
+  {
     "title": "Générer et stocker un PDF depuis WeWeb vers Xano",
     "category": "API & Backend",
     "level": "Avancé",

@@ -1,0 +1,382 @@
+<h1>Envoyer un devis par email avec Brevo (template + pièce jointe)</h1>
+
+<p class="subtitle">Dans cet article, je vais expliquer comment envoyer un email transactionnel via l'API Brevo depuis Xano, en utilisant un template personnalisé et en attachant un PDF généré dynamiquement, tout en évitant les pièges courants de configuration.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> API & Backend</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Brevo API, Email transactionnel, Template Brevo, Attachment PDF, Params vs Attributes, API Request Xano</p>
+    <p>📅 <strong>Mise à jour:</strong> 31/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 30 minutes</p>
+    <p>⚙️ <strong>Stack:</strong> Xano + Brevo</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour envoyer un email Brevo avec template depuis Xano : utilisez <code>params</code> pour injecter les variables dans le template (pas <code>to[]</code>), déstructurez les objets fichiers Xano (<code>devis_pdf.url</code> et non <code>devis_pdf</code>), et respectez le format <code>attachment: [{url, name}]</code>.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<h3>🎯 Objectif</h3>
+
+<p>Dans le cadre du projet 10, l'objectif était d'envoyer automatiquement un devis PDF par email au client à partir du backend Xano, en utilisant Brevo (ex-Sendinblue) avec :</p>
+
+<ul>
+    <li>Un template Brevo prédéfini</li>
+    <li>Des données personnalisées (nom client, référence devis)</li>
+    <li>Le PDF du devis en pièce jointe</li>
+</ul>
+
+<h3>🛑 Symptômes</h3>
+
+<p><strong>Ce qui fonctionnait :</strong></p>
+<ul>
+    <li>✅ L'appel à l'API Brevo réussissait (code 201)</li>
+    <li>✅ L'email était bien reçu</li>
+    <li>✅ Le template Brevo était déclenché (templateId OK)</li>
+    <li>✅ La variable <code>{{ contact.EMAIL }}</code> s'affichait</li>
+</ul>
+
+<p><strong>Ce qui ne fonctionnait pas :</strong></p>
+<ul>
+    <li>❌ Les variables personnalisées (référence devis, nom) ne s'affichaient pas</li>
+    <li>❌ Impossible d'ajouter la pièce jointe PDF</li>
+    <li>❌ Erreurs API successives : <code>Not numeric</code>, <code>invalid_parameter</code></li>
+</ul>
+
+<h2>🔍 Explication : comprendre l'API Brevo</h2>
+
+<h3>🧠 Les deux types de variables dans Brevo</h3>
+
+<p>Brevo utilise deux sources de données distinctes dans les templates :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Syntaxe template</th>
+            <th>Source</th>
+            <th>Usage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Attributs contact</strong></td>
+            <td><code>{{ contact.EMAIL }}</code></td>
+            <td>Base de données Brevo</td>
+            <td>Données permanentes du contact</td>
+        </tr>
+        <tr>
+            <td><strong>Paramètres API</strong></td>
+            <td><code>{{ params.reference }}</code></td>
+            <td>Payload de l'API call</td>
+            <td>Données transactionnelles (devis, commande, etc.)</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : l'analogie du formulaire</strong><br>
+<ul>
+    <li><strong>Attributs contact</strong> = champs de profil (nom, email, téléphone) → déjà enregistrés dans Brevo</li>
+    <li><strong>Params</strong> = données spécifiques à cet envoi (numéro de commande, montant, date) → envoyées à chaque appel API</li>
+</ul>
+</div>
+
+<h3>📦 Structure correcte d'un appel API Brevo</h3>
+
+<pre><code>{
+  "to": [                        // ⚠️ Uniquement destinataires
+    {
+      "email": "client@example.com",
+      "name": "Jean Dupont"
+    }
+  ],
+  "templateId": 1,               // ID du template Brevo
+  "params": {                    // ✅ Variables injectées dans le template
+    "reference": "DEV-2024-001",
+    "montant": "1500€",
+    "pdf_url": "https://..."
+  },
+  "attachment": [                // ✅ Pièces jointes
+    {
+      "url": "https://...",      // URL publique du fichier
+      "name": "devis.pdf"        // Nom du fichier
+    }
+  ]
+}
+</code></pre>
+
+<h2>❌ Erreurs courantes (fausses pistes)</h2>
+
+<h3>🚫 Erreur 1 — Mettre les variables métier dans <code>to[]</code></h3>
+
+<pre><code>// ❌ Mauvais
+"to": [
+  {
+    "email": "client@example.com",
+    "name": "Jean Dupont",
+    "reference": "DEV-2024-001",  // ⚠️ Ignoré par Brevo
+    "pdf": "..."                   // ⚠️ Ignoré par Brevo
+  }
+]
+</code></pre>
+
+<p><strong>Pourquoi ça ne marche pas :</strong> Brevo ignore tous les champs de <code>to[]</code> sauf <code>email</code> et <code>name</code>.</p>
+
+<h3>🚫 Erreur 2 — Envoyer l'objet fichier complet en pièce jointe</h3>
+
+<p>Dans Xano, un champ de type <code>attachment</code> retourne un objet complexe :</p>
+
+<pre><code>{
+  "access": "public",
+  "path": "/uploads/2026/01/devis.pdf",
+  "name": "devis.pdf",
+  "url": "https://x0fl-XXXX.xano.io/vault/xxx/devis.pdf",
+  "size": 123456,
+  "mime": "application/pdf"
+}
+</code></pre>
+
+<pre><code>// ❌ Mauvais
+"attachment": [
+  {
+    "url": $P10_devis1.devis_pdf,  // ⚠️ Envoie tout l'objet
+    "name": "devis.pdf"
+  }
+]
+
+// Erreur : "url is not valid in attachment"
+</code></pre>
+
+<p><strong>Solution :</strong> Extraire uniquement la propriété <code>url</code> :</p>
+
+<pre><code>// ✅ Bon
+"url": $P10_devis1.devis_pdf.url
+</code></pre>
+
+<h3>🚫 Erreur 3 — Concaténation de chaînes avec <code>+</code></h3>
+
+<pre><code>// ❌ Mauvais (dans le DSL Xano)
+"name": "devis-" + reference + ".pdf"
+
+// Erreur : "Not numeric"
+</code></pre>
+
+<p><strong>Pourquoi :</strong> Dans le DSL Xano (langage de manipulation de données), l'opérateur <code>+</code> est une addition numérique, pas une concaténation de chaînes.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Pour concaténer des chaînes dans Xano, utilisez une fonction dédiée ou passez directement la variable existante (<code>$P10_devis1.devis_pdf.name</code>).
+</div>
+
+<h2>✅ Solution étape par étape</h2>
+
+<h3>Étape 1️⃣ : Préparer le template Brevo</h3>
+
+<p>Dans votre interface Brevo (Campaigns → Templates → Transactional templates) :</p>
+
+<ol>
+    <li>Créer un template d'email</li>
+    <li>Utiliser les variables <code>{{ params.xxx }}</code> dans le contenu :
+        <pre><code>Bonjour {{ params.nom }},
+
+Voici votre devis n° {{ params.reference }}.
+
+Vous pouvez le télécharger en pièce jointe.
+
+Cordialement,
+L'équipe</code></pre>
+    </li>
+    <li>Noter l'ID du template (ex: <code>1</code>)</li>
+</ol>
+
+<h3>Étape 2️⃣ : Créer l'API dans Xano</h3>
+
+<p>Créer une API POST qui :</p>
+<ol>
+    <li>Récupère les données du devis en base</li>
+    <li>Utilise un addon pour joindre les données client</li>
+    <li>Appelle l'API Brevo avec les bons paramètres</li>
+</ol>
+
+<h3>Étape 3️⃣ : Code Xano complet (solution finale)</h3>
+
+<pre><code>query BREVO_devistoclient verb=POST {
+  api_group = "P10_devis"
+
+  input {
+    int devis_id?
+  }
+
+  stack {
+    // Récupérer le devis + données client
+    db.get P10_devis {
+      field_name = "id"
+      field_value = $input.devis_id
+      addon = [
+        {
+          name : "P10_client_by_devis"
+          input: {P10_client_id: $output.client_id}
+          as   : "_client_by_devis"
+        }
+      ]
+    } as $P10_devis1
+
+    // Appel API Brevo
+    api.request {
+      url = "https://api.brevo.com/v3/smtp/email"
+      method = "POST"
+      params = {}
+        // 📧 Destinataire
+        |set:"to":([]
+          |push:({}
+            |set:"email":$P10_devis1._client_by_devis.email
+            |set:"name":$P10_devis1._client_by_devis.nom
+          )
+        )
+        // 📝 Template ID
+        |set:"templateId":1
+
+        // ✅ Variables injectées dans le template
+        |set:"params":({}
+          |set:"nom":$P10_devis1._client_by_devis.nom
+          |set:"reference":$P10_devis1.reference
+          |set:"pdf_url":$P10_devis1.devis_pdf.url
+        )
+
+        // 📎 Pièce jointe PDF
+        |set:"attachment":([]
+          |push:({}
+            |set:"url":$P10_devis1.devis_pdf.url      // ⚠️ .url, pas l'objet complet
+            |set:"name":$P10_devis1.devis_pdf.name    // ⚠️ .name
+          )
+        )
+
+      headers = []
+        |push:"api-key: xkeysib-XXXXXXXX"             // ⚠️ Votre clé API Brevo
+        |push:"Content-Type: application/json"
+        |push:"Accept: application/json"
+    } as $output_brevo_request
+  }
+
+  response = $output_brevo_request
+}
+</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : tester l'API Brevo directement</strong><br>
+Avant d'intégrer dans Xano, testez votre payload dans un outil comme Postman ou l'API Explorer de Brevo pour valider la structure.
+</div>
+
+<h3>Étape 4️⃣ : Obtenir la clé API Brevo</h3>
+
+<ol>
+    <li>Aller dans Brevo → Settings → SMTP & API → API Keys</li>
+    <li>Créer une nouvelle clé API (copier <code>xkeysib-...</code>)</li>
+    <li>Remplacer <code>xkeysib-XXXXXXXX</code> dans le code ci-dessus</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Sécurité</strong><br>
+Ne jamais exposer votre clé API Brevo côté frontend. Toujours faire l'appel depuis le backend (Xano).
+</div>
+
+<h2>🧭 Exemple de résultat</h2>
+
+<h3>Réponse API Brevo (succès)</h3>
+
+<pre><code>{
+  "messageId": "&lt;202601311425.12345@smtp-relay.brevo.com&gt;",
+  "code": "201"
+}
+</code></pre>
+
+<h3>Email reçu</h3>
+
+<div class="figure">
+    <pre><code>À : client@example.com
+Objet : Votre devis n° DEV-2024-001
+Pièce jointe : devis.pdf (245 Ko)
+
+───────────────────────────────────
+
+Bonjour Jean Dupont,
+
+Voici votre devis n° DEV-2024-001.
+
+Vous pouvez le télécharger en pièce jointe.
+
+Cordialement,
+L'équipe</code></pre>
+    <p class="figure-caption">Exemple d'email reçu avec template Brevo</p>
+</div>
+
+<h2>🔧 Debugging : vérifier le payload envoyé</h2>
+
+<p>Si l'email ne fonctionne pas comme prévu, ajoutez un log dans Xano pour voir exactement ce qui est envoyé :</p>
+
+<pre><code>// Juste avant api.request
+log {
+  message = "Payload Brevo"
+  data = {
+    to: $P10_devis1._client_by_devis.email,
+    params: {
+      nom: $P10_devis1._client_by_devis.nom,
+      reference: $P10_devis1.reference
+    },
+    attachment_url: $P10_devis1.devis_pdf.url
+  }
+}
+</code></pre>
+
+<p>Consultez ensuite les logs dans Xano → Logs pour analyser la structure exacte du payload.</p>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>Points clés :</strong>
+<ul>
+    <li><strong>to[]</strong> = uniquement destinataires (<code>email</code> + <code>name</code>), rien d'autre</li>
+    <li><strong>params</strong> = toutes les variables injectées dans le template (<code>{{ params.xxx }}</code>)</li>
+    <li><strong>Attributs contact</strong> (<code>{{ contact.XXX }}</code>) = base de données Brevo</li>
+    <li><strong>Attachment</strong> = toujours <code>[{url: string, name: string}]</code></li>
+    <li>Déstructurer les objets Xano : <code>devis_pdf.url</code> et non <code>devis_pdf</code></li>
+    <li>Pas de concaténation avec <code>+</code> dans le DSL Xano (utiliser les propriétés directement)</li>
+    <li>Toujours tester avec les logs Xano pour valider le payload envoyé</li>
+</ul>
+</div>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+<ul>
+    <li>Gérer les erreurs Brevo (quotas, email invalide, etc.)</li>
+    <li>Ajouter des webhooks Brevo pour tracer les ouvertures/clics</li>
+    <li>Utiliser plusieurs pièces jointes (devis + conditions générales)</li>
+    <li>Personnaliser le <code>replyTo</code> et <code>sender</code></li>
+    <li>Envoyer des emails en copie (cc/bcc)</li>
+    <li>Utiliser des templates conditionnels selon le type de client</li>
+</ul>
+</div>
+
+<h2>🎓 Quiz rapide</h2>
+
+<p><strong>🧠 Question :</strong> Pourquoi la variable <code>{{ params.reference }}</code> ne s'affiche pas dans le template Brevo alors que <code>{{ contact.EMAIL }}</code> fonctionne ?</p>
+
+<details>
+    <summary>✅ Voir la réponse</summary>
+    <p>Parce que <code>{{ contact.EMAIL }}</code> provient de la base de données Brevo (attribut contact permanent), tandis que <code>{{ params.reference }}</code> doit être envoyé dynamiquement dans le champ <code>params</code> du payload API. Si <code>params</code> n'est pas correctement configuré dans l'appel API, la variable reste vide dans le template.</p>
+</details>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://developers.brevo.com/reference/sendtransacemail" target="_blank" rel="noopener">Brevo API : Send transactional email</a></li>
+    <li><a href="https://help.brevo.com/hc/fr/articles/360000946299" target="_blank" rel="noopener">Brevo : Utiliser les variables dans les templates</a></li>
+    <li><a href="https://docs.xano.com/working-with-data/api-request" target="_blank" rel="noopener">Xano Docs : API Request</a></li>
+    <li><a href="#" data-article="../articles/api/generer-stocker-pdf-weweb-xano.html">Article : Générer et stocker un PDF depuis WeWeb vers Xano</a></li>
+    <li><a href="#" data-article="../articles/xano/webhook-stripe-xano-email-brevo.html">Article : Webhook Stripe → Xano → Email Brevo</a></li>
+</ul>
