@@ -19,6 +19,35 @@
     ]
   },
   {
+    "title": "Générer et stocker un PDF depuis WeWeb vers Xano",
+    "category": "API & Backend",
+    "level": "Avancé",
+    "keywords": [
+      "Blob to File",
+      "Attachment Metadata",
+      "Storage Create Attachment",
+      "File Resource vs Attachment",
+      "Multipart Form Data",
+      "html2canvas",
+      "jsPDF"
+    ],
+    "theme": "api",
+    "path": "../articles/api/generer-stocker-pdf-weweb-xano.html",
+    "date": "31/01/2026",
+    "timeSpent": "3-4 heures",
+    "excerpt": "Pour stocker un PDF généré en frontend dans Xano, il faut respecter une chaîne de conversion stricte : Blob → File → File Resource → Attachment → DB. La clé est d'utiliser storage....",
+    "tags": [
+      "api",
+      "blob to file",
+      "attachment metadata",
+      "storage create attachment",
+      "api & backend",
+      "weweb",
+      "xano",
+      "frontend"
+    ]
+  },
+  {
     "title": "Intégrer l'API Sirene de l'INSEE avec Xano",
     "category": "API & Backend",
     "level": "Intermédiaire",

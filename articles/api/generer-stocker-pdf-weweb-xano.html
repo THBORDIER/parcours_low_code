@@ -1,0 +1,372 @@
+<h1>Générer et stocker un PDF depuis WeWeb vers Xano</h1>
+
+<p class="subtitle">Dans cet article, je vais expliquer comment générer un PDF côté frontend avec html2canvas + jsPDF, puis l'envoyer et le stocker correctement dans Xano, en évitant les pièges courants liés aux types de fichiers (Blob, File, File Resource, Attachment).</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> API & Backend</p>
+    <p>🎯 <strong>Niveau:</strong> Avancé</p>
+    <p>🔍 <strong>Mots-clés:</strong> Blob to File, Attachment Metadata, Storage Create Attachment, File Resource vs Attachment, Multipart Form Data, html2canvas, jsPDF</p>
+    <p>📅 <strong>Mise à jour:</strong> 31/01/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 3-4 heures</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Xano</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour stocker un PDF généré en frontend dans Xano, il faut respecter une chaîne de conversion stricte : <strong>Blob → File → File Resource → Attachment → DB</strong>. La clé est d'utiliser <code>storage.create_attachment_metadata</code> pour convertir le file resource en attachment avant l'insertion en base.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<h3>🎯 Objectif initial</h3>
+
+<ul>
+    <li>Générer un PDF côté frontend avec html2canvas + jsPDF (dans WeWeb)</li>
+    <li>Télécharger le PDF localement</li>
+    <li>Envoyer le PDF à Xano via une API</li>
+    <li>Le stocker dans un champ <code>devis_pdf</code> d'un enregistrement existant</li>
+    <li><strong>Sans créer de nouvel enregistrement inutile</strong></li>
+</ul>
+
+<h3>🛑 Symptômes rencontrés</h3>
+
+<p>Malgré un script JavaScript fonctionnel pour la génération du PDF, plusieurs problèmes apparaissaient :</p>
+
+<ul>
+    <li>Xano recevait <code>{}</code> ou une string chiffrée au lieu d'un fichier</li>
+    <li>Le champ <code>devis_pdf.path</code> restait vide en base</li>
+    <li><code>size = 0</code> dans les métadonnées du fichier</li>
+    <li>Messages d'erreur cryptiques : "Input requires attachment. Currently set to file resource."</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Le problème ne venait pas du script de génération PDF (qui fonctionnait parfaitement), mais de la <strong>chaîne de conversion entre les différents types de fichiers</strong> entre WeWeb et Xano.
+</div>
+
+<h2>🔍 Explication : comprendre les types de fichiers</h2>
+
+<h3>🧠 Les 4 types de fichiers à distinguer</h3>
+
+<p>Le parcours d'un fichier de WeWeb vers Xano passe par plusieurs formats. Chaque étape nécessite le bon type :</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Où ?</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Blob</strong></td>
+            <td>JavaScript navigateur</td>
+            <td>Données binaires brutes, non-sérialisables en JSON</td>
+        </tr>
+        <tr>
+            <td><strong>File</strong></td>
+            <td>JavaScript navigateur</td>
+            <td>Extension de Blob avec nom et type MIME, exploitable par multipart</td>
+        </tr>
+        <tr>
+            <td><strong>File Resource</strong></td>
+            <td>Xano (entrée API)</td>
+            <td>Fichier reçu via multipart, temporaire, non stockable directement en DB</td>
+        </tr>
+        <tr>
+            <td><strong>Attachment</strong></td>
+            <td>Xano (base de données)</td>
+            <td>Métadonnées de fichier stockées en base (path, size, mime, etc.)</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : l'analogie de la chaîne logistique</strong><br>
+Imaginez un colis (PDF) qui doit voyager :
+<ul>
+    <li><strong>Blob</strong> = colis non emballé (données brutes)</li>
+    <li><strong>File</strong> = colis emballé avec étiquette (nom + type)</li>
+    <li><strong>File Resource</strong> = colis reçu au centre de tri (temporaire)</li>
+    <li><strong>Attachment</strong> = colis enregistré dans l'inventaire final (base de données)</li>
+</ul>
+Chaque étape nécessite une transformation spécifique.
+</div>
+
+<h3>🔄 La chaîne de conversion correcte</h3>
+
+<pre><code>JavaScript (WeWeb)           Xano API                  Xano Database
+─────────────────────────────────────────────────────────────────
+Blob                    →    (❌ non exploitable)
+    ↓
+File                    →    File Resource         →   (❌ type incompatible)
+                                    ↓
+                            Attachment Metadata   →   Attachment ✅
+</code></pre>
+
+<h2>🧪 Solution étape par étape</h2>
+
+<h3>Étape 1️⃣ : Générer le PDF et le convertir en File (WeWeb)</h3>
+
+<p>Dans votre Custom JavaScript WeWeb, après la génération du PDF avec jsPDF :</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Erreur fréquente</strong><br>
+Ne pas utiliser directement <code>pdf.save()</code> car cela télécharge uniquement le fichier sans le rendre exploitable par le workflow.
+</div>
+
+<pre><code>// ❌ Mauvais : télécharge uniquement
+pdf.save("devis.pdf");
+
+// ✅ Bon : récupérer le Blob puis le convertir en File
+const pdfBlob = pdf.output("blob");
+const pdfFile = new File([pdfBlob], "devis.pdf", {
+  type: "application/pdf"
+});
+
+return {
+  pdf_blob: pdfFile,
+  filename: "devis.pdf",
+  mime: "application/pdf"
+};
+</code></pre>
+
+<p><strong>Pourquoi ?</strong> WeWeb peut sérialiser un Blob en JSON (résultat : <code>{}</code>), mais un <code>File</code> est correctement reconnu comme fichier uploadable.</p>
+
+<h3>Étape 2️⃣ : Configurer l'API WeWeb en multipart (WeWeb)</h3>
+
+<p>Dans l'action API de votre workflow WeWeb :</p>
+
+<ol>
+    <li>Créer une action API POST vers votre endpoint Xano</li>
+    <li><strong>Content Type</strong> : sélectionner <code>multipart/form-data</code></li>
+    <li>Ajouter un champ <code>PDF</code> avec la formule : <code>pdf_blob</code> (retour du script JS)</li>
+    <li>Ajouter <code>devis_id</code> (ID de l'enregistrement à mettre à jour)</li>
+</ol>
+
+<div class="callout callout-warning">
+⚠️ <strong>Erreur fréquente</strong><br>
+Si vous laissez <code>Content-Type: application/json</code>, Xano recevra une string JWT ou <code>{}</code> au lieu du fichier.
+</div>
+
+<h3>Étape 3️⃣ : Convertir File Resource en Attachment (Xano)</h3>
+
+<p>Dans votre API Xano, voici la configuration correcte :</p>
+
+<pre><code>// API : P10_devis/PDF
+// Verb : POST
+
+Input {
+  file? PDF?
+  int devis_id?
+}
+
+Stack {
+  // 🔑 Étape clé : convertir file resource en attachment
+  storage.create_attachment_metadata {
+    file_resource = $input.PDF
+  } as $att
+
+  // Mettre à jour l'enregistrement existant
+  db.edit P10_devis {
+    field_name = "id"
+    field_value = $input.devis_id
+    data = { devis_pdf: $att }
+  } as $result1
+}
+
+Response = $result1
+</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+<code>storage.create_attachment_metadata</code> est la fonction magique qui transforme un <code>file resource</code> (temporaire) en <code>attachment</code> (stockable en base).
+</div>
+
+<h3>🔬 Comprendre <code>storage.create_attachment_metadata</code></h3>
+
+<p>Cette fonction Xano :</p>
+
+<ul>
+    <li>Prend un <code>file_resource</code> en entrée</li>
+    <li>Stocke le fichier dans le storage Xano</li>
+    <li>Retourne un objet <code>attachment</code> avec :
+        <ul>
+            <li><code>path</code> : chemin du fichier stocké</li>
+            <li><code>size</code> : taille en bytes</li>
+            <li><code>mime</code> : type MIME</li>
+            <li><code>name</code> : nom du fichier</li>
+        </ul>
+    </li>
+</ul>
+
+<h2>❌ Fausses pistes à éviter</h2>
+
+<h3>🚫 Tentatives incorrectes</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Tentative</th>
+            <th>Pourquoi ça ne fonctionne pas</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Stocker directement <code>$input.PDF</code> dans la DB</td>
+            <td>Type incompatible : file resource ≠ attachment</td>
+        </tr>
+        <tr>
+            <td>Utiliser <code>Create File Resource</code></td>
+            <td>Cette fonction crée un fichier depuis du texte/base64, pas depuis un upload</td>
+        </tr>
+        <tr>
+            <td>Envoyer le fichier en JSON</td>
+            <td>Les fichiers binaires ne peuvent pas être sérialisés en JSON</td>
+        </tr>
+        <tr>
+            <td>Forcer le <code>path</code> côté frontend</td>
+            <td>Le path est généré par Xano lors du stockage</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-warning">
+⚠️ <strong>Piège fréquent : Create File Resource</strong><br>
+La fonction <code>Create File Resource</code> de Xano accepte un paramètre <code>filedata</code> de type <strong>text</strong>, pas <code>file resource</code>. Elle sert à créer un fichier depuis une URL, du base64 ou du texte brut. Elle ne peut PAS traiter un fichier uploadé via multipart.
+</div>
+
+<h2>🧭 Exemple concret : workflow complet</h2>
+
+<h3>Scénario utilisateur</h3>
+
+<p>Un utilisateur génère un devis, l'affiche à l'écran, puis clique sur "Télécharger et sauvegarder le PDF".</p>
+
+<h3>Code JavaScript (WeWeb)</h3>
+
+<pre><code>// Charger les librairies
+const html2canvas = await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm');
+const jsPDF = await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm');
+
+// Capturer l'élément HTML
+const element = document.getElementById('devis-container');
+const canvas = await html2canvas.default(element);
+
+// Générer le PDF
+const pdf = new jsPDF.default();
+const imgData = canvas.toDataURL('image/png');
+pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+
+// ✅ Convertir en File
+const pdfBlob = pdf.output("blob");
+const pdfFile = new File([pdfBlob], "devis.pdf", {
+  type: "application/pdf"
+});
+
+// Télécharger localement
+pdf.save("devis.pdf");
+
+// Retourner pour le workflow
+return {
+  pdf_blob: pdfFile,
+  filename: "devis.pdf"
+};
+</code></pre>
+
+<h3>Configuration API WeWeb</h3>
+
+<ul>
+    <li><strong>URL</strong> : <code>https://votre-instance.xano.io/api:1/p10_devis/PDF</code></li>
+    <li><strong>Method</strong> : POST</li>
+    <li><strong>Content-Type</strong> : multipart/form-data</li>
+    <li><strong>Body</strong> :
+        <ul>
+            <li><code>PDF</code> = <code>pdf_blob</code> (formule WeWeb)</li>
+            <li><code>devis_id</code> = <code>123</code> (ID de l'enregistrement)</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>API Xano</h3>
+
+<pre><code>POST /p10_devis/PDF
+
+Input:
+  - PDF (file, optional)
+  - devis_id (int, optional)
+
+Stack:
+  1. storage.create_attachment_metadata {
+       file_resource: $input.PDF
+     } → $att
+
+  2. db.edit P10_devis {
+       field_name: "id"
+       field_value: $input.devis_id
+       data: { devis_pdf: $att }
+     } → $result
+
+Response: $result
+</code></pre>
+
+<h3>✅ Résultat en base</h3>
+
+<pre><code>{
+  "id": 123,
+  "devis_pdf": {
+    "path": "/uploads/2026/01/31/abc123.pdf",
+    "size": 245678,
+    "mime": "application/pdf",
+    "name": "devis.pdf"
+  }
+}
+</code></pre>
+
+<h2>📌 À retenir</h2>
+
+<div class="summary">
+📌 <strong>Points clés :</strong>
+<ul>
+    <li><strong>Blob ≠ File ≠ File Resource ≠ Attachment</strong> : chaque type a son rôle et son contexte</li>
+    <li>Dans WeWeb : convertir le Blob en <code>File</code> avec <code>new File([blob], name, {type})</code></li>
+    <li>Dans l'API WeWeb : toujours utiliser <code>multipart/form-data</code> pour les fichiers</li>
+    <li>Dans Xano : utiliser <code>storage.create_attachment_metadata</code> pour convertir file resource → attachment</li>
+    <li>Ne JAMAIS utiliser <code>Create File Resource</code> pour traiter un upload multipart</li>
+    <li>Toujours vérifier le type réel du champ en base (attachment vs file resource vs text)</li>
+</ul>
+</div>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+<ul>
+    <li>Gérer les erreurs de génération PDF (élément non trouvé, timeout)</li>
+    <li>Compresser le PDF côté frontend avec <code>pdf.output("blob", {compress: true})</code></li>
+    <li>Ajouter un watermark ou des métadonnées PDF</li>
+    <li>Versionner les PDFs (archiver l'ancien avant remplacement)</li>
+    <li>Implémenter un système de signature électronique sur le PDF</li>
+</ul>
+</div>
+
+<h2>🎓 Quiz rapide</h2>
+
+<p><strong>🧠 Question :</strong> Pourquoi ne peut-on pas stocker directement <code>$input.PDF</code> (file resource) dans un champ de type <code>attachment</code> ?</p>
+
+<details>
+    <summary>✅ Voir la réponse</summary>
+    <p>Parce qu'un <code>file resource</code> est un fichier temporaire reçu via l'API, tandis qu'un <code>attachment</code> est un objet contenant les métadonnées d'un fichier stocké (path, size, mime). Il faut utiliser <code>storage.create_attachment_metadata</code> pour effectuer la conversion et le stockage.</p>
+</details>
+
+<h2>🔗 Ressources utiles</h2>
+
+<ul>
+    <li><a href="https://developer.mozilla.org/fr/docs/Web/API/Blob" target="_blank" rel="noopener">Documentation MDN : Blob</a></li>
+    <li><a href="https://developer.mozilla.org/fr/docs/Web/API/File" target="_blank" rel="noopener">Documentation MDN : File</a></li>
+    <li><a href="https://docs.xano.com/working-with-data/file-uploads" target="_blank" rel="noopener">Xano Docs : File Uploads</a></li>
+    <li><a href="https://html2canvas.hertzen.com/" target="_blank" rel="noopener">html2canvas - Documentation officielle</a></li>
+    <li><a href="https://github.com/parallax/jsPDF" target="_blank" rel="noopener">jsPDF - Repository GitHub</a></li>
+    <li><a href="#" data-article="../articles/api/integration-weweb-xano.html">Article : Intégration WeWeb-Xano</a></li>
+    <li><a href="#" data-article="../articles/weweb/generer-pdf-html2canvas-jspdf.html">Article : Générer un PDF depuis WeWeb</a></li>
+</ul>
