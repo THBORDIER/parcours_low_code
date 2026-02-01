@@ -96,6 +96,21 @@
                         console.error('Erreur:', error);
                     });
             }
+
+            // Auto-load article from URL parameter if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleParam = urlParams.get('article');
+            if (articleParam) {
+                const matchingLink = Array.from(articleLinks).find(link =>
+                    link.getAttribute('data-article') === articleParam
+                );
+
+                if (matchingLink) {
+                    matchingLink.click();
+                } else {
+                    loadArticle(articleParam);
+                }
+            }
         });
     </script>
 

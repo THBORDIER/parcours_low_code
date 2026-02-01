@@ -113,6 +113,23 @@
                         console.error('[APP] Failed to load article:', url, error);
                     });
             }
+
+            // Auto-load article from URL parameter if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleParam = urlParams.get('article');
+            if (articleParam) {
+                // Find the matching link in the menu
+                const matchingLink = Array.from(articleLinks).find(link =>
+                    link.getAttribute('data-article') === articleParam
+                );
+
+                if (matchingLink) {
+                    matchingLink.click();
+                } else {
+                    // Try loading directly if exact match not found
+                    loadArticle(articleParam);
+                }
+            }
         });
     </script>
 

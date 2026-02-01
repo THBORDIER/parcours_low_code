@@ -694,7 +694,7 @@ class ArticleSearch {
                         🔍 ${article.keywords.slice(0, 5).map(k => this.highlightHTML(k, query)).join(', ')}
                     </div>
                 ` : ''}
-                <a href="themes/${article.theme}.html?article=${encodeURIComponent(article.path)}"
+                <a href="/themes/${article.theme}.html?article=${encodeURIComponent(article.path)}"
                    class="result-link">
                     Lire l'article →
                 </a>
