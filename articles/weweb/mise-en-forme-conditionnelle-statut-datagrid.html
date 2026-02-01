@@ -1,0 +1,203 @@
+<h1>Mettre en forme conditionnelle un statut dans WeWeb (Datagrid vs Repeater)</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Datagrid, Repeater, Mise en forme conditionnelle, Cell styling, Badge conditionnel, Custom display value, Collection list, Limitation WeWeb</p>
+    <p>📅 <strong>Mise à jour:</strong> 01/02/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 30min</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + Figma</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Le Datagrid WeWeb ne permet pas d'appliquer des styles conditionnels visuels par cellule (background, radius, padding). La solution consiste à utiliser un Repeater (Collection list) avec des Div personnalisées pour obtenir un rendu fidèle au design avec badges conditionnels.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>Contexte :</strong> Dans le cadre du projet 10 de ma formation développeur low-code, je devais reproduire un tableau (Datagrid) conçu sur Figma dans WeWeb. L'un des points clés du design était l'affichage du statut sous forme de pill (badge arrondi) avec couleur conditionnelle selon le statut : <strong>Brouillon</strong>, <strong>Archivé</strong>, <strong>Terminé</strong>.</p>
+
+<p><strong>🛑 Problématique principale :</strong></p>
+
+<p>Le composant Datagrid WeWeb (version actuelle) ne permet plus :</p>
+<ul>
+    <li>de sélectionner une cellule individuellement,</li>
+    <li>d'injecter des composants (Div, Badge, etc.) dans une cellule,</li>
+    <li>ni d'appliquer un style conditionnel visuel (background, radius, padding) par cellule.</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+Les tutoriels vidéo disponibles sont obsolètes : ils montrent des fonctionnalités (cell template, sélection de cellule, contenu custom par cellule) qui n'existent plus dans la version actuelle de WeWeb.
+</div>
+
+<h2>🔍 Tests réalisés</h2>
+
+<h3>1️⃣ Utilisation de Custom display value</h3>
+
+<p><strong>Approche :</strong></p>
+<ul>
+    <li>Activation de <code>Custom display value</code> sur la colonne Statut</li>
+    <li>Tentatives via l'éditeur Display value (Formula)</li>
+</ul>
+
+<p><strong>Résultat :</strong></p>
+<ul>
+    <li>✅ Les formules acceptent de la logique (if, switch)</li>
+    <li>❌ Elles ne peuvent renvoyer que des <strong>valeurs</strong> (texte, nombre, date)</li>
+    <li>❌ Impossible de produire un <strong>rendu visuel</strong> (badge, pill, CSS, HTML interprété)</li>
+</ul>
+
+<p>➡️ <strong>Échec.</strong></p>
+
+<h3>2️⃣ Tentative de rendu HTML via JavaScript</h3>
+
+<p><strong>Approche :</strong></p>
+<ul>
+    <li>Retour de balises <code>&lt;span&gt;</code> avec styles inline via un switch</li>
+</ul>
+
+<p><strong>Résultat :</strong></p>
+<ul>
+    <li>❌ Le HTML est affiché comme <strong>texte brut</strong> ou échappé</li>
+    <li>❌ Aucune interprétation HTML/CSS dans le Datagrid</li>
+</ul>
+
+<p>➡️ <strong>Échec confirmé.</strong></p>
+
+<h3>3️⃣ Recherche de styles dynamiques (Cell / Row)</h3>
+
+<p><strong>Approche :</strong></p>
+<ul>
+    <li>Vérification de toutes les options disponibles dans :
+        <ul>
+            <li>colonne</li>
+            <li>cellule</li>
+            <li>ligne</li>
+            <li>Datagrid global</li>
+        </ul>
+    </li>
+</ul>
+
+<p><strong>Résultat :</strong></p>
+<ul>
+    <li>❌ Aucune option <code>Cell style</code>, <code>Cell class</code>, <code>Row class</code> ou équivalent</li>
+    <li>Seuls l'alignement et la valeur textuelle sont configurables</li>
+</ul>
+
+<p>➡️ <strong>Limitation structurelle du composant.</strong></p>
+
+<h2>🔬 Constat technique final</h2>
+
+<div class="callout callout-advanced">
+🔬 <strong>Analyse technique</strong><br>
+Le Datagrid WeWeb est aujourd'hui un composant <strong>monolithique</strong> :
+<ul>
+    <li>❌ Pas de template de cellule</li>
+    <li>❌ Pas de composants internes</li>
+    <li>❌ Pas de rendu conditionnel visuel par cellule</li>
+</ul>
+La logique JavaScript est autorisée uniquement pour <strong>transformer des valeurs</strong>, pas pour générer de l'UI.
+</div>
+
+<h2>🧪 Solution finale retenue</h2>
+
+<h3>Choix technique</h3>
+
+<p>👉 <strong>Abandon du Datagrid natif pour cette fonctionnalité spécifique.</strong></p>
+
+<h3>Implémentation</h3>
+
+<p>Remplacement du Datagrid par un <strong>Repeater (Collection list)</strong> :</p>
+
+<ul>
+    <li>Chaque <strong>ligne</strong> est un <code>Div</code> (flex)</li>
+    <li>Chaque <strong>colonne</strong> est un <code>Div</code></li>
+    <li>Le <strong>statut</strong> est un vrai composant "pill" avec :
+        <ul>
+            <li>Background conditionnel</li>
+            <li>Border radius</li>
+            <li>Padding</li>
+            <li>Couleurs conformes à Figma</li>
+        </ul>
+    </li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Dans le Repeater, utilisez un composant Div dédié pour le badge avec des styles conditionnels basés sur la valeur du statut. Par exemple :
+<ul>
+    <li><code>if (status === "Brouillon") → background: #FFF3CD</code></li>
+    <li><code>if (status === "Terminé") → background: #D1E7DD</code></li>
+    <li><code>if (status === "Archivé") → background: #E2E3E5</code></li>
+</ul>
+</div>
+
+<h3>✅ Avantages</h3>
+<ul>
+    <li>Rendu 100 % fidèle au design Figma</li>
+    <li>Logique conditionnelle claire</li>
+    <li>Comportement maîtrisé</li>
+    <li>Solution utilisée en conditions réelles sur WeWeb</li>
+</ul>
+
+<h3>⚠️ Inconvénients</h3>
+<ul>
+    <li>Perte des fonctionnalités natives du Datagrid (tri/pagination auto)</li>
+    <li>Mais acceptable et justifié dans le cadre d'un projet de formation</li>
+</ul>
+
+<h2>🧭 Exemple concret</h2>
+
+<p><strong>Structure du Repeater :</strong></p>
+
+<pre><code>Repeater (lié à collection "Devis")
+  └─ Div (flex-row) - Ligne du tableau
+       ├─ Div - Colonne "ID"
+       │    └─ Text: {devis.id}
+       ├─ Div - Colonne "Client"
+       │    └─ Text: {devis.client}
+       ├─ Div - Colonne "Statut"
+       │    └─ Div (pill/badge)
+       │         ├─ Background: [conditionnel]
+       │         ├─ Padding: 8px 16px
+       │         ├─ Border-radius: 20px
+       │         └─ Text: {devis.statut}
+       └─ Div - Colonne "Montant"
+            └─ Text: {devis.montant}
+</code></pre>
+
+<p><strong>Logique conditionnelle pour le badge (exemple en pseudo-code) :</strong></p>
+
+<pre><code>if (devis.statut === "Brouillon") {
+  background: #FFF3CD;
+  color: #856404;
+} else if (devis.statut === "Terminé") {
+  background: #D1E7DD;
+  color: #0F5132;
+} else if (devis.statut === "Archivé") {
+  background: #E2E3E5;
+  color: #383D41;
+}
+</code></pre>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Le Datagrid WeWeb ne supporte pas le style conditionnel par cellule ni l'injection de composants</li>
+  <li>Les tutoriels vidéo montrant ces fonctionnalités sont obsolètes</li>
+  <li>Le Custom display value ne permet que de transformer des valeurs, pas de générer de l'UI</li>
+  <li>La solution Repeater (Collection list) offre une flexibilité totale pour le rendu conditionnel</li>
+  <li>Ce compromis technique est justifié quand la fidélité au design prime sur les fonctionnalités natives du Datagrid</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+<ul>
+    <li><a href="https://docs.weweb.io/data/collections.html" target="_blank">Documentation WeWeb - Collections</a></li>
+    <li><a href="https://docs.weweb.io/components/repeater.html" target="_blank">Documentation WeWeb - Repeater</a></li>
+</ul>

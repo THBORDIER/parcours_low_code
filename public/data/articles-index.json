@@ -839,6 +839,33 @@
     ]
   },
   {
+    "title": "Mettre en forme conditionnelle un statut dans WeWeb (Datagrid vs Repeater)",
+    "category": "WeWeb",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Datagrid",
+      "Repeater",
+      "Mise en forme conditionnelle",
+      "Cell styling",
+      "Badge conditionnel",
+      "Custom display value",
+      "Collection list",
+      "Limitation WeWeb"
+    ],
+    "theme": "weweb",
+    "path": "../articles/weweb/mise-en-forme-conditionnelle-statut-datagrid.html",
+    "date": "01/02/2026",
+    "timeSpent": "30min",
+    "excerpt": "Le Datagrid WeWeb ne permet pas d'appliquer des styles conditionnels visuels par cellule (background, radius, padding). La solution consiste à utiliser un Repeater (Collection list...",
+    "tags": [
+      "weweb",
+      "datagrid",
+      "repeater",
+      "mise en forme conditionnelle",
+      "collection"
+    ]
+  },
+  {
     "title": "État d'avancement du projet (Design & Intégration WeWeb)",
     "category": "WeWeb",
     "level": "Débutant",
