@@ -141,7 +141,7 @@ class RecentPage {
                     <p class="result-excerpt">${article.excerpt}</p>
                 ` : ''}
                 ${tagsHTML}
-                <a href="themes/${article.theme}.html?article=${encodeURIComponent(article.path)}"
+                <a href="/themes/${article.theme}.html?article=${encodeURIComponent(article.path)}"
                    class="result-link">
                     Lire l'article →
                 </a>

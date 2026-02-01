@@ -103,7 +103,7 @@ class ArticleListUI {
         return `
             <div class="article-card ${compact ? 'article-card-compact' : ''}">
                 <div class="article-header">
-                    <h3><a href="themes/${article.theme}.html?article=${encodeURIComponent(article.path)}">${highlightedTitle}</a></h3>
+                    <h3><a href="/themes/${article.theme}.html?article=${encodeURIComponent(article.path)}">${highlightedTitle}</a></h3>
                     <button class="favorite-btn-small ${isFavorite ? 'active' : ''}"
                             data-path="${article.path}"
                             aria-label="Favoris"

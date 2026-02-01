@@ -193,33 +193,41 @@ class ArticleSearch {
         // Create controls container
         const controlsHTML = `
             <div class="search-controls" id="search-controls" style="display: none;">
-                <div class="search-options">
-                    <label class="search-toggle">
-                        <input type="checkbox" id="search-in-content" checked>
-                        <span>Rechercher dans le contenu</span>
-                    </label>
+                <div class="search-controls-header">
+                    <button class="toggle-filters-btn" id="toggle-filters-btn" type="button">
+                        <span class="toggle-icon">▼</span>
+                        <span>Filtres et options de recherche</span>
+                    </button>
                 </div>
-                <div class="search-filters">
-                    <div class="filter-group">
-                        <label>Thèmes</label>
-                        <div class="filter-chips" id="theme-filters"></div>
+                <div class="search-controls-content" id="search-controls-content" style="display: none;">
+                    <div class="search-options">
+                        <label class="search-toggle">
+                            <input type="checkbox" id="search-in-content" checked>
+                            <span>Rechercher dans le contenu</span>
+                        </label>
                     </div>
-                    <div class="filter-group">
-                        <label>Niveaux</label>
-                        <div class="filter-chips" id="level-filters"></div>
+                    <div class="search-filters">
+                        <div class="filter-group">
+                            <label>Thèmes</label>
+                            <div class="filter-chips" id="theme-filters"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label>Niveaux</label>
+                            <div class="filter-chips" id="level-filters"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label>Tags <span class="filter-hint">(limité aux 20 plus fréquents)</span></label>
+                            <div class="filter-chips" id="tag-filters"></div>
+                        </div>
                     </div>
-                    <div class="filter-group">
-                        <label>Tags</label>
-                        <div class="filter-chips" id="tag-filters"></div>
+                    <div class="sort-controls">
+                        <label for="sort-select">Trier par :</label>
+                        <select id="sort-select" class="sort-select">
+                            <option value="relevance">Pertinence</option>
+                            <option value="title">Titre (A → Z)</option>
+                            <option value="date">Plus récents</option>
+                        </select>
                     </div>
-                </div>
-                <div class="sort-controls">
-                    <label for="sort-select">Trier par :</label>
-                    <select id="sort-select" class="sort-select">
-                        <option value="relevance">Pertinence</option>
-                        <option value="title">Titre (A → Z)</option>
-                        <option value="date">Plus récents</option>
-                    </select>
                 </div>
             </div>
         `;
@@ -233,6 +241,20 @@ class ArticleSearch {
 
         // Populate filters
         this.populateFilters();
+
+        // Toggle filters visibility
+        const toggleBtn = document.getElementById('toggle-filters-btn');
+        const controlsContent = document.getElementById('search-controls-content');
+        if (toggleBtn && controlsContent) {
+            toggleBtn.addEventListener('click', () => {
+                const isVisible = controlsContent.style.display !== 'none';
+                controlsContent.style.display = isVisible ? 'none' : 'block';
+                const icon = toggleBtn.querySelector('.toggle-icon');
+                if (icon) {
+                    icon.textContent = isVisible ? '▼' : '▲';
+                }
+            });
+        }
 
         // Sort change
         const sortSelect = document.getElementById('sort-select');
@@ -260,14 +282,21 @@ class ArticleSearch {
         const themes = [...new Set(this.articles.map(a => a.theme))].sort();
         const levels = [...new Set(this.articles.map(a => a.level).filter(l => l))].sort();
 
-        // Extract all unique tags
-        const allTags = new Set();
+        // Extract all unique tags with frequency count
+        const tagFrequency = new Map();
         this.articles.forEach(article => {
             if (article.tags && Array.isArray(article.tags)) {
-                article.tags.forEach(tag => allTags.add(tag));
+                article.tags.forEach(tag => {
+                    tagFrequency.set(tag, (tagFrequency.get(tag) || 0) + 1);
+                });
             }
         });
-        const tags = [...allTags].sort();
+
+        // Sort tags by frequency (most common first) and limit to top 20
+        const tags = [...tagFrequency.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 20)
+            .map(([tag]) => tag);
 
         // Theme filters
         const themeContainer = document.getElementById('theme-filters');

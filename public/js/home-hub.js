@@ -289,7 +289,7 @@ class HomeHub {
         return `
             <div class="article-card">
                 <div class="article-header">
-                    <h3><a href="themes/${article.theme}.html?article=${encodeURIComponent(article.path)}">${article.title}</a></h3>
+                    <h3><a href="/themes/${article.theme}.html?article=${encodeURIComponent(article.path)}">${article.title}</a></h3>
                     <button class="favorite-btn-small ${isFavorite ? 'active' : ''}"
                             data-path="${article.path}"
                             aria-label="Favoris"
