@@ -19,6 +19,37 @@
     ]
   },
   {
+    "title": "Débugger un Webhook Stripe dans Xano — Retour d'expérience",
+    "category": "API & Backend",
+    "level": "Intermédiaire",
+    "keywords": [
+      "Webhook Stripe",
+      "Signature HMAC",
+      "json_decode",
+      "util.get_raw_input",
+      "checkout.session.completed",
+      "Debugging Xano",
+      "Stripe Webhook Secret",
+      "Encoding",
+      "Raw body"
+    ],
+    "theme": "api",
+    "path": "../articles/api/debugger-webhook-stripe-xano.html",
+    "date": "03/02/2026",
+    "timeSpent": "1h",
+    "excerpt": "Lors de l'intégration d'un webhook Stripe dans Xano, trois erreurs critiques bloquent souvent l'exécution : (1) la vérification de signature échoue si on parse le body en JSON avan...",
+    "tags": [
+      "api",
+      "webhook stripe",
+      "signature hmac",
+      "json_decode",
+      "api & backend",
+      "xano",
+      "stripe",
+      "webhook"
+    ]
+  },
+  {
     "title": "Envoyer un devis par email avec Brevo (template + pièce jointe)",
     "category": "API & Backend",
     "level": "Intermédiaire",

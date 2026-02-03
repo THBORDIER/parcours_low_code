@@ -1,0 +1,320 @@
+<h1>Débugger un Webhook Stripe dans Xano — Retour d'expérience</h1>
+
+<p class="subtitle">Comment résoudre les 3 erreurs les plus fréquentes lors de l'intégration d'un webhook Stripe dans Xano : échec de vérification de signature, body vide, et variables orphelines. Guide pratique avec code fonctionnel.</p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> API & Backend</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> Webhook Stripe, Signature HMAC, json_decode, util.get_raw_input, checkout.session.completed, Debugging Xano, Stripe Webhook Secret, Encoding, Raw body</p>
+    <p>📅 <strong>Mise à jour:</strong> 03/02/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 1h</p>
+    <p>⚙️ <strong>Stack utilisée:</strong> WeWeb (front) + Xano (back) + Stripe Checkout</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Lors de l'intégration d'un webhook Stripe dans Xano, trois erreurs critiques bloquent souvent l'exécution : (1) <strong>la vérification de signature échoue</strong> si on parse le body en JSON avant validation, (2) <strong><code>$body.type</code> est vide</strong> si on ne parse pas le raw body avec <code>json_decode</code>, (3) <strong>variables orphelines</strong> provoquent des erreurs fatales. Solution : utiliser <code>encoding = ""</code> pour garder le body brut, parser avec <code>json_decode</code> dans une variable séparée, et nettoyer tout code copié d'anciennes APIs.
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Contexte métier :</strong></p>
+<p>Mise en place d'un système d'achat de crédits via Stripe Checkout. Lorsqu'un utilisateur finalise un paiement, Stripe envoie un webhook à Xano pour notifier l'événement <code>checkout.session.completed</code>. L'API Xano doit alors :</p>
+
+<ul>
+    <li>Intercepter l'événement webhook</li>
+    <li>Vérifier la signature HMAC de Stripe (sécurité)</li>
+    <li>Extraire les métadonnées (<code>user_id</code>, <code>credit</code>)</li>
+    <li>Créditer le compte utilisateur en base de données</li>
+</ul>
+
+<p><strong>💡 Metadata envoyées par Stripe :</strong></p>
+<pre><code>{
+  "credit": "100",
+  "user_id": "38"
+}</code></pre>
+
+<p><strong>🛑 Symptômes rencontrés :</strong></p>
+<ol>
+    <li>La condition <code>if</code> n'est jamais validée alors que les valeurs affichées sont identiques</li>
+    <li>Après correction, <code>$body.type</code> retourne une chaîne vide</li>
+    <li>Erreur fatale <code>Missing var entry: reservation1</code></li>
+</ol>
+
+<h2>🔍 Comprendre les webhooks Stripe</h2>
+
+<h3>Qu'est-ce qu'un webhook ?</h3>
+
+<p>Un <strong>webhook</strong> est un appel HTTP automatique envoyé par un service externe (ici Stripe) vers votre API lorsqu'un événement se produit (paiement réussi, abonnement annulé, etc.).</p>
+
+<p><strong>🧠 Analogie :</strong> C'est comme une sonnette de porte. Au lieu de demander constamment "Y a-t-il quelqu'un ?" (polling), vous attendez que quelqu'un appuie sur la sonnette (webhook) pour agir.</p>
+
+<p><strong>📊 Workflow complet :</strong></p>
+<pre><code>User (WeWeb) → [Paiement] → Stripe Checkout
+                                  ↓
+                          [checkout.session.completed]
+                                  ↓
+                            Webhook Stripe
+                                  ↓
+                            API Xano → [Vérif signature] → [Crédit user]</code></pre>
+
+<h3>Pourquoi la vérification de signature ?</h3>
+
+<p>Stripe signe chaque webhook avec un <strong>secret HMAC-SHA256</strong>. Cela garantit que :</p>
+<ul>
+    <li>✅ Le webhook provient bien de Stripe (pas d'un attaquant)</li>
+    <li>✅ Le contenu n'a pas été modifié en transit</li>
+    <li>✅ Le webhook n'est pas rejoué (protection contre les attaques replay)</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention : body brut requis</strong><br>
+La signature HMAC est calculée sur le <strong>body brut exact</strong> (la chaîne de caractères telle que reçue). Si Xano parse le JSON avant la vérification, l'ordre des clés ou le formatage peuvent changer, invalidant la signature. C'est la cause n°1 d'échec des webhooks Stripe.
+</div>
+
+<h2>🧪 Problème n°1 — La vérification de signature échoue</h2>
+
+<h3>Symptôme</h3>
+
+<p>La condition <code>if</code> n'est jamais validée alors que <code>$body.type</code> contient bien <code>checkout.session.completed</code>. Le debug affiche :</p>
+
+<pre><code>Condition IF non validée.
+Attendu: checkout.session.completed
+Reçu: checkout.session.completed</code></pre>
+
+<p>Les deux valeurs sont identiques, donc c'est la <strong>seconde condition</strong> qui échoue : la vérification de signature.</p>
+
+<h3>Cause</h3>
+
+<p>L'API utilisait <code>encoding = "json"</code> dans <code>util.get_raw_input</code>, ce qui parse le body en objet JSON <strong>avant</strong> que la fonction de vérification de signature ne puisse lire le body brut.</p>
+
+<p>Or, Stripe calcule le HMAC-SHA256 sur le <strong>body brut exact</strong>. Quand Xano re-sérialise l'objet avec <code>json_encode</code>, l'ordre des clés ou le formatage peuvent différer, ce qui invalide la signature.</p>
+
+<h3>Solution</h3>
+
+<p>Passer <code>encoding = ""</code> (chaîne vide) pour récupérer le body brut sans parsing :</p>
+
+<pre><code>// ❌ Avant (body parsé → signature invalide)
+util.get_raw_input {
+  encoding = "json"
+}
+
+// ✅ Après (body brut → signature valide)
+util.get_raw_input {
+  encoding = ""
+}</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Cette règle s'applique à <strong>tous les webhooks nécessitant une vérification HMAC</strong> (Stripe, GitHub, Shopify, etc.). Toujours utiliser <code>encoding = ""</code> pour garder le body intact.
+</div>
+
+<h2>🧪 Problème n°2 — <code>$body.type</code> est vide après correction</h2>
+
+<h3>Symptôme</h3>
+
+<p>Après le fix de la signature, <code>$body.type</code> retourne une chaîne vide. La condition <code>if</code> échoue à nouveau.</p>
+
+<h3>Cause</h3>
+
+<p>Avec <code>encoding = ""</code>, <code>$body</code> est une <strong>chaîne de caractères brute</strong>, pas un objet JSON. On ne peut donc pas accéder à <code>$body.type</code> directement.</p>
+
+<h3>Solution</h3>
+
+<p>Parser le body brut avec <code>json_decode</code> dans une variable séparée :</p>
+
+<pre><code>// 1. Récupérer le body BRUT (pour la signature)
+util.get_raw_input {
+  encoding = ""
+  exclude_middleware = false
+} as $raw_request
+
+// 2. Parser en JSON dans une variable séparée
+var $body {
+  value = $raw_request|json_decode
+}</code></pre>
+
+<p><strong>✅ Résultat :</strong></p>
+<ul>
+    <li>Le raw body (<code>$raw_request</code>) reste intact pour la vérification de signature</li>
+    <li>L'objet JSON (<code>$body</code>) est exploitable pour accéder à <code>$body.type</code>, <code>$body.data.object</code>, etc.</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin : le pipe <code>|json_decode</code></strong><br>
+Xano utilise des pipes (<code>|</code>) pour chaîner des transformations. <code>$raw_request|json_decode</code> est équivalent à <code>JSON.parse(rawRequest)</code> en JavaScript. Autres pipes utiles : <code>|to_int</code>, <code>|concat</code>, <code>|strlen</code>.
+</div>
+
+<h2>🧪 Problème n°3 — <code>Missing var entry: reservation1</code></h2>
+
+<h3>Symptôme</h3>
+
+<p>Erreur fatale au runtime :</p>
+
+<pre><code>Missing var entry: reservation1</code></pre>
+
+<h3>Cause</h3>
+
+<p>Du code copié depuis une ancienne API (réservations) faisait référence à <code>$reservation1</code>, une variable qui n'existe plus dans le nouveau contexte (crédits).</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Danger du copier-coller</strong><br>
+Lors du développement rapide, il est tentant de copier une API existante et de la modifier. Mais les variables orphelines provoquent des erreurs fatales difficiles à tracer. <strong>Toujours nettoyer le code copié ligne par ligne.</strong>
+</div>
+
+<h3>Solution</h3>
+
+<p>Supprimer toutes les références à <code>$reservation1</code> et adapter le code au nouveau cas d'usage :</p>
+
+<pre><code>// ❌ Ancien code (réservations)
+db.edit reservation { ... } as $reservation1
+
+// ✅ Nouveau code (crédits)
+db.get user {
+  field_name = "id"
+  field_value = $body.data.object.metadata.user_id|to_int
+} as $user
+
+db.edit user {
+  field_name = "id"
+  field_value = $body.data.object.metadata.user_id|to_int
+  data = {
+    credit: ($user.credit|to_int) + ($body.data.object.metadata.credit|to_int)
+  }
+} as $user1</code></pre>
+
+<h2>🧰 Code final fonctionnel</h2>
+
+<p>Voici le code complet de l'API webhook Stripe dans Xano :</p>
+
+<pre><code>query "P10_stripe-webhook" verb=POST {
+  api_group = "STRIPE"
+
+  stack {
+    var $debug_trace {
+      value = []
+    }
+
+    // 1. Récupérer le body BRUT (essentiel pour la signature)
+    util.get_raw_input {
+      encoding = ""
+      exclude_middleware = false
+    } as $raw_request
+
+    // 2. Parser en JSON pour exploiter les données
+    var $body {
+      value = $raw_request|json_decode
+    }
+
+    var $request_header {
+      value = $env.$http_headers
+    }
+
+    // 3. Vérifier la signature Stripe
+    function.run "Stripe Custom Signature" {
+      input = {
+        http_headers: $request_header
+        SECRET_KEY  : $env.stripe_key  // clé whsec_...
+      }
+    } as $func2
+
+    // 4. Traiter si checkout réussi + signature valide
+    conditional {
+      if (`$body.type` == "checkout.session.completed" && `$func2.result`) {
+        db.get user {
+          field_name = "id"
+          field_value = $body.data.object.metadata.user_id|to_int
+        } as $user
+
+        db.edit user {
+          field_name = "id"
+          field_value = $body.data.object.metadata.user_id|to_int
+          data = {
+            credit: ($user.credit|to_int) + ($body.data.object.metadata.credit|to_int)
+          }
+        } as $user1
+      }
+    }
+  }
+}</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce : <code>$env.stripe_key</code></strong><br>
+Ne jamais hardcoder la clé Stripe dans le code. Utiliser les <strong>Environment Variables</strong> de Xano pour stocker <code>stripe_key</code> = votre Webhook Signing Secret (<code>whsec_...</code>). Cela facilite la gestion multi-environnements (dev/prod) et améliore la sécurité.
+</div>
+
+<h2>🧭 Exemple de test avec Stripe CLI</h2>
+
+<p>Pour tester votre webhook localement sans faire de vrais paiements :</p>
+
+<ol>
+    <li>Installer <a href="https://stripe.com/docs/stripe-cli" target="_blank" rel="noopener">Stripe CLI</a></li>
+    <li>Se connecter : <code>stripe login</code></li>
+    <li>Écouter les webhooks : <code>stripe listen --forward-to https://votre-instance.xano.io/api:P10/stripe-webhook</code></li>
+    <li>Déclencher un événement de test : <code>stripe trigger checkout.session.completed</code></li>
+</ol>
+
+<p>Vous verrez immédiatement si la signature est validée et si les crédits sont ajoutés.</p>
+
+<h2>📋 Tableau de diagnostic rapide</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Symptôme</th>
+            <th>Cause probable</th>
+            <th>Solution</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Signature invalide</td>
+            <td><code>encoding = "json"</code></td>
+            <td>Utiliser <code>encoding = ""</code></td>
+        </tr>
+        <tr>
+            <td><code>$body.type</code> vide</td>
+            <td>Body brut non parsé</td>
+            <td>Ajouter <code>var $body { value = $raw_request|json_decode }</code></td>
+        </tr>
+        <tr>
+            <td>Missing var entry</td>
+            <td>Variable orpheline (code copié)</td>
+            <td>Nettoyer toutes les références anciennes</td>
+        </tr>
+        <tr>
+            <td>Webhook non reçu</td>
+            <td>URL incorrecte dans Stripe Dashboard</td>
+            <td>Vérifier l'URL et le verbe (POST)</td>
+        </tr>
+        <tr>
+            <td><code>whsec_...</code> invalide</td>
+            <td>Clé API au lieu de Webhook Secret</td>
+            <td>Utiliser la clé <strong>Webhook Signing Secret</strong> (Stripe Dashboard → Webhooks)</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li><strong>Toujours utiliser <code>encoding = ""</code></strong> pour les webhooks nécessitant une vérification de signature HMAC. Le body brut doit rester intact.</li>
+  <li><strong>Parser ensuite avec <code>json_decode</code></strong> pour accéder aux propriétés de l'objet.</li>
+  <li><strong><code>stripe_key</code> = la Webhook Signing Secret</strong> (<code>whsec_...</code>), pas la clé API (<code>sk_test_...</code>).</li>
+  <li><strong>Ajouter des traces de debug</strong> (<code>$debug_trace</code>) à chaque étape pour identifier rapidement où ça coince.</li>
+  <li><strong>Nettoyer le code copié</strong> d'anciennes APIs — les variables orphelines provoquent des erreurs fatales.</li>
+  <li><strong>Tester avec Stripe CLI</strong> avant de déployer en production pour valider la signature et le workflow complet.</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+
+<ul>
+    <li><a href="https://stripe.com/docs/webhooks" target="_blank" rel="noopener">Documentation Stripe Webhooks</a></li>
+    <li><a href="https://stripe.com/docs/webhooks/signatures" target="_blank" rel="noopener">Vérification de signature Stripe</a></li>
+    <li><a href="https://stripe.com/docs/stripe-cli" target="_blank" rel="noopener">Stripe CLI</a> – Tester les webhooks localement</li>
+    <li><a href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener">Stripe Dashboard - Webhooks</a> – Configurer vos endpoints</li>
+</ul>
