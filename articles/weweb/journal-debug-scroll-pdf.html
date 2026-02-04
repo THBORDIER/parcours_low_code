@@ -1,0 +1,258 @@
+<h1>WeWeb – Journal de debug : Scroll, conditions métier, calculs et génération PDF</h1>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie:</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau:</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés:</strong> WeWeb debug, html2canvas, jsPDF pagination, scroll container, fixed header footer, JavaScript float precision, validation formulaire, capture DOM PDF, scale to fit PDF</p>
+    <p>📅 <strong>Mise à jour:</strong> 04/02/2026</p>
+    <p>⏱️ <strong>Temps passé:</strong> 15min</p>
+    <p>⚙️ <strong>Stack:</strong> WeWeb + html2canvas + jsPDF</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Journal technique documentant 6 problèmes réels rencontrés dans WeWeb : validation de champs incohérente, scroll cassé avec fixed header/footer, imprécision des calculs JS, bugs de pagination PDF, et leurs solutions testées et validées.
+</div>
+
+<h2>🎯 Objectif de cet article</h2>
+<p>Cet article documente les <strong>problèmes réels rencontrés</strong> lors du développement d'une fonctionnalité de génération de PDF dans WeWeb, avec :</p>
+<ul>
+    <li>Les symptômes observés</li>
+    <li>Les hypothèses testées</li>
+    <li>Les échecs et pourquoi</li>
+    <li>Les solutions retenues et leurs raisons techniques</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Ce type de journal est précieux pour la formation : il montre le processus de debug réel, pas seulement le code final. Conservez ces traces pour progresser plus vite sur les prochains projets.
+</div>
+
+<h2>🛑 Problème #1 : Logique métier (conditions true / false incohérentes)</h2>
+
+<h3>Symptôme</h3>
+<ul>
+    <li>Une condition censée bloquer l'action (<code>false</code>) passait quand même à <code>true</code></li>
+    <li>Les champs <code>email</code> et <code>telephone</code> étaient vides, mais la validation passait</li>
+</ul>
+
+<h3>Code initial (simplifié)</h3>
+<pre><code>champ != null</code></pre>
+
+<h3>Hypothèse</h3>
+<p>"Peut-être que la valeur n'est pas <code>null</code> mais autre chose"</p>
+
+<h3>🔍 Diagnostic</h3>
+<p>En JavaScript :</p>
+<ul>
+    <li><code>""</code> (string vide) ≠ <code>null</code></li>
+    <li><code>" "</code> (espaces) ≠ <code>null</code></li>
+</ul>
+<p>Donc <code>!= null</code> ne protège que contre <code>null</code> / <code>undefined</code></p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+<code>!= null</code> n'est JAMAIS une validation utilisateur suffisante. Une string vide ou contenant uniquement des espaces passera cette condition.
+</div>
+
+<h3>✅ Test concluant</h3>
+<pre><code>((value ?? '').trim() !== '')</code></pre>
+
+<h3>Décision</h3>
+<ul>
+    <li>Toute validation utilisateur = <strong>non null + non vide + trim</strong></li>
+    <li><code>!= null</code> réservé uniquement aux champs techniques</li>
+</ul>
+
+<h2>🛑 Problème #2 : Scroll cassé (main passe sous le footer)</h2>
+
+<h3>Symptôme</h3>
+<p>En scrollant vers le bas :</p>
+<ul>
+    <li>Le contenu du <code>main</code> passe derrière le <code>footer</code></li>
+    <li><code>html2canvas</code> capture mal la zone</li>
+</ul>
+
+<h3>Contexte technique</h3>
+<ul>
+    <li><code>header</code> : <code>position: fixed</code></li>
+    <li><code>footer</code> : <code>position: fixed</code></li>
+    <li><code>main</code> : hauteur automatique</li>
+    <li>Scroll global sur <code>body</code></li>
+</ul>
+
+<h3>Hypothèses testées</h3>
+<ol>
+    <li>Ajouter des <code>z-index</code></li>
+    <li>Passer le footer en <code>sticky</code></li>
+    <li>Ajouter du <code>padding-bottom</code> au main</li>
+</ol>
+<p>➡️ <strong>Résultat :</strong> bricolage fragile, dépendant de la hauteur réelle du footer.</p>
+
+<h3>🔍 Diagnostic final</h3>
+<ul>
+    <li>Les éléments <code>fixed</code> ne réservent aucune place dans le flux</li>
+    <li>Le <code>body</code> continue de scroller "sous" eux</li>
+</ul>
+
+<h3>✅ Solution retenue : Layout en vh</h3>
+<p>Scroll uniquement sur <code>main</code></p>
+
+<h4>Implémentation</h4>
+<ul>
+    <li><code>header</code> : hauteur fixe (vh / px)</li>
+    <li><code>footer</code> : hauteur fixe</li>
+    <li><code>main</code> :
+        <ul>
+            <li><code>height: calc(100vh - header - footer)</code></li>
+            <li><code>overflow-y: auto</code></li>
+        </ul>
+    </li>
+</ul>
+
+<h4>Pourquoi ça marche</h4>
+<ul>
+    <li>Plus de scroll global</li>
+    <li><code>html2canvas</code> peut mesurer un conteneur stable</li>
+    <li>Plus de contenu masqué</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Avec un layout en <code>vh</code> et scroll sur <code>main</code>, les éléments fixed (header/footer) restent toujours visibles et le contenu ne passe plus dessous. C'est la solution standard pour les applications web modernes.
+</div>
+
+<h2>🛑 Problème #3 : Imprécision JS (0.6000000000000001)</h2>
+
+<h3>Symptôme</h3>
+<p>Multiplication simple → résultat "bizarre"</p>
+
+<h3>Cause</h3>
+<p>Représentation float IEEE 754 (classique en JavaScript)</p>
+
+<div class="figure">
+    <pre><code>0.1 + 0.2 // 0.30000000000000004</code></pre>
+    <p class="figure-caption">Exemple classique d'imprécision des flottants en JS</p>
+</div>
+
+<h3>✅ Test concluant</h3>
+<pre><code>Math.round(val * 100) / 100</code></pre>
+
+<h3>Décision</h3>
+<ul>
+    <li>Tous les montants calculés → <strong>arrondis avant affichage</strong></li>
+    <li><code>toFixed(2)</code> seulement pour l'affichage (retourne une string)</li>
+</ul>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Pour des calculs financiers précis, envisagez d'utiliser une bibliothèque comme <code>decimal.js</code> ou <code>big.js</code> qui gèrent les décimales sans approximation.
+</div>
+
+<h2>🛑 Problème #4 : PDF découpage entre pages cassé</h2>
+
+<h3>Symptôme</h3>
+<p>PDF multi-pages avec :</p>
+<ul>
+    <li>Blanc entre pages</li>
+    <li>Décalage vertical</li>
+    <li>Contenu coupé n'importe comment</li>
+</ul>
+
+<h3>Code testé (approche classique)</h3>
+<ul>
+    <li>1 canvas géant</li>
+    <li>Même image collée sur chaque page</li>
+    <li>Offset Y recalculé</li>
+</ul>
+
+<h3>Hypothèse</h3>
+<p>"Le calcul d'offset est faux"</p>
+
+<h3>🔍 Diagnostic réel</h3>
+<ul>
+    <li>jsPDF ne gère pas un scroll d'image</li>
+    <li>Repositionner une image géante = imprécis</li>
+    <li>Erreurs cumulées dès que la hauteur tombe pile sur une page</li>
+</ul>
+
+<h3>Test alternatif (qui marche)</h3>
+<ul>
+    <li>Découper le canvas en tranches</li>
+    <li>Une image = une page</li>
+</ul>
+<p>➡️ Rendu parfait, mais :</p>
+<ul>
+    <li>Multi-pages</li>
+    <li>Pas le besoin métier final</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+jsPDF n'est pas conçu pour simuler un scroll ou repositionner une grande image sur plusieurs pages. Cette approche génère toujours des bugs d'alignement.
+</div>
+
+<h2>✅ Problème #5 : Décision produit – Forcer sur une seule page</h2>
+
+<h3>Besoin réel</h3>
+<ul>
+    <li>Un devis en une page</li>
+    <li>Acceptable si réduit</li>
+    <li>Zéro bug de pagination</li>
+</ul>
+
+<h3>Stratégie retenue</h3>
+<ul>
+    <li><strong>Scale to fit</strong></li>
+    <li>Pas de pagination</li>
+    <li>Pas de calcul d'offset</li>
+    <li>Une seule image</li>
+</ul>
+
+<h3>Pourquoi ça marche</h3>
+<ul>
+    <li>jsPDF ne fait qu'afficher une image</li>
+    <li>Aucune logique de page break</li>
+    <li>Aucune jonction à gérer</li>
+</ul>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Simplifier le besoin résout souvent le bug. Une seule page = zéro calcul de pagination = zéro bug d'alignement.
+</div>
+
+<h2>🧰 Problème #6 : Script final – Pourquoi il est stable</h2>
+
+<h3>Points clés de stabilité</h3>
+<ul>
+    <li><strong>Lock global</strong> (<code>__WW_PDF_LOCK__</code>) : empêche les clics multiples</li>
+    <li><strong>Chargement CDN sécurisé</strong> : vérification que les libs sont chargées</li>
+    <li><strong>Timeout html2canvas</strong> : laisse le temps au DOM de se stabiliser</li>
+    <li><strong>Capture DOM maîtrisée</strong> : scroll local uniquement</li>
+    <li><strong>Pas de pagination</strong> : une seule image → une seule page</li>
+</ul>
+
+<p>➡️ <strong>Moins de logique = moins de bugs</strong></p>
+
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+    <li><code>!= null</code> n'est jamais une validation utilisateur (toujours trim + vérifier vide)</li>
+    <li><code>fixed</code> + scroll global = piège classique (préférer layout vh + scroll sur main)</li>
+    <li><code>html2canvas</code> a besoin d'un DOM stable (pas de scroll body)</li>
+    <li><code>jsPDF</code> n'est pas fait pour simuler un scroll ou une pagination complexe</li>
+    <li>Simplifier le besoin (1 page au lieu de multi-pages) résout souvent le bug</li>
+    <li>Toujours arrondir les calculs JS avec des flottants avant affichage</li>
+    <li>Documenter les hypothèses testées permet d'apprendre de ses erreurs</li>
+</ul>
+</div>
+
+<h2>🔗 Ressources utiles</h2>
+<ul>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number" target="_blank">MDN : Number et précision des flottants</a></li>
+    <li><a href="https://html2canvas.hertzen.com/" target="_blank">Documentation html2canvas</a></li>
+    <li><a href="https://github.com/parallax/jsPDF" target="_blank">Documentation jsPDF</a></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position" target="_blank">MDN : position (fixed, sticky, etc.)</a></li>
+</ul>

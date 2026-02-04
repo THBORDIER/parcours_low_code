@@ -1,0 +1,211 @@
+<h1>Flux "mot de passe oublié" avec WeWeb + Brevo</h1>
+
+<p><em>Dans cet article, je détaille la mise en place complète d'un flux de réinitialisation de mot de passe en utilisant WeWeb pour l'interface, Brevo pour l'envoi d'emails transactionnels, et une API custom pour la gestion des utilisateurs. Je partage les problèmes rencontrés et les solutions fonctionnelles.</em></p>
+
+<!-- Metadata block -->
+<div class="metadata">
+    <p>🏷️ <strong>Catégorie :</strong> WeWeb</p>
+    <p>🎯 <strong>Niveau :</strong> Intermédiaire</p>
+    <p>🔍 <strong>Mots-clés :</strong> Reset password, Forgot password, WeWeb validation, Regex JavaScript, Brevo transactional email, Query parameters, Magic link, Password policy, Formula condition, Brevo params</p>
+    <p>📅 <strong>Mise à jour :</strong> 04/02/2026</p>
+    <p>⏱️ <strong>Temps passé :</strong> 15min</p>
+    <p>⚙️ <strong>Stack :</strong> WeWeb + Brevo + API custom</p>
+</div>
+
+<!-- TL;DR -->
+<div class="tldr">
+✅ <strong>TL;DR :</strong>
+Pour créer un flux de réinitialisation de mot de passe fonctionnel avec WeWeb + Brevo, les points critiques sont : (1) valider le mot de passe avec une regex correcte en utilisant <code>.test()</code>, (2) passer les paramètres via <code>params</code> dans l'API Brevo, (3) récupérer le <code>user_id</code> depuis l'URL WeWeb avec les query parameters, et (4) éviter les erreurs JS courantes (comparaison de regex, syntaxe stricte).
+</div>
+
+<h2>🤔 Problème rencontré</h2>
+
+<p><strong>🛑 Besoin initial :</strong></p>
+<ul>
+    <li>Créer un formulaire d'inscription/réinitialisation dans WeWeb</li>
+    <li>Valider un mot de passe complexe (min 8 caractères, minuscule, majuscule, chiffre, caractère spécial)</li>
+    <li>Envoyer un email via Brevo contenant un lien avec un identifiant utilisateur</li>
+    <li>Récupérer cet identifiant dans une page WeWeb pour permettre le reset</li>
+</ul>
+
+<p><strong>💡 Scénario utilisateur :</strong></p>
+<p>Un utilisateur clique sur "Mot de passe oublié" → saisit son email → reçoit un lien par email → clique sur le lien → arrive sur une page WeWeb avec son <code>user_id</code> en paramètre → peut définir un nouveau mot de passe.</p>
+
+<h2>🔍 Les erreurs rencontrées (et pourquoi ça ne marchait pas)</h2>
+
+<h3>❌ Erreur 1 : Comparer une valeur à une regex</h3>
+<pre><code>// ❌ INCORRECT
+PasswordInputValue = ^(?=.*[A-Z])...
+</code></pre>
+<p>➡️ <strong>Problème :</strong> Une regex ne se compare pas avec <code>=</code>, elle se teste avec <code>.test()</code></p>
+
+<h3>❌ Erreur 2 : Regex interprétée comme du JavaScript invalide</h3>
+<p>La regex était écrite directement dans une condition sans être encapsulée correctement, provoquant une erreur <code>Unexpected token '^'</code>.</p>
+
+<h3>❌ Erreur 3 : Soustraction au lieu de lecture de variable</h3>
+<pre><code>// ❌ INCORRECT
+.test(variables[...] - value)
+</code></pre>
+<p>➡️ <strong>Problème :</strong> Le <code>- value</code> était interprété comme une soustraction, retournant <code>NaN</code>, donc <code>.test(NaN)</code> retournait toujours <code>false</code>.</p>
+
+<h3>❌ Erreur 4 : Comparer à la chaîne "null"</h3>
+<pre><code>// ❌ INCORRECT
+value != "null"
+</code></pre>
+<p>➡️ <strong>Problème :</strong> <code>"null"</code> est une chaîne de caractères, pas une valeur vide. Il faut utiliser <code>null</code> sans guillemets.</p>
+
+<div class="callout callout-warning">
+⚠️ <strong>Attention</strong><br>
+WeWeb est très permissif dans l'éditeur de formules, mais exécute du JavaScript strict. Les erreurs de syntaxe JS ne sont souvent détectées qu'à l'exécution, pas à la saisie.
+</div>
+
+<h2>✅ Solution fonctionnelle : validation du mot de passe</h2>
+
+<h3>🔧 Regex finale (copiable)</h3>
+<pre><code>^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$
+</code></pre>
+
+<p><strong>Explications :</strong></p>
+<ul>
+    <li><code>^</code> : début de la chaîne</li>
+    <li><code>(?=.*[a-z])</code> : au moins 1 minuscule</li>
+    <li><code>(?=.*[A-Z])</code> : au moins 1 majuscule</li>
+    <li><code>(?=.*\d)</code> : au moins 1 chiffre</li>
+    <li><code>(?=.*[^A-Za-z0-9])</code> : au moins 1 caractère spécial</li>
+    <li><code>\S{8,}</code> : 8 caractères minimum sans espace</li>
+    <li><code>$</code> : fin de la chaîne</li>
+</ul>
+
+<h3>✅ Condition WeWeb complète (copiable)</h3>
+<pre><code>variables['cd6eda7b-6d67-4942-8c56-3b362840e7b5-value'] === true
+&& variables['138d3a19-97fb-4fa3-96d8-51dd46f0567a-value'] != null
+&& variables['138d3a19-97fb-4fa3-96d8-51dd46f0567a-value'] !== ""
+&& variables['686eba83-ed14-4f23-82cc-7d1d0af5df88-value'] != null
+&& variables['686eba83-ed14-4f23-82cc-7d1d0af5df88-value'] !== ""
+&& variables['5c149008-50e7-49e9-a4f6-460d7e10350f-value'] != null
+&& variables['5c149008-50e7-49e9-a4f6-460d7e10350f-value'] !== ""
+&& variables['22638315-a261-4d55-bbc0-7866ec8375e1-value'] != null
+&& variables['22638315-a261-4d55-bbc0-7866ec8375e1-value'] !== ""
+&& variables['dc33a746-5c44-46d4-99b1-93c37caf0297-value'] != null
+&& variables['dc33a746-5c44-46d4-99b1-93c37caf0297-value'] !== ""
+&& /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/
+   .test(variables['dc33a746-5c44-46d4-99b1-93c37caf0297-value'])
+</code></pre>
+
+<div class="callout callout-tip">
+✨ <strong>Astuce</strong><br>
+Utilisez <code>===</code> et <code>!==</code> pour des comparaisons strictes en JavaScript. Vérifiez toujours <code>!= null</code> ET <code>!== ""</code> pour les champs texte, car une chaîne vide n'est pas <code>null</code>.
+</div>
+
+<h3>💬 Message utilisateur (UX-friendly)</h3>
+<p>Affichez ce message dans un Snackbar ou popup en cas d'erreur de validation :</p>
+<div class="callout callout-warning">
+⚠️ <strong>Mot de passe invalide</strong><br>
+8 caractères minimum, avec au moins 1 minuscule, 1 majuscule, 1 chiffre et 1 caractère spécial.<br>
+Les espaces ne sont pas autorisés.
+</div>
+
+<h2>📧 Envoi de l'email via Brevo avec passage de paramètres</h2>
+
+<h3>Étape 1️⃣ : Préparer l'appel API dans WeWeb</h3>
+
+<p>Dans votre workflow WeWeb, configurez un appel API vers Brevo en passant le <code>user_id</code> :</p>
+
+<pre><code>|set: "params": ({})
+  |set: "user_id": $user1.id
+)
+</code></pre>
+
+<p>Cela crée un objet <code>params</code> contenant <code>user_id</code> qui sera envoyé à Brevo.</p>
+
+<h3>Étape 2️⃣ : Configurer le template Brevo</h3>
+
+<p>Dans votre template d'email Brevo, insérez le paramètre dans l'URL du bouton/lien :</p>
+
+<pre><code>https://votre-app.weweb-preview.io/reset-password/?user_id={{ params.user_id }}
+</code></pre>
+
+<p>✅ Brevo remplacera automatiquement <code>{{ params.user_id }}</code> par la valeur envoyée depuis WeWeb.</p>
+
+<div class="callout callout-advanced">
+🔬 <strong>Pour aller plus loin</strong><br>
+Vous pouvez passer plusieurs paramètres : <code>{{ params.user_id }}</code>, <code>{{ params.token }}</code>, <code>{{ params.timestamp }}</code>, etc. Brevo supporte tous les paramètres personnalisés envoyés dans l'objet <code>params</code>.
+</div>
+
+<h2>🔗 Récupération du paramètre côté WeWeb</h2>
+
+<h3>Étape 3️⃣ : Lire le query parameter dans WeWeb</h3>
+
+<p>Dans votre page de réinitialisation, récupérez le <code>user_id</code> depuis l'URL :</p>
+
+<ul>
+    <li>Créez une variable WeWeb liée au query parameter <code>user_id</code></li>
+    <li>Utilisez cette variable dans vos workflows (affichage, appel API, vérification utilisateur)</li>
+</ul>
+
+<div class="callout callout-warning">
+⚠️ <strong>Sécurité</strong><br>
+Passer le <code>user_id</code> directement dans l'URL est fonctionnel mais <strong>non sécurisé</strong> pour de la production. Pour un système robuste, utilisez un <strong>token JWT</strong> ou un <strong>magic link</strong> avec expiration. Cette méthode est acceptable pour du prototypage ou des environnements contrôlés.
+</div>
+
+<h2>📊 Bonus : Clic sur une ligne de DataGrid WeWeb</h2>
+
+<p><strong>Problème :</strong> WeWeb n'offre pas de "on row click" direct exploitable facilement.</p>
+
+<p><strong>Solution :</strong></p>
+<ol>
+    <li>Ajoutez un bouton ou container cliquable dans une cellule</li>
+    <li>Au clic, stockez la ligne dans une variable (<code>selectedRow</code>)</li>
+    <li>Déclenchez un workflow avec une condition sur le statut</li>
+</ol>
+
+<pre><code>// Condition pour vérifier le statut "Brouillon"
+(variables['56e3bdfa-2a56-42ca-8ff3-53f2eb734e5d-selectedRows']?.[0]?.status ?? "") === "Brouillon"
+</code></pre>
+
+<h2>🧭 Exemple complet du flux</h2>
+
+<h3>1. Formulaire WeWeb (page "Mot de passe oublié")</h3>
+<ul>
+    <li>Champ email</li>
+    <li>Bouton "Envoyer le lien"</li>
+    <li>Workflow : appel API → envoi email Brevo avec <code>params.user_id</code></li>
+</ul>
+
+<h3>2. Template Brevo</h3>
+<pre><code>Bonjour,
+
+Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :
+
+[Réinitialiser mon mot de passe](https://votre-app.weweb-preview.io/reset-password/?user_id={{ params.user_id }})
+
+Ce lien est valable pendant 24 heures.
+</code></pre>
+
+<h3>3. Page WeWeb "Réinitialisation"</h3>
+<ul>
+    <li>Récupération du <code>user_id</code> depuis l'URL</li>
+    <li>Formulaire avec nouveau mot de passe (validation regex)</li>
+    <li>Bouton "Valider" → appel API pour update password</li>
+</ul>
+
+<!-- Final summary -->
+<div class="summary">
+📌 <strong>À retenir :</strong>
+<ul>
+  <li>Utilisez <code>.test()</code> pour tester une regex en JavaScript, jamais <code>=</code></li>
+  <li>Vérifiez toujours <code>!= null</code> ET <code>!== ""</code> pour les champs texte</li>
+  <li>Passez les paramètres à Brevo via l'objet <code>params</code> dans l'API call</li>
+  <li>Récupérez les query parameters WeWeb pour lire les données de l'URL</li>
+  <li>Passer un <code>user_id</code> en clair dans l'URL est fonctionnel mais non sécurisé en production</li>
+  <li>Pour un DataGrid, ajoutez un bouton cliquable dans une cellule plutôt que de compter sur un "row click" direct</li>
+</ul>
+</div>
+
+<h2>🔗 Liens utiles</h2>
+<ul>
+    <li><a href="https://docs.weweb.io/workflows/actions.html" target="_blank">Documentation WeWeb : Workflows et Actions</a></li>
+    <li><a href="https://developers.brevo.com/docs/send-a-transactional-email" target="_blank">Documentation Brevo : Envoyer un email transactionnel</a></li>
+    <li><a href="https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Regular_Expressions" target="_blank">MDN : Expressions régulières JavaScript</a></li>
+    <li><a href="https://regex101.com/" target="_blank">Regex101 : Testeur de regex en ligne</a></li>
+</ul>

@@ -794,6 +794,25 @@
     ]
   },
   {
+    "title": "Flux \"mot de passe oublié\" avec WeWeb + Brevo",
+    "category": "",
+    "level": "",
+    "keywords": [],
+    "theme": "weweb",
+    "path": "../articles/weweb/flux-mot-de-passe-oublie-brevo.html",
+    "date": "",
+    "timeSpent": "",
+    "excerpt": "Pour créer un flux de réinitialisation de mot de passe fonctionnel avec WeWeb + Brevo, les points critiques sont : (1) valider le mot de passe avec une regex correcte en utilisant ...",
+    "tags": [
+      "weweb",
+      "api",
+      "brevo",
+      "workflow",
+      "query",
+      "variable"
+    ]
+  },
+  {
     "title": "Générer un PDF depuis WeWeb : ce qui marche, ce qui casse, et pourquoi",
     "category": "WeWeb",
     "level": "Intermédiaire",
@@ -834,6 +853,35 @@
     "excerpt": "Figure 1 : Exemple d'interface WeWeb (image à ajouter dans /public/images/weweb/)",
     "tags": [
       "weweb"
+    ]
+  },
+  {
+    "title": "WeWeb – Journal de debug : Scroll, conditions métier, calculs et génération PDF",
+    "category": "WeWeb",
+    "level": "Intermédiaire",
+    "keywords": [
+      "WeWeb debug",
+      "html2canvas",
+      "jsPDF pagination",
+      "scroll container",
+      "fixed header footer",
+      "JavaScript float precision",
+      "validation formulaire",
+      "capture DOM PDF",
+      "scale to fit PDF"
+    ],
+    "theme": "weweb",
+    "path": "../articles/weweb/journal-debug-scroll-pdf.html",
+    "date": "04/02/2026",
+    "timeSpent": "15min",
+    "excerpt": "Journal technique documentant 6 problèmes réels rencontrés dans WeWeb : validation de champs incohérente, scroll cassé avec fixed header/footer, imprécision des calculs JS, bugs de...",
+    "tags": [
+      "weweb",
+      "weweb debug",
+      "html2canvas",
+      "jspdf pagination",
+      "debug",
+      "bug"
     ]
   },
   {
